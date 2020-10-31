@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>kendall C++东游记</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Description">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <!-- <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css"> -->
+  <!-- <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify/lib/themes/dark.css"> -->
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sushantrahate/docsify-darkly-theme/css/darkly.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sushantrahate/docsify-darkly-theme/css/darkly.min.css">
+
+</head>
+<body>
+  <nav style="color: #29af82;">
+    <a href="https://linkge-web.gitee.io/kendall-basis/#/" target="_blank">基础</a>
+    <a href="https://linkge-web.gitee.io/kendall-findoffer/#/" target="_blank">寻offer面试</a>
+    <a href="https://linkge-web.gitee.io/kendall-algoritm/#/" target="_blank">算法</a>
+    <a href="#">进阶</a>
+  </nav>
+  <div id="app"></div>
+  <!-- docsify-edit-on-github 在GitHub编辑 -->
+  <script src="//unpkg.com/docsify-edit-on-github/index.js"></script>>
+</script>
+  <script>
+    window.$docsify = {
+      name: 'C++男孩东游记',  //目录题目
+      repo: 'https://github.com/linKge-web/kenwebsum-blog',  //右上角GitHub地址
+      // coverpage: true,  //封面
+      loadSidebar: true,  //定制侧边导航栏
+      maxLevel: 4,//最大支持渲染的标题层级
+      subMaxLevel: 3,  //目录中显示的最大层级
+      homepage: 'README.md',
+      auto2top: true,//切换页面后是否自动跳转到页面顶部
+      // loadNavbar: true  //导航栏
+      
+      themeColor: '#31af80',  //主题颜色
+      mergeNavbar: true, //小屏设备下合并导航栏到侧边栏。
+
+      //全文搜索
+      search: {
+        //maxAge: 86400000, // 过期时间，单位毫秒，默认一天
+        paths: 'auto',
+        placeholder: '搜索',
+        noData: '找不到结果',
+        // 搜索标题的最大程级, 1 - 6
+        depth: 3,
+      },
+
+      //添加GitHub编辑链接
+      plugins: [
+        EditOnGithubPlugin.create('https://github.com/linKge-web/kenwebsum-blog/blob/master/docs/')
+      ]
+    }
+  </script>
+  
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
+  <!-- <script src="//unpkg.com/docsify"></script> -->
+
+    <!--javascript代码高亮-->
+    <script src="//unpkg.com/prismjs/components/prism-javascript.js"></script>
+    <script src="//unpkg.com/prismjs/components/prism-json.js"></script>
+    <script src="//unpkg.com/prismjs/components/prism-css.js"></script>
+    <!--全文搜索,直接用官方提供的无法生效-->
+    <script src="https://cdn.bootcss.com/docsify/4.5.9/plugins/search.min.js"></script>
+    <!-- 复制到剪贴板 -->
+    <script src="//unpkg.com/docsify-copy-code"></script>
+    <!-- 图片缩放 -->
+    <script src="//unpkg.com/docsify/lib/plugins/zoom-image.js"></script>
+    <!-- 字数统计 -->
+    <script src="//unpkg.com/docsify-count/dist/countable.js"></script>
+</body>
+</html>
