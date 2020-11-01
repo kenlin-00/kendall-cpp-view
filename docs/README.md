@@ -4,7 +4,7 @@
 
   > **机遇和努力都很重要，但是只有努力是我们唯一能把控在自己手里的事。我是 Kendall，大家都叫我 K哥，让我们一起遨游`C++`的海洋吧！**
 
-开源项目感谢大家的参与，如果觉得文章对你有帮助，麻烦 [赏个star](https://github.com/linKge-web/kendall-cpp)，你们的支持是我们最大的动力。感谢有你！！！让我们一起努力奔互联网大厂吧！
+开源项目感谢大家的参与，如果觉得文章对你有帮助，麻烦 [赏个star](https://github.com/linKge-web/kendall-cpp)，你们的支持是我们最大的动力。感谢有你！！！
   
 如果在`GitHub`加载很慢，可以到 [码云](https://gitee.com/linKge-web/kendall-cpp/tree/main/docs) 进行查看,或者[在线阅读](https://linkge-web.gitee.io/kendall-cpp/#/)。
    
