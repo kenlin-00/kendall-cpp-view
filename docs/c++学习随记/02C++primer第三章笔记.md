@@ -15,3 +15,7 @@ string line(10,'h'); //hhhhhhhhhh
 
 ![](./img/string01.png)
 
+> 配置g++支持c++11
+> 命令行直接执行：alias g++='g++ -std=c++11'
+
+
