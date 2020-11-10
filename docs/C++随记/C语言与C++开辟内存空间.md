@@ -36,6 +36,6 @@ void test1() {
 
 **`malloc/free`与`new/delete`的差别是什么?**
 
-- 1. malloc/free是标准库函数, new/delete 是表达式
-- 2. malloc只负责开辟空间，但并不会进行初始化;          
-    new表达式开辟空间之后，也会进行初始化
+- 1. `malloc/free`是标准库函数, `new/delete` 是表达式
+- 2. `malloc`只负责开辟空间，但并不会进行初始化;          
+    `new`表达式开辟空间之后，也会进行初始化
