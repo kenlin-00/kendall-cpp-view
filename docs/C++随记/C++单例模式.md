@@ -43,7 +43,7 @@ static Singleton s4;  //error
 int main() {
     //设为私有后，下面的语句将会报错
     Singleton s1;
-    Singleton s2;  //可以创建多个对象
+    Singleton s2;  
 
     Singleton * p1 = new Singleton();  //error
     return 0;
