@@ -222,7 +222,226 @@ public:
 };
 ```
 
+## 反转链表
+[题目来源](https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/)
 
+定义一个函数，输入一个链表的头节点，反转该链表并输出反转后链表的头节点。
+
+实例：
+```
+输入: 1->2->3->4->5->NULL
+输出: 5->4->3->2->1->NULL
+```
+使用头接法对链表进行反转
+```js
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        //头结点指向的第一个元素
+        // ListNode * pre = nullptr;
+        ListNode * cur = head;
+        head = nullptr;
+        while(cur) {
+            ListNode * next = cur -> next;
+            cur->next = head;
+            head = cur;
+            cur = next;
+        }
+
+        return head;
+    }
+};
+```
+## 反转链表2
+[题目来源](https://leetcode-cn.com/problems/reverse-linked-list-ii/)
+
+反转从位置 m 到 n 的链表。请使用一趟扫描完成反转。
+
+说明:       
+1 ≤ m ≤ n ≤ 链表长度。
+
+示例：
+```
+输入: 1->2->3->4->5->NULL, m = 2, n = 4
+输出: 1->4->3->2->5->NULL
+```
+```js
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* reverseBetween(ListNode* head, int m, int n) {
+       if(m==n) return head;
+        auto dummy=new ListNode(-1);
+        dummy->next=head;
+        auto a=dummy,d=dummy;
+        for(int i=0;i<m-1;i++) a=a->next;
+        for(int i=0;i<n;i++) d=d->next;
+        auto b=a->next,c=d->next;
+        for(auto p=b,q=p->next;q!=c;){
+            auto o=q->next;
+            q->next=p;
+            p=q;q=o;
+        }
+        a->next=d;
+        b->next=c;
+        return dummy->next;
+    }
+};
+```
+
+## 替换空格
+[题目来源](https://leetcode-cn.com/problems/ti-huan-kong-ge-lcof/)
+
+请实现一个函数，把字符串 s 中的每个空格替换成"%20"。
+
+示例：
+```
+输入：s = "We are happy."
+输出："We%20are%20happy."
+```
+方法一：20%占三个字符，空格只是占一个字符，所以先在后面补0以增加长度。
+```js
+class Solution {
+public:
+    string replaceSpace(string s) {
+        int length1 = s.length() - 1;
+        for(int i=0;i<=length1;i++) {
+            if(s[i] == ' ') {
+                s += "00";
+            }
+        }
+        int length2 = s.length()-1;
+        if(length1 == length2) return s;  //没有空格
+        //从后向前
+        for(int i=length1;i>=0;--i) {
+            char c = s[i];
+            if(c == ' ') {
+                s[length2--] = '0';
+                s[length2--] = '2';
+                s[length2--] = '%';
+            }else {
+                s[length2--] = c;
+            }
+        }
+        return s;
+
+    }
+};
+```
+方法二：统计空格数
+```
+class Solution {
+public:
+    string replaceSpace(string s) {
+        int len = s.length()-1;
+        int count = 0;
+        for(int i=0;i<=len;++i) {
+            if(s[i] == ' ') ++count;
+        }
+        if(count == 0) return s;
+        //需要加上字符，让s的长度为len2
+        s += string(count * 2,' ');
+
+        int len2 = len + count * 2;
+        for(int i = len;i>=0;--i) {
+            if(s[i] == ' ') {
+                s[len2--] = '0';
+                s[len2--] = '2';
+                s[len2--] = '%';
+            }else {
+                s[len2--] =  s[i];
+            }
+        }
+        return s;
+    }
+};
+```
+
+## 从尾到头打印链表
+
+[题目来源](https://leetcode-cn.com/problems/cong-wei-dao-tou-da-yin-lian-biao-lcof/)
+
+输入一个链表的头节点，从尾到头反过来返回每个节点的值（用数组返回）。
+示例：
+```
+输入：head = [1,3,2]
+输出：[2,3,1]
+```
+
+方法一：使用递归
+```js
+class Solution {
+public:
+    vector<int> reversePrint(ListNode* head) {
+        if(!head) return{};
+        vector<int> res = reversePrint(head->next);
+        res.push_back(head->val);
+        return res;
+    }
+};
+```
+方法二：使用数组
+```js
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<int> reversePrint(ListNode* head) {
+        vector<int> vec;
+        ListNode *p = head;
+        while(p) {
+            vec.push_back(p->val);
+            p = p->next;
+        }
+        reverse(vec.begin(),vec.end());
+        // 两个字符串反转函数
+        //1.strrev函数只对字符数组有效，对string类型是无效的。
+        //2.reverse函数是反转容器中的内容，对字符数组无效。
+        return vec;
+    }
+};
+```
+
+方法三：使用栈
+```js
+class Solution {
+public:
+    vector<int> reversePrint(ListNode* head) {
+        stack<int> sta;
+        vector<int> res;
+        while(head) {
+            sta.push(head->val);
+            head = head->next;
+        }
+        while(!sta.empty()) {
+            res.push_back(sta.top());
+            sta.pop();
+        }
+        return res;
+    }
+};
+```
 
 
 
