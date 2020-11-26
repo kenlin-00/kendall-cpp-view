@@ -460,25 +460,182 @@ F(N) = F(N - 1) + F(N - 2), 其中 N > 1.
 输出：2
 解释：F(3) = F(2) + F(1) = 1 + 1 = 2.
 ```
-方法一：
+**递归法**
+
+时间复杂度：O(2<sup>n</sup>)
+
+空间复杂度：O(1)
+
+```js
+class Solution {
+public:
+    int fib(int N) {
+        if(N <= 1) {
+            return N;
+        }
+        return fib(N-1) + fib(N-2);
+    }
+};
+```
+**优化递归**
+
+递归会重复计算大量相同数据，我们可以用个数组把结果存起来
+
+```js
+class Solution {
+public:
+    int fib(int N) {
+        int ans[31]; 
+        ans[0] = 0;
+        ans[1] = 1;
+        for(int i = 2;i<=N;i++) {
+            ans[i] = ans[i - 1] + ans[i - 2];
+        }
+        return ans[N];
+    }
+};
+```
+时间复杂度：O(n)
+
+空间复杂度：O(n)
+
+**优化存储**
+其实我们可以发现每次就用到了最近的两个数，所以我们可以只存储最近的两个数
+- sum 存储第 n 项的值
+- one 存储第 n-1 项的值
+- two 存储第 n-2 项的值
+
 ```js
 class Solution {
 public:
     int fib(int N) {
         if(N == 0) return 0;
         if(N == 1) return 1;
-        int f = 0, one = 1,two = 0;
-        while(N>=2) {
-            f = one + two;
-            two = f;
-            one = two;
-
-            --N;
+        int sum = 0, one = 1,two = 0; //前一个，前两个
+        for(int i=2;i<=N;++i) {
+            sum = one + two;
+            two = one;
+            one = sum;
         }
-        return f;
+        return sum;
     }
 };
 ```
+
+## 二维数组中的查找
+
+在一个 n * m 的二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个高效的函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。
+
+示例:
+
+现有矩阵 matrix 如下：
+```
+[
+  [1,   4,  7, 11, 15],
+  [2,   5,  8, 12, 19],
+  [3,   6,  9, 16, 22],
+  [10, 13, 14, 17, 24],
+  [18, 21, 23, 26, 30]
+]
+```
+给定 target = 5，返回 true。
+
+给定 target = 20，返回 false。
+```js
+class Solution {
+public:
+    bool findNumberIn2DArray(vector<vector<int>>& matrix, int target) {
+        int i=matrix.size() - 1,j = 0;
+        //判断的条件是越界,从左下角开始找
+        while(i>=0&&j<matrix[0].size()) {
+            if(target == matrix[i][j]) {
+                return true;
+            }else if(target > matrix[i][j]) {
+                ++j;
+            }else {
+                --i;
+            }
+        }
+        return false;
+    }
+};
+```
+
+## 重建二叉树
+[题目来源](https://leetcode-cn.com/problems/zhong-jian-er-cha-shu-lcof/)
+
+输入某二叉树的前序遍历和中序遍历的结果，请重建该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。
+
+例如，给出
+```
+前序遍历 preorder = [3,9,20,15,7]
+中序遍历 inorder = [9,3,15,20,7]
+```
+返回如下的二叉树：
+```
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+思路：不断找根节点，不断划分左子树和右子树。
+```js
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+        if(preorder.size() == 0 || inorder.size() == 0) return NULL;
+        //先找到根节点，再找到中序遍历中根节点的索引
+        TreeNode *root = new TreeNode(preorder[0]);
+        TreeNode *p = root;
+        int index = 0;
+        //找出中序遍历中根节点的索引
+        for(int i = 0;i<inorder.size();++i) {
+            if(root->val == inorder[i]) {
+                index = i;
+                break;
+            }
+        }
+        //使用递归进行构建
+        //左子树的前序遍历和右子树的前序遍历，左子树的中序遍历和右子树的中序遍历 数组
+        vector<int> preleft,preright,inleft,inright;  
+        //左子树的前序遍历 放到数组中
+        for(int i=1;i<=index;++i) {
+            preleft.push_back(preorder[i]);
+        }
+        //右子树的前序遍历
+        for(int i=index + 1;i<preorder.size();++i) {
+            preright.push_back(preorder[i]);
+        }
+        //左子树的中序遍历
+        for(int i=0;i<=index;++i) {
+            inleft.push_back(inorder[i]);
+        }
+        //右子树的中序遍历
+        for(int i=index+1;i<inorder.size();++i) {
+            inright.push_back(inorder[i]);
+        }
+        p -> left = buildTree(preleft,inleft);
+        p -> right = buildTree(preright,inright);
+        return root;
+    }
+};
+```
+优化待补充...
+
+
+
+
 
 
 
