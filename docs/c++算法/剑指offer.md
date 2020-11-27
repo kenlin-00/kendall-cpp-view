@@ -1,137 +1,92 @@
-## 旋转数组的最小数字
-[题目来源](https://leetcode-cn.com/problems/xuan-zhuan-shu-zu-de-zui-xiao-shu-zi-lcof/)
+## 链表
 
-题目描述
 
-把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。
+### 反转链表
+[题目来源](https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/)
 
-输入一个非递减排序的数组的一个旋转，输出旋转数组的最小元素。
-
-NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。
+定义一个函数，输入一个链表的头节点，反转该链表并输出反转后链表的头节点。
 
 实例：
 ```
-输入：[3,4,5,1,2]
-输出：1
-
-输入：[2,2,2,0,1]
-输出：0
+输入: 1->2->3->4->5->NULL
+输出: 5->4->3->2->1->NULL
 ```
-**题解：使用二分查找**
+使用头接法对链表进行反转
 ```js
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
 class Solution {
 public:
-    int minArray(vector<int>& numbers) {
-        if(numbers.empty()) {
-            return 0;
+    ListNode* reverseList(ListNode* head) {
+        //头结点指向的第一个元素
+        // ListNode * pre = nullptr;
+        ListNode * cur = head;
+        head = nullptr;
+        while(cur) {
+            ListNode * next = cur -> next;
+            cur->next = head;
+            head = cur;
+            cur = next;
         }
-       int start = 0,end = numbers.size() - 1;
-       while(start + 1 < end) {
-           int mid = start + (end - start) / 2;
-            if(numbers[mid] > numbers[end]) {
-                start = mid;
-            }else if(numbers[mid] < numbers[end]) {
-                end = mid;
-            }else {
-                -- end;
-            }
-       }
-       return numbers[start] < numbers[end] ? numbers[start] : numbers[end];
+
+        return head;
     }
 };
 ```
-改一下
-```js
-class Solution {
-public:
-    int minArray(vector<int>& numbers) {
-        if(numbers.size() == 0) {
-            return 0;
-        }
-        int start = 0,end = numbers.size() - 1;
-        while(start < end) {
-            if(numbers[start] < numbers[end]) {//确认子数组是否是类似1,1,2,4,5,..,7的非递减数组
-                return numbers[start];
-            }
-            int mid = start + (end - start) /2;
-            if(numbers[mid] > numbers[start]) {
-                start = mid + 1;
-            }else if(numbers[mid] < numbers[end]) {
-                end = mid;
-            }else {
-                ++ start;  //这是是start++，return start
-            }
-        }
-        return numbers[start];
-    }
-};
-```
+### 反转链表2
+[题目来源](https://leetcode-cn.com/problems/reverse-linked-list-ii/)
 
-## 青蛙跳台阶问题
-[题目来源](https://leetcode-cn.com/problems/qing-wa-tiao-tai-jie-wen-ti-lcof/)
+反转从位置 m 到 n 的链表。请使用一趟扫描完成反转。
 
-一只青蛙一次可以跳上1级台阶，也可以跳上2级台阶。求该青蛙跳上一个 n 级的台阶总共有多少种跳法。
-
-答案需要取模 1e9+7（1000000007），如计算初始结果为：1000000008，请返回 1。
+说明:       
+1 ≤ m ≤ n ≤ 链表长度。
 
 示例：
 ```
-输入：n = 2
-输出：2
-
-输入：n = 0
-输出：1
-
+输入: 1->2->3->4->5->NULL, m = 2, n = 4
+输出: 1->4->3->2->5->NULL
 ```
-提示：      
-0 <= n <= 100
-
-思路：
-
-1.第0级台阶到第1级台 只有一种方法 上1级台阶
-
-2.第0级台阶到第2级台 有两种方法 一种是0-2 上2级台阶 一种是上到1级台阶 再上2级台阶
-
-3.第0级台阶到第3级台 有两种方法 一种是0-2 再2-3 一种是0-1 1-3 (其中0-1 1-2 2-3已经包含在前面的方法中了)
-
-4.逆向来看就是 n台阶的方案数量 = n-1台阶方案数量 + n-2的方案数量
-
-总结斐波那契数列：f(n) = f(n - 1) + f(n - 2)
-
 ```js
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
 class Solution {
 public:
-    int numWays(int n) {
-        if(n == 0) 
-            return 1;
-        if(n <=2) 
-            return n;
-        long one = 1,two = 2;
-        long res;
-        for(int i = 3;i<=n;++i) {
-            res = (one + two) % 1000000007;
-            one = two;
-            two = res;
+    ListNode* reverseBetween(ListNode* head, int m, int n) {
+       if(m==n) return head;
+        auto dummy=new ListNode(-1);
+        dummy->next=head;
+        auto a=dummy,d=dummy;
+        for(int i=0;i<m-1;i++) a=a->next;
+        for(int i=0;i<n;i++) d=d->next;
+        auto b=a->next,c=d->next;
+        for(auto p=b,q=p->next;q!=c;){
+            auto o=q->next;
+            q->next=p;
+            p=q;q=o;
         }
-        return res;
-    }
-};
-```
-使用动态规划
-```js
-class Solution {
-public:
-    int numWays(int n) {
-        vector<int> v(n+1,1);
-        for(int i=2;i <= n;i++) {
-            v[i] = (v[i-1] + v[i-2]) % 1000000007;
-        }
-        return v[n];
+        a->next=d;
+        b->next=c;
+        return dummy->next;
     }
 };
 ```
 
-## 二叉树的镜像
+
+## 二叉树
+
+### 二叉树的镜像
 [题目来源](https://leetcode-cn.com/problems/er-cha-shu-de-jing-xiang-lcof/)
 请完成一个函数，输入一个二叉树，该函数输出它的镜像。
 
@@ -222,89 +177,246 @@ public:
 };
 ```
 
-## 反转链表
-[题目来源](https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/)
 
-定义一个函数，输入一个链表的头节点，反转该链表并输出反转后链表的头节点。
+### 重建二叉树
+[题目来源](https://leetcode-cn.com/problems/zhong-jian-er-cha-shu-lcof/)
+
+输入某二叉树的前序遍历和中序遍历的结果，请重建该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。
+
+例如，给出
+```
+前序遍历 preorder = [3,9,20,15,7]
+中序遍历 inorder = [9,3,15,20,7]
+```
+返回如下的二叉树：
+```
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+思路：不断找根节点，不断划分左子树和右子树。
+```js
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+        if(preorder.size() == 0 || inorder.size() == 0) return NULL;
+        //先找到根节点，再找到中序遍历中根节点的索引
+        TreeNode *root = new TreeNode(preorder[0]);
+        TreeNode *p = root;
+        int index = 0;
+        //找出中序遍历中根节点的索引
+        for(int i = 0;i<inorder.size();++i) {
+            if(root->val == inorder[i]) {
+                index = i;
+                break;
+            }
+        }
+        //使用递归进行构建
+        //左子树的前序遍历和右子树的前序遍历，左子树的中序遍历和右子树的中序遍历 数组
+        vector<int> preleft,preright,inleft,inright;  
+        //左子树的前序遍历 放到数组中
+        for(int i=1;i<=index;++i) {
+            preleft.push_back(preorder[i]);
+        }
+        //右子树的前序遍历
+        for(int i=index + 1;i<preorder.size();++i) {
+            preright.push_back(preorder[i]);
+        }
+        //左子树的中序遍历
+        for(int i=0;i<=index;++i) {
+            inleft.push_back(inorder[i]);
+        }
+        //右子树的中序遍历
+        for(int i=index+1;i<inorder.size();++i) {
+            inright.push_back(inorder[i]);
+        }
+        p -> left = buildTree(preleft,inleft);
+        p -> right = buildTree(preright,inright);
+        return root;
+    }
+};
+```
+优化待补充...
+
+### 树的子结构
+[题目来源](https://leetcode-cn.com/problems/shu-de-zi-jie-gou-lcof/)
+输入两棵二叉树A和B，判断B是不是A的子结构。(约定空树不是任意一个树的子结构)
+
+B是A的子结构， 即 A中有出现和B相同的结构和节点值。
+
+例如:
+给定的树 A:
+```
+     3
+    / \
+   4   5
+  / \
+ 1   2
+给定的树 B：
+
+   4 
+  /
+ 1
+```
+返回 true，因为 B 与 A 的一个子树拥有相同的结构和节点值。
 
 实例：
 ```
-输入: 1->2->3->4->5->NULL
-输出: 5->4->3->2->1->NULL
+输入：A = [1,2,3], B = [3,1]
+输出：false
+
+输入：A = [3,4,5,1,2], B = [4,1]
+输出：true
 ```
-使用头接法对链表进行反转
+
+## 其他
+### 旋转数组的最小数字
+[题目来源](https://leetcode-cn.com/problems/xuan-zhuan-shu-zu-de-zui-xiao-shu-zi-lcof/)
+
+题目描述
+
+把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。
+
+输入一个非递减排序的数组的一个旋转，输出旋转数组的最小元素。
+
+NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。
+
+实例：
+```
+输入：[3,4,5,1,2]
+输出：1
+
+输入：[2,2,2,0,1]
+输出：0
+```
+**题解：使用二分查找**
 ```js
-/**
- * Definition for singly-linked list.
- * struct ListNode {
- *     int val;
- *     ListNode *next;
- *     ListNode(int x) : val(x), next(NULL) {}
- * };
- */
 class Solution {
 public:
-    ListNode* reverseList(ListNode* head) {
-        //头结点指向的第一个元素
-        // ListNode * pre = nullptr;
-        ListNode * cur = head;
-        head = nullptr;
-        while(cur) {
-            ListNode * next = cur -> next;
-            cur->next = head;
-            head = cur;
-            cur = next;
+    int minArray(vector<int>& numbers) {
+        if(numbers.empty()) {
+            return 0;
         }
-
-        return head;
+       int start = 0,end = numbers.size() - 1;
+       while(start + 1 < end) {
+           int mid = start + (end - start) / 2;
+            if(numbers[mid] > numbers[end]) {
+                start = mid;
+            }else if(numbers[mid] < numbers[end]) {
+                end = mid;
+            }else {
+                -- end;
+            }
+       }
+       return numbers[start] < numbers[end] ? numbers[start] : numbers[end];
     }
 };
 ```
-## 反转链表2
-[题目来源](https://leetcode-cn.com/problems/reverse-linked-list-ii/)
+改一下
+```js
+class Solution {
+public:
+    int minArray(vector<int>& numbers) {
+        if(numbers.size() == 0) {
+            return 0;
+        }
+        int start = 0,end = numbers.size() - 1;
+        while(start < end) {
+            if(numbers[start] < numbers[end]) {//确认子数组是否是类似1,1,2,4,5,..,7的非递减数组
+                return numbers[start];
+            }
+            int mid = start + (end - start) /2;
+            if(numbers[mid] > numbers[start]) {
+                start = mid + 1;
+            }else if(numbers[mid] < numbers[end]) {
+                end = mid;
+            }else {
+                ++ start;  //这是是start++，return start
+            }
+        }
+        return numbers[start];
+    }
+};
+```
 
-反转从位置 m 到 n 的链表。请使用一趟扫描完成反转。
+### 青蛙跳台阶问题
+[题目来源](https://leetcode-cn.com/problems/qing-wa-tiao-tai-jie-wen-ti-lcof/)
 
-说明:       
-1 ≤ m ≤ n ≤ 链表长度。
+一只青蛙一次可以跳上1级台阶，也可以跳上2级台阶。求该青蛙跳上一个 n 级的台阶总共有多少种跳法。
+
+答案需要取模 1e9+7（1000000007），如计算初始结果为：1000000008，请返回 1。
 
 示例：
 ```
-输入: 1->2->3->4->5->NULL, m = 2, n = 4
-输出: 1->4->3->2->5->NULL
+输入：n = 2
+输出：2
+
+输入：n = 0
+输出：1
+
 ```
+提示：      
+0 <= n <= 100
+
+思路：
+
+1.第0级台阶到第1级台 只有一种方法 上1级台阶
+
+2.第0级台阶到第2级台 有两种方法 一种是0-2 上2级台阶 一种是上到1级台阶 再上2级台阶
+
+3.第0级台阶到第3级台 有两种方法 一种是0-2 再2-3 一种是0-1 1-3 (其中0-1 1-2 2-3已经包含在前面的方法中了)
+
+4.逆向来看就是 n台阶的方案数量 = n-1台阶方案数量 + n-2的方案数量
+
+总结斐波那契数列：f(n) = f(n - 1) + f(n - 2)
+
 ```js
-/**
- * Definition for singly-linked list.
- * struct ListNode {
- *     int val;
- *     ListNode *next;
- *     ListNode(int x) : val(x), next(NULL) {}
- * };
- */
 class Solution {
 public:
-    ListNode* reverseBetween(ListNode* head, int m, int n) {
-       if(m==n) return head;
-        auto dummy=new ListNode(-1);
-        dummy->next=head;
-        auto a=dummy,d=dummy;
-        for(int i=0;i<m-1;i++) a=a->next;
-        for(int i=0;i<n;i++) d=d->next;
-        auto b=a->next,c=d->next;
-        for(auto p=b,q=p->next;q!=c;){
-            auto o=q->next;
-            q->next=p;
-            p=q;q=o;
+    int numWays(int n) {
+        if(n == 0) 
+            return 1;
+        if(n <=2) 
+            return n;
+        long one = 1,two = 2;
+        long res;
+        for(int i = 3;i<=n;++i) {
+            res = (one + two) % 1000000007;
+            one = two;
+            two = res;
         }
-        a->next=d;
-        b->next=c;
-        return dummy->next;
+        return res;
+    }
+};
+```
+使用动态规划
+```js
+class Solution {
+public:
+    int numWays(int n) {
+        vector<int> v(n+1,1);
+        for(int i=2;i <= n;i++) {
+            v[i] = (v[i-1] + v[i-2]) % 1000000007;
+        }
+        return v[n];
     }
 };
 ```
 
-## 替换空格
+
+### 替换空格
 [题目来源](https://leetcode-cn.com/problems/ti-huan-kong-ge-lcof/)
 
 请实现一个函数，把字符串 s 中的每个空格替换成"%20"。
@@ -372,7 +484,7 @@ public:
 };
 ```
 
-## 从尾到头打印链表
+### 从尾到头打印链表
 
 [题目来源](https://leetcode-cn.com/problems/cong-wei-dao-tou-da-yin-lian-biao-lcof/)
 
@@ -442,7 +554,7 @@ public:
     }
 };
 ```
-## 斐波那契数
+### 斐波那契数
 [题目来源](https://leetcode-cn.com/problems/fibonacci-number/)
 
 斐波那契数，通常用 F(n) 表示，形成的序列称为斐波那契数列。该数列由 0 和 1 开始，后面的每一项数字都是前面两项数字的和。也就是：
@@ -522,7 +634,7 @@ public:
 };
 ```
 
-## 二维数组中的查找
+### 二维数组中的查找
 
 在一个 n * m 的二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个高效的函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。
 
@@ -560,80 +672,6 @@ public:
     }
 };
 ```
-
-## 重建二叉树
-[题目来源](https://leetcode-cn.com/problems/zhong-jian-er-cha-shu-lcof/)
-
-输入某二叉树的前序遍历和中序遍历的结果，请重建该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。
-
-例如，给出
-```
-前序遍历 preorder = [3,9,20,15,7]
-中序遍历 inorder = [9,3,15,20,7]
-```
-返回如下的二叉树：
-```
-    3
-   / \
-  9  20
-    /  \
-   15   7
-```
-
-思路：不断找根节点，不断划分左子树和右子树。
-```js
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
- * };
- */
-class Solution {
-public:
-    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
-        if(preorder.size() == 0 || inorder.size() == 0) return NULL;
-        //先找到根节点，再找到中序遍历中根节点的索引
-        TreeNode *root = new TreeNode(preorder[0]);
-        TreeNode *p = root;
-        int index = 0;
-        //找出中序遍历中根节点的索引
-        for(int i = 0;i<inorder.size();++i) {
-            if(root->val == inorder[i]) {
-                index = i;
-                break;
-            }
-        }
-        //使用递归进行构建
-        //左子树的前序遍历和右子树的前序遍历，左子树的中序遍历和右子树的中序遍历 数组
-        vector<int> preleft,preright,inleft,inright;  
-        //左子树的前序遍历 放到数组中
-        for(int i=1;i<=index;++i) {
-            preleft.push_back(preorder[i]);
-        }
-        //右子树的前序遍历
-        for(int i=index + 1;i<preorder.size();++i) {
-            preright.push_back(preorder[i]);
-        }
-        //左子树的中序遍历
-        for(int i=0;i<=index;++i) {
-            inleft.push_back(inorder[i]);
-        }
-        //右子树的中序遍历
-        for(int i=index+1;i<inorder.size();++i) {
-            inright.push_back(inorder[i]);
-        }
-        p -> left = buildTree(preleft,inleft);
-        p -> right = buildTree(preright,inright);
-        return root;
-    }
-};
-```
-优化待补充...
-
-
 
 
 
