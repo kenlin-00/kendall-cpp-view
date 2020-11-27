@@ -280,6 +280,215 @@ B是A的子结构， 即 A中有出现和B相同的结构和节点值。
 输入：A = [3,4,5,1,2], B = [4,1]
 输出：true
 ```
+方法一：层次遍历+深度优先搜索
+```js
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool isSubStructure(TreeNode* A, TreeNode* B) {
+        if(!A || !B) {
+            return false;
+        }
+        bool res = false;
+        //A的根节点与B的根节点相等，就开始递归遍历
+        if(A->val == B->val) {
+            res = treeAhasB(A,B);
+        }
+        //如果不相等，A就递归往左走
+        if(!res) res = isSubStructure(A->left,B);
+        //如果还是匹配不到就A就往右子树匹配右子树
+        if(!res) res = isSubStructure(A->right,B);
+        return res;
+    }
+    //深度优先搜索思想
+    bool treeAhasB(TreeNode * A,TreeNode * B) {
+        //如果B已经遍历完了，就返回true
+        if(!B) return true;
+        //如果A已经遍历完，但是B还有，则就返回false
+        if(!A) return false;
+        //如果A与B的值不相等了就返回false
+        if(A->val != B -> val) return false;
+        return treeAhasB(A->left,B->left) && treeAhasB(A->right,B->right);
+    }
+};
+```
+方法二：代码冗余优化
+```js
+class Solution {
+public:
+    bool isSubStructure(TreeNode* A, TreeNode* B) {
+        if(!A || !B) {
+            return false;
+        }
+        bool res = false;
+        if(treeAhasB(A,B)) return true;
+        //如果不相等，A就递归往左走
+        return isSubStructure(A->left,B) || isSubStructure(A->right,B);
+    }
+    bool treeAhasB(TreeNode * A,TreeNode * B) {
+        //如果B已经遍历完了，就返回true
+        if(!B) return true;
+        //如果A已经遍历完，但是B还有，则就返回false
+        if(!A) return false;
+        //如果A与B的值不相等了就返回false
+        if(A->val != B -> val) return false;
+        return treeAhasB(A->left,B->left) && treeAhasB(A->right,B->right);
+    }
+};
+```
+
+### 对称的二叉树
+[题目来源](https://leetcode-cn.com/problems/dui-cheng-de-er-cha-shu-lcof/)
+
+请实现一个函数，用来判断一棵二叉树是不是对称的。如果一棵二叉树和它的镜像一样，那么它是对称的。
+```
+例如，二叉树 [1,2,2,3,4,4,3] 是对称的。
+
+    1
+   / \
+  2   2
+ / \ / \
+3  4 4  3
+但是下面这个 [1,2,2,null,3,null,3] 则不是镜像对称的:
+
+    1
+   / \
+  2   2
+   \   \
+   3    3
+```
+示例：
+```
+输入：root = [1,2,2,3,4,4,3]
+输出：true
+
+输入：root = [1,2,2,null,3,null,3]
+输出：false
+```
+```js
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool isSymmetric(TreeNode* root) {
+        if(!root) return true;
+        return compare(root->left,root->right);
+    }
+    bool compare(TreeNode * tleft,TreeNode * tright) {
+        //排除一下特殊星空
+        //如果左子树为空右子树不空，直接返回false
+        if(tleft == NULL && tright != NULL) return false;
+        //如果左子树不为空右子树空，直接返回false
+        if(tleft != NULL && tright == NULL) return false;
+        //如果左右子树都为空，就直接返回true
+        if(tleft == NULL && tright == NULL) return true;
+
+        //如果左右子树的值不相等也返回false
+        if(tleft->val != tright->val) return false;
+
+        //进行递归 左子树的左子树，右子树的右子树
+        // 外围   内围
+        return compare(tleft->left,tright->right) && compare(tleft -> right,tright -> left);
+    }
+    
+};
+```
+
+## 从上到下打印二叉树
+[题目来源](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-lcof/)
+
+从上到下打印出二叉树的每个节点，同一层的节点按照从左到右的顺序打印。
+
+例如:
+给定二叉树: `[3,9,20,null,null,15,7]`,
+```
+    3
+   / \
+  9  20
+    /  \
+   15   7
+返回
+[3,9,20,15,7]
+```
+
+```js
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<int> levelOrder(TreeNode* root) {
+        if(root == NULL) return {};
+        vector<int> res;  //存放结果的值
+        queue<TreeNode *> que;
+        que.push(root);
+        // 广度优先搜索
+        while(!que.empty()) {
+            TreeNode * node = que.front();
+            que.pop();
+            if(node->left)
+                que.push(node->left);
+            if(node->right)
+                que.push(node->right);
+            //这值存入返回的数组中
+            res.push_back(node->val);
+        }
+        return res;
+    }
+};
+```
+### 从上到下打印二叉树 II
+[题目来演](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-ii-lcof/)
+
+从上到下按层打印二叉树，同一层的节点按从左到右的顺序打印，每一层打印到一行。
+
+例如:
+给定二叉树: [3,9,20,null,null,15,7],
+```
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+返回层次遍历结果
+```
+[
+  [3],
+  [9,20],
+  [15,7]
+]
+```
+
+```js
+
+```
+
+
+
+
+
 
 ## 其他
 ### 旋转数组的最小数字
