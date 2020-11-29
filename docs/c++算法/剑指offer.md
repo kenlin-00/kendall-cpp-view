@@ -566,6 +566,110 @@ public:
 };
 ```
 
+## 栈
+ 栈的
+### 压入、弹出序列
+输入两个整数序列，第一个序列表示栈的压入顺序，请判断第二个序列是否为该栈的弹出顺序。假设压入栈的所有数字均不相等。例如，序列 {1,2,3,4,5} 是某栈的压栈序列，序列 {4,5,3,2,1} 是该压栈序列对应的一个弹出序列，但 {4,3,5,1,2} 就不可能是该压栈序列的弹出序列。
+
+示例：
+```
+输入：pushed = [1,2,3,4,5], popped = [4,5,3,2,1]
+输出：true
+解释：我们可以按以下顺序执行：
+push(1), push(2), push(3), push(4), pop() -> 4,
+push(5), pop() -> 5, pop() -> 3, pop() -> 2, pop() -> 1
+
+
+输入：pushed = [1,2,3,4,5], popped = [4,3,5,1,2]
+输出：false
+解释：1 不能在 2 之前弹出。
+```
+```js
+class Solution {
+public:
+    bool validateStackSequences(vector<int>& pushed, vector<int>& popped) {
+
+        stack<int> sta;
+        int poid = 0;
+        for(int i=0;i<pushed.size();++i) {
+            sta.push(pushed[i]);
+            while(!sta.empty() && poid < popped.size() && sta.top() == popped[poid] ) {
+                sta.pop();
+                ++poid;
+            }
+        }
+        return sta.empty();
+    }
+};
+```
+
+### 最小的k个数
+输入整数数组 arr ，找出其中最小的 k 个数。例如，输入4、5、1、6、2、7、3、8这8个数字，则最小的4个数字是1、2、3、4。
+
+示例：
+```
+输入：arr = [3,2,1], k = 2
+输出：[1,2] 或者 [2,1]
+```
+
+方法一：排序
+```js
+class Solution {
+public:
+    vector<int> getLeastNumbers(vector<int>& arr, int k) {
+        vector<int> vec(k,0);
+        sort(arr.begin(),arr.end());
+        for(int i=0;i<k;++i) {
+            vec[i] = arr[i];
+        }
+        return vec;
+     }
+};
+```
+复杂度分析
+
+- 时间复杂度：`O(nlogn)`，其中 nn 是数组 arr 的长度。算法的时间复杂度即排序的时间复杂度。
+
+- 空间复杂度：`O(log n)`，排序所需额外的空间复杂度为 O(\log n)O(logn)。
+
+方法二：使用推
+
+我们用一个大根堆实时维护数组的前 `kk` 小值。首先将前 `kk` 个数插入大根堆中，随后从第 `k+1k+1` 个数开始遍历，如果当前遍历到的数比大根堆的堆顶的数要小，就把堆顶的数弹出，再插入当前遍历到的数。最后将大根堆里的数存入数组返回即可。在下面的代码中，由于 C++ 语言中的堆（即优先队列）为大根堆，我们可以这么做。
+```js
+class Solution {
+public:
+    vector<int> getLeastNumbers(vector<int>& arr, int k) {
+        vector<int>vec(k, 0);
+        if (k == 0) { // 排除 0 的情况
+            return vec;
+        }
+        priority_queue<int> Q;
+        for (int i = 0; i < k; ++i) {
+            Q.push(arr[i]);
+        }
+        for (int i = k; i < (int)arr.size(); ++i) {
+            if (Q.top() > arr[i]) {
+                Q.pop();
+                Q.push(arr[i]);
+            }
+        }
+        for (int i = 0; i < k; ++i) {
+            vec[i] = Q.top();
+            Q.pop();
+        }
+        return vec;
+    }
+};
+```
+**复杂度分析：**
+
+时间复杂度：OO(nlog k)，其中 nn 是数组 arr 的长度。由于大根堆实时维护前 kk 小值，所以插入删除都是O(\log k)`O(log k)` 的时间复杂度，最坏情况下数组里 nn 个数都会插入，所以一共需要 `O(nlog k)` 的时间复杂度。
+
+空间复杂度：`O(k)`，因为大根堆里最多 `kk` 个数。
+
+
+
+
 
 
 
