@@ -13,3 +13,5 @@ http_secure_link_module --with-http_stub_status_module --with-stream --with-pcre
 openssl=/home/kendall/kenworkspace/app/nginx
 /openssl-1.1.0g
 ```
+
+
