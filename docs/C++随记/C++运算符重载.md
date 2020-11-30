@@ -211,7 +211,7 @@ Complex Complex::operator+(const Complex &rhs) {
             `computer com[3];`      
 则`com[1]`等价于`com.operator[](1)`，如果`[]`中的参数类型非int型，或者非对象数组要使用下标运算符时，需要重载下标运算符`[]`。
 
-下面实习下表运算符`[]`:
+下面实现表运算符`[]`:
 ```js
 #include <string.h>
 #include <iostream>
@@ -259,6 +259,155 @@ int main() {
     return 0;
 }
 ```
+
+### 输入>>输出<<的重载
+`>>`和`<<`运算符 **只能重载为友元函数形式**.     
+因为成员函数的第一个参数默认是this，也就是其本身， 如果以成员函数形式重载输入输出流运算符，左操作数必然是对象本身，而输入输出流运算符左操作数要求是流对象，所以输入输出流运算符不能以成员函数形式进行重载。
+```js
+#include <iostream>
+using namespace std;
+
+
+class Complex
+{
+private:
+    double imag;		//虚部
+    double real;		//实部
+public:
+    Complex(double r=0.0,double i=0.0)	//构造函数
+    {
+        real=r;
+        imag=i;
+    }
+    friend ostream& operator<<(ostream& ,Complex& );		//友元函数声明
+    friend istream& operator>>(istream& ,Complex& );
+};
+
+ostream& operator<<(ostream& os,Complex& C1)			//对操作符<<的重载
+{
+    os<<C1.real<<"+i*"<<C1.imag<<endl;
+    return os;
+}
+
+istream& operator>>(istream& is,Complex& C1)			//对操作符>>的重载
+{
+    is>>C1.real;
+    while (is.get()!='*')
+    {
+        break;
+    }
+    is>>C1.imag;
+    return is;
+}
+
+int main()
+{
+    Complex c1(2.5,3.1);
+    cin>>c1;
+    cout<<c1;
+    return 0;
+}
+```
+### 指针运算符->的重载     
+箭头运算符必须是类的成员函数
+
+指针运算符返回值必须是一个指针，或者是一个重载了箭头运算符的对象。
+如果返回的是一个指针将调用内置的箭头运算符。执行相当于	        
+	`(*(obj.operator->()).data;`
+
+总的来说重载的箭头运算符就是为了改变从哪个对象中获取成员
+```js
+#include <iostream>
+using std::cout;
+using std::endl;
+
+class Data {
+public:
+    Data()
+    :_ix(10)
+    {
+        cout << "Data()" << endl;
+    }
+    int getX() const {
+        return  _ix;
+    }
+    ~Data() {
+        cout << "~Data()" << endl;
+    }
+
+private:
+    int _ix;
+};
+//中间层
+class MiddleLayer {
+public:
+    MiddleLayer()
+    :_pdata(new Data)
+    {
+        cout << "MIddleLayer" << endl;
+    }
+    //指针运算符返回值是一个指针
+    Data *operator->() {
+        return _pdata;
+    }
+
+    ~MiddleLayer() {
+        cout << "~MiddleLayer" << endl;
+    }
+
+private:
+    Data * _pdata;
+};
+//第三层
+class ThridLayer {
+public:
+    ThridLayer()
+    :_pMiddleLayer(new MiddleLayer())
+    {
+        cout << "ThridLayer()" << endl;
+    }
+    //指针运算符返回一个重载了指针运算符的对象
+    MiddleLayer &operator-> () {
+        return * _pMiddleLayer;
+    }
+    ~ThridLayer() {
+        cout << " ~ThridLayer()" << endl;
+    }
+
+private:
+    MiddleLayer * _pMiddleLayer;
+};
+
+int main() {
+    MiddleLayer m1;  //m1是一个对象
+    cout << "m1调用的：" << m1->getX() << endl;   //调用Data *operator->()
+    cout << (m1.operator->())->getX() << endl;
+
+    cout << "--------" << endl;
+    ThridLayer t1;
+    cout << "--------" << endl;
+    cout << "t1调用的：" << t1->getX() << endl;  //t1也可以一步到位
+    cout << (t1.operator->().operator->())->getX() << endl;
+    return 0;
+}
+```
+运行结果：
+```
+Data()
+MIddleLayer
+m1调用的：10
+10
+--------
+Data()
+MIddleLayer
+ThridLayer()
+--------
+t1调用的：10
+10
+ ~ThridLayer()
+~MiddleLayer
+```
+
 
 
 
