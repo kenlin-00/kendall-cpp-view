@@ -12,7 +12,7 @@
 输出: 5->4->3->2->1->NULL
 ```
 使用头接法对链表进行反转
-```js
+```cpp
 /**
  * Definition for singly-linked list.
  * struct ListNode {
@@ -52,7 +52,7 @@ public:
 输入: 1->2->3->4->5->NULL, m = 2, n = 4
 输出: 1->4->3->2->5->NULL
 ```
-```js
+```cpp
 /**
  * Definition for singly-linked list.
  * struct ListNode {
@@ -112,7 +112,7 @@ public:
 输出：[4,7,2,9,6,3,1]
 ```
 递归交换左右子树
-```js
+```cpp
 /**
  * Definition for a binary tree node.
  * struct TreeNode {
@@ -147,7 +147,7 @@ public:
 };
 ```
 使用栈迭代实现
-```js
+```cpp
 /**
  * Definition for a binary tree node.
  * struct TreeNode {
@@ -198,7 +198,7 @@ public:
 ```
 
 思路：不断找根节点，不断划分左子树和右子树。
-```js
+```cpp
 /**
  * Definition for a binary tree node.
  * struct TreeNode {
@@ -281,7 +281,7 @@ B是A的子结构， 即 A中有出现和B相同的结构和节点值。
 输出：true
 ```
 方法一：层次遍历+深度优先搜索
-```js
+```cpp
 /**
  * Definition for a binary tree node.
  * struct TreeNode {
@@ -321,7 +321,7 @@ public:
 };
 ```
 方法二：代码冗余优化
-```js
+```cpp
 class Solution {
 public:
     bool isSubStructure(TreeNode* A, TreeNode* B) {
@@ -373,7 +373,7 @@ public:
 输入：root = [1,2,2,null,3,null,3]
 输出：false
 ```
-```js
+```cpp
 /**
  * Definition for a binary tree node.
  * struct TreeNode {
@@ -426,7 +426,7 @@ public:
 [3,9,20,15,7]
 ```
 
-```js
+```cpp
 /**
  * Definition for a binary tree node.
  * struct TreeNode {
@@ -489,7 +489,7 @@ DFS记得使用引用`&`，不然就得维护一个全局变量了。
 
 BFS的模板如下：
 
-```js
+```cpp
 vector<vector<int>> levelOrder(TreeNode* root) {
     queue<TreeNode*> q;
     q.push(root);
@@ -513,7 +513,7 @@ vector<vector<int>> levelOrder(TreeNode* root) {
 }
 ```
 DFS:
-```js
+```cpp
 /**
  * Definition for a binary tree node.
  * struct TreeNode {
@@ -540,7 +540,7 @@ public:
 };
 ```
 BFS:
-```js
+```cpp
 class Solution {
 public:
     vector<vector<int>> levelOrder(TreeNode* root) {
@@ -584,7 +584,7 @@ push(5), pop() -> 5, pop() -> 3, pop() -> 2, pop() -> 1
 输出：false
 解释：1 不能在 2 之前弹出。
 ```
-```js
+```cpp
 class Solution {
 public:
     bool validateStackSequences(vector<int>& pushed, vector<int>& popped) {
@@ -613,7 +613,7 @@ public:
 ```
 
 方法一：排序
-```js
+```cpp
 class Solution {
 public:
     vector<int> getLeastNumbers(vector<int>& arr, int k) {
@@ -635,7 +635,7 @@ public:
 方法二：使用推
 
 我们用一个大根堆实时维护数组的前 `kk` 小值。首先将前 `kk` 个数插入大根堆中，随后从第 `k+1k+1` 个数开始遍历，如果当前遍历到的数比大根堆的堆顶的数要小，就把堆顶的数弹出，再插入当前遍历到的数。最后将大根堆里的数存入数组返回即可。在下面的代码中，由于 C++ 语言中的堆（即优先队列）为大根堆，我们可以这么做。
-```js
+```cpp
 class Solution {
 public:
     vector<int> getLeastNumbers(vector<int>& arr, int k) {
@@ -694,7 +694,7 @@ NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。
 输出：0
 ```
 **题解：使用二分查找**
-```js
+```cpp
 class Solution {
 public:
     int minArray(vector<int>& numbers) {
@@ -717,7 +717,7 @@ public:
 };
 ```
 改一下
-```js
+```cpp
 class Solution {
 public:
     int minArray(vector<int>& numbers) {
@@ -774,7 +774,7 @@ public:
 
 总结斐波那契数列：f(n) = f(n - 1) + f(n - 2)
 
-```js
+```cpp
 class Solution {
 public:
     int numWays(int n) {
@@ -794,7 +794,7 @@ public:
 };
 ```
 使用动态规划
-```js
+```cpp
 class Solution {
 public:
     int numWays(int n) {
@@ -819,7 +819,7 @@ public:
 输出："We%20are%20happy."
 ```
 方法一：20%占三个字符，空格只是占一个字符，所以先在后面补0以增加长度。
-```js
+```cpp
 class Solution {
 public:
     string replaceSpace(string s) {
@@ -888,7 +888,7 @@ public:
 ```
 
 方法一：使用递归
-```js
+```cpp
 class Solution {
 public:
     vector<int> reversePrint(ListNode* head) {
@@ -900,7 +900,7 @@ public:
 };
 ```
 方法二：使用数组
-```js
+```cpp
 /**
  * Definition for singly-linked list.
  * struct ListNode {
@@ -928,7 +928,7 @@ public:
 ```
 
 方法三：使用栈
-```js
+```cpp
 class Solution {
 public:
     vector<int> reversePrint(ListNode* head) {
@@ -970,7 +970,7 @@ F(N) = F(N - 1) + F(N - 2), 其中 N > 1.
 
 空间复杂度：O(1)
 
-```js
+```cpp
 class Solution {
 public:
     int fib(int N) {
@@ -985,7 +985,7 @@ public:
 
 递归会重复计算大量相同数据，我们可以用个数组把结果存起来
 
-```js
+```cpp
 class Solution {
 public:
     int fib(int N) {
@@ -1009,7 +1009,7 @@ public:
 - one 存储第 n-1 项的值
 - two 存储第 n-2 项的值
 
-```js
+```cpp
 class Solution {
 public:
     int fib(int N) {
@@ -1045,7 +1045,7 @@ public:
 给定 target = 5，返回 true。
 
 给定 target = 20，返回 false。
-```js
+```cpp
 class Solution {
 public:
     bool findNumberIn2DArray(vector<vector<int>>& matrix, int target) {
