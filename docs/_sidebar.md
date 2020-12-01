@@ -32,7 +32,7 @@
   * [Nginx反向代理负载均衡](/后台组件专题/Nginx反向代理负载均衡.md)
 
 * C++算法
-  * [剑指offer](./C++算法/剑指offer.md)
+  * [剑指offer](/算法/剑指offer.md)
 
 
 * video学习笔记
