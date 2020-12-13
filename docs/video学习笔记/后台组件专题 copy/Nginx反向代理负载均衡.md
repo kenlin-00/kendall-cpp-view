@@ -136,4 +136,29 @@ http {
 参考：https://www.ljxy.pub/article/6
 
 
+查看是否成功
+```shell
+$ spawn-fcgi -a 127.0.0.1 -p 10000 -f ./app
+spawn-fcgi: child spawned successfully: PID: 46047
+```
+就可以上传了
+
+
+### 安装fastdfs+nginx
+```
+/home/kendall/kenworkspace/heima/nginx/nginx-1.10.1# ./configure --add-module=/home/kendall/kenworkspace/heima/nginx/fastdfs-nginx-module/src
+
+make
+
+sudo make install
+```
+
+
+
+
+
+
+
+
+
 
