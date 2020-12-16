@@ -143,6 +143,9 @@ gcc -shared fun1.o fun2.o -o libtest2.so
 
 ### 3.5 动态库/共享库的使用
 引用动态库编译成可执行文件（跟静态库方式一样）：
+```
+gcc main.c -I -L./ -ltest2 -o main2
+```
 
 用到的参数：
 - -L：指定要连接的库的所在目录
@@ -209,6 +212,123 @@ gcc -c test.s -o test.o
 // 链接: ld, 链接test.c代码中调用的库函数
 gcc test.o -o test
 ```
+
+## 5.说一下makefile
+
+makefile文件定义了一系列的规则来指定，哪些文件需要先编译，哪些文件需要后编译，哪些文件需要重新编译，甚至还能进行更复杂的功能操作。makefile带来的好处就是“**自动化编译**”，一旦写好只需要一个make命令就可以自动编译整个工程。
+
+其中make是一个命令工具，是一个解释makefile中指令的命令工具。
+
+**makefile使用的基本规则**
+```
+目标:依赖
+（tab）命令
+```
+其中：
+- 目标: 要生成的目标文件
+- 依赖: 目标文件由哪些文件生成
+- 命令: 通过执行该命令由依赖文件生成目标
+
+例子：      
+比如现在有`main.c fun1.c fun2.c sum.c`, 根据这个基本规则编写一个简单的makefile文件, 生成可执行文件`main`。
+```makefile
+# 会去下面找缺失的。o文件
+main:main.o fun1.o fun2.o sum.o
+	gcc -o main main.o fun1.o fun2.o sum.o
+
+main.o:main.c
+	gcc -o main.o -c main.c -I./
+
+fun1.o:fun1.c
+	gcc -o fun1.o -c fun1.c
+
+fun2.o:fun2.c
+	gcc -o fun2.o -c fun2.c
+
+sum.o:sum.c
+	gcc -o sum.o -c sum.c
+```
+
+**可以使用变量进行改进**
+```makefile
+target = main
+object = main.o fun1.o fun2.o sum.o
+
+CC = gcc
+CPPFLAGS = -I./
+
+$(target):$(object)
+	$(CC) -o $@ $^
+
+## 使用模式规则
+%.o:%.c
+	$(CC) -o $@ -c $< $(CPPFLAGS)
+
+#main.o:main.c
+#	$(CC)  -o main.o -c $< $(CPPFLAGS)
+#
+#fun1.o:fun1.c
+#	$(CC)  -o fun1.o -c $<
+#
+#fun2.o:fun2.c
+#	$(CC)  -o fun2.o -c $<
+#
+#sum.o:sum.c
+#	$(CC)  -o sum.o -c sum.c
+```
+> 特别注意：自动变量只能在规则的命令中使用.    
+``` 
+自动变量：
+
+$@: 表示规则中的目标     
+$<: 表示规则中的第一个条件  //冒号后面出现的第一个条件    
+$^: 表示规则中的所有条件, 组成一个列表, 以空格隔开, 如果这个列表中有重复的项则消除重复项。 
+```
+使用makefile函数和清理操作
+
+```makefile
+target = main
+# 使用函数
+src = $(wildcard *.c)  # 找到所有的.c文件
+object = $(patsubst %.c, %.o , $(src))  # 把.c换成.o
+
+CC = gcc
+CPPFLAGS = -I./
+
+$(target):$(object)
+	$(CC) -o $@ $^
+
+## 使用模式规则，匹配该目录下所有.o和。c结尾的文件
+%.o:%.c
+	$(CC) -o $@ -c $< $(CPPFLAGS)
+
+# 清理操作
+.PHONY:clean  #设置伪目标
+clean:
+	rm -f $(object) $(target)
+```
+
+### 5.1要生成动态库, Makefile怎么写？
+>  不对
+> 
+```
+main:libtest2.so main.c
+	gcc main.c -I -L./ -ltest2 -o main
+
+libtest2.so:fun1.o fun2.o
+	gcc -shared fun1.o fun2.o -o libtest2.so
+
+fun1.o:fun1.c
+	gcc -fpic -c fun1.c -o fun1.o 
+
+fun2.o:fun2.c
+	gcc -fpic -c fun2.c -o fun2.o
+```
+
+
+
+
+
 
 
 
