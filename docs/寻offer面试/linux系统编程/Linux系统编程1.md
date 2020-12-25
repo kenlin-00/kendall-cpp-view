@@ -162,7 +162,7 @@ gcc main.c -I -L./ -ltest2 -o main2
 
 当系统加载可执行代码时候, 能够知道其所依赖的库的名字, 但是还需要知道所依赖的库的绝对路径。此时就需要系统动态载入器(dynamic linker/loader)。
 
-ldd命令可以查看可执行文件依赖的库文件, 执行ldd main2, 可以发现libtest2.so找不到.
+`ldd`命令可以查看可执行文件依赖的库文件, 执行`ldd main2`, 可以发现libtest2.so找不到.
 
 ![](./img/动态库2.png)
 
@@ -308,131 +308,59 @@ clean:
 	rm -f $(object) $(target)
 ```
 
-### 5.1要生成动态库, Makefile怎么写？
->  不对
-> 
+### 5.1要生成静态库和动态库, Makefile怎么写？
+- 生成静态库
 ```
-main:libtest2.so main.c
-	gcc main.c -I -L./ -ltest2 -o main
+# 使用函数
+# 匹配当前目录下所有的.c文件  注意$()中不能添加空格
+src = $(wildcard *.c)   
+objs = $(patsubst %.c,%.o,$(src))   #将src的.c换成.o
+# 普通变量
+target = libtest1.a
 
-libtest2.so:fun1.o fun2.o
-	gcc -shared fun1.o fun2.o -o libtest2.so
+# 制作静态库
+#libtest1.a:add.o sub.o
+#	ar rcs libtest1.a add.o sub.o
+$(target):$(objs)
+	# ar rcs $(target) $(objs)
+	ar rcs $@ $^
 
-fun1.o:fun1.c
-	gcc -fpic -c fun1.c -o fun1.o 
+# 汇编成.o文件
+#add.o:add.c
+#	gcc -c add.c -o add.o
+#
+#sub.o:sub.c
+#	gcc -c sub.c -o sub.o
 
-fun2.o:fun2.c
-	gcc -fpic -c fun2.c -o fun2.o
+# $(objs):$(src)
+%.o:%.c 
+	gcc -c $<
+
+# 清理操作
+.PHONY:clean  #设置伪目标
+clean:
+	rm -f $(objs) $(target)
+```
+- 生成动态库
+```
+src = $(wildcard *.c)
+objs = $(patsubst %.c,%.o,$(src));
+target = libtest2.so
+
+# 制作动态库  $@--> 自定义变量
+$(target):$(objs)
+	gcc -shared $^ -o $@ 
+	mv $@ ./lib
+
+%.o:%.c
+	gcc -c -fpic $< -o $@
+
+.PHONY:clean
+clean:
+	-rm -f $(target) $(objs)
 ```
 
-## io读写文件
-```cpp
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-//在linux下一班还会添加这几个文件
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
-int main() {
-
-	//打开文件  O_RDWR 可读可写打开   O_CREAT 若此文件不存在则创建它  mode_t mode 文件权限
-	// int open(const char *pathname, int flags, mode_t mode);
-	int fd = open("test.log", O_RDWR | O_CREAT,0777);
-	//文件打开失败
-	if(fd<0) {
-		perror("open error");
-		return -1;
-	}
-
-	//写文件
-	// ssize_t write(int fd, const void *buf, size_t count);
-	write(fd,"hello world",strlen("hello world"));
-
-	//读文件
-	//  ssize_t read(int fd, void *buf, size_t count);
-	char buf[1024];  //读到本地的栈空间中来，读上来的数据保存在缓冲区buf中  count: buf缓冲区存放的最大字节数
-
-	//需要进行初始化
-	memset(buf,0x00,sizeof(buf));
-	int n = read(fd,buf,sizeof(buf));  //返回的是读到的字节数
-	printf("n == [%d],buf == [%s]\n",n, buf);
-
-	//关闭文件
-	close(fd);
-
-	return 0;
-}
-```
-编译运行
-```
-gcc open.c -o open
-
-执行结果：
-$ ./open 
-n == [0],buf == []
-```
-发现输出是空的，但是test.log中是有内容的。
-
-这是因为文件写的时候会发生指针移动，写完了指针就会移动到文件末尾了，所以读的时候也是从文件末尾开始读的，因此读的是空的。所以需要将指针移动到开始位置。
-
-```cpp
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-//在linux下一班还会添加这几个文件
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-int main(int argc, char *argv[]) {
-
-	//打开文件  O_RDWR 可读可写打开   O_CREAT 若此文件不存在则创建它  mode_t mode 文件权限
-	// int open(const char *pathname, int flags, mode_t mode);
-	// int fd = open("test.log", O_RDWR | O_CREAT,0777);
-	// 文件不要写死
-	int fd = open(argv[1], O_RDWR | O_CREAT, 0777);
-	//文件打开失败
-	if(fd<0) {
-		perror("open error");
-		return -1;
-	}
-
-	//写文件
-	// ssize_t write(int fd, const void *buf, size_t count);
-	write(fd,"hello world",strlen("hello world"));
-
-	//将文件指针移动到开始位置
-	// off_t lseek(int fd, off_t offset, int whence);
-	/*
-	fd 是文件描述符，
-	参数 offset 的含义取决于参数 whence：
-	如果 whence 是 SEEK_SET，文件偏移量将设置为 offset。
-	如果 whence 是 SEEK_CUR，文件偏移量将被设置为 cfo 加上 offset，offset 可以为正也可以为负。
-	如果 whence 是 SEEK_END，文件偏移量将被设置为文件长度加上 offset，offset 可以为正也可以为负。
-	*/
-	// 件指针移动到头部
-	lseek(fd,0,SEEK_SET);
-
-
-	//读文件
-	//  ssize_t read(int fd, void *buf, size_t count);
-	char buf[1024];  //读到本地的栈空间中来，读上来的数据保存在缓冲区buf中  count: buf缓冲区存放的最大字节数
-
-	//需要进行初始化
-	memset(buf,0x00,sizeof(buf));
-	int n = read(fd,buf,sizeof(buf));  //返回的是读到的字节数
-	printf("n == [%d],buf == [%s]\n",n, buf);
-
-	//关闭文件
-	close(fd);
-
-	return 0;
-}
-```
 
 
 
