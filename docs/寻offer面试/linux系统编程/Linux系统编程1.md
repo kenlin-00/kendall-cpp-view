@@ -233,7 +233,7 @@ makefile文件定义了一系列的规则来指定，哪些文件需要先编译
 例子：      
 比如现在有`main.c fun1.c fun2.c sum.c`, 根据这个基本规则编写一个简单的makefile文件, 生成可执行文件`main`。
 ```makefile
-# 会去下面找缺失的。o文件
+# 会去下面找缺失的.o文件
 main:main.o fun1.o fun2.o sum.o
 	gcc -o main main.o fun1.o fun2.o sum.o
 
@@ -348,7 +348,6 @@ clean:
 
 - 生成动态库
 
-
 ```
 src = $(wildcard *.c)
 objs = $(patsubst %.c,%.o,$(src));
@@ -415,6 +414,7 @@ clean:
 **通过`ps aux`查看进程的状态**
 
 ![](./img/查看进程状态.png)
+
 
 
 
