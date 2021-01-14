@@ -408,7 +408,7 @@ clean:
 
 - ⑤TASK_STOPPED（停止）：进程停止执行。当进程接收到SIGSTOP，SIGTSTP，SIGTTIN，SIGTTOU等信号的时候。此外，在调试期间接收到任何信号，都会使进程进入这种状态。当接收到SIGCONT信号，会重新回到TASK_RUNNABLE。
 
-![](./img/../进程的状态.png)
+![](./img/进程的状态.png)
 
 如何查看进程的状态？			
 
