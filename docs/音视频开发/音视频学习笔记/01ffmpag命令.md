@@ -68,7 +68,7 @@ ffplay -volume 10 -x 800 -y 600 test_1920x1080.mp4
  -video_size size 帧尺寸 设置显示帧存储(WxH格式)，仅适用于类似
 原始YUV等没有包含帧大小(WxH)的视频。
 
- -pixel_format format 格式设置像素格式。
+ -pixel_format format   设置像素格式。
 
  比如: ffplay -pixel_format yuv420p -video_size 320x240 -framerate 5 yuv420p_320x240.yuv
 
@@ -153,7 +153,111 @@ codec:v h264_qsv 强制视频采用h264_qsv解码
 ### ffplay播放命令
 
 ```
+ffplay -pixel_format yuv420p -video_size 320x240 -framerate 5 yuv420p_320x240.yuv
 
+@ framerate 设置帧率
+# -pixel_format format   设置像素格式。
+# -video_size size 帧尺寸 
+
+```
+
+### ffplay简单过滤器
+```
+◼ 视频旋转
+ffplay -i test.mp4 -vf transpose=1
+◼ 视频反转
+ffplay test.mp4 -vf hflip
+ffplay test.mp4 -vf vflip
+◼ 视频旋转和反转
+ffplay test.mp4 -vf hflip,transpose=1
+◼ 音频变速播放
+ffplay -i test.mp4 -af atempo=2
+◼ 视频变速播放
+ffplay -i test.mp4 -vf setpts=PTS/2
+◼ 音视频同时变速
+ffplay -i test.mp4 -vf setpts=PTS/2 -af atempo=2
+◼ 更多参考
+http://www.ffmpeg.org/ffmpeg-filters.html
+```
+
+### ffmpeg命令参数
+
+![](./img/ffmpeg03.png)
+
+
+## 提取音视频数据
+
+```
+提取视频中的音频
+ffmpeg -i test.mp4 -acodec copy -vn audio.mp4
+
+提取视频中的视频
+ffmpeg -i test.mp4 -acodec copy -an video.mp4
+
+# 提取视频
+保留编码格式：ffmpeg -i test.mp4 -vcodec copy -an test_copy.h264
+强制格式：ffmpeg -i test.mp4 -vcodec libx264 -an test.h264
+
+# 提取音频
+保留编码格式：ffmpeg -i test.mp4 -acodec copy -vn test.aac
+强制格式：ffmpeg -i test.mp4 -acodec libmp3lame -vn test.mp3
+```
+
+### ffmpeg 命令提取像素格式
+
+```
+# 提取YUV
+# 提取3 秒数据，分辨率和源视频一致
+ffmpeg -i test_1280x720.mp4 -t 3 -pix_fmt yuv420p yuv420p_orig.yuv
+# 提取3 秒数据，分辨率转为320x240
+ffmpeg -i test_1280x720 .mp4 -t 3 -pix_fmt yuv420p -s 320x240
+yuv420p_320x240.yuv
+# 提取RGB
+# 提取3 秒数据，分辨率转为320x240
+ffmpeg -i test.mp4 -t 3 -pix_fmt rgb24 -s 320x240 rgb24_320x240.rgb
+# RGB 和YUV 之间的转换
+ffmpeg -s 320x240 -pix_fmt yuv420p -i yuv420p_320x240.yuv -pix_fmt rgb24
+rgb24_320x240_2.rgb
+```
+
+### ffmpeg提取pcm数据
+```
+提取PCM
+ffmpeg -i buweishui.mp3 -ar 48000 -ac 2 -f s16le 48000_2_s16le.pcm
+ffmpeg -i buweishui.mp3 -ar 48000 -ac 2 -sample_fmt s16 out_s16.wav
+ffmpeg -i buweishui.mp3 -ar 48000 -ac 2 -codec:a pcm_s16le out2_s16le.wav
+ffmpeg -i buweishui.mp3 -ar 48000 -ac 2 -f f32le 48000_2_f32le.pcm
+ffmpeg -i test.mp4 -t 10 -vn -ar 48000 -ac 2 -f f32le 48000_2_f32le_2.pcm
+```
+
+### ffmpeg直播拉流
+```
+# 直播拉流
+ffplay rtmp://server/live/streamName
+ffmpeg -i rtmp://server/live/streamName -c copy dump.flv
+对于不是rtmp的协议 -c copy要谨慎使用
+# 可用地址
+HKS：rtmp://live.hkstv.hk.lxdns.com/live/hks2
+大熊兔(点播)：rtsp://184.72.239.149/vod/mp4://BigBuckBunny_175k.mov
+CCTV1高清：http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8
+ffmpeg -i http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8 -c copy cctv1.ts
+ffmpeg -i http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8 cctv1.flv
+ffmpeg -i http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8 -acodec aac -vcodec libx264
+cctv1-2.flv
+CCTV3高清：http://ivi.bupt.edu.cn/hls/cctv3hd.m3u8
+CCTV5高清：http://ivi.bupt.edu.cn/hls/cctv5hd.m3u8
+CCTV5+高清：http://ivi.bupt.edu.cn/hls/cctv5phd.m3u8
+CCTV6高清：http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8
+```
+
+### ffmpeg直播推流
+```
+直播推流
+ffmpeg -re -i out.mp4 -c copy flv rtmp://server/live/streamName
+-re,表示按时间戳读取文件
+
+参考： Nginx 搭建rtmp 流媒体服务器(Ubuntu 16.04)
+https://www.jianshu.com/p/16741e363a77
 ```
 
 
