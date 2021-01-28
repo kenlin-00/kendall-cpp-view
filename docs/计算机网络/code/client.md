@@ -4,60 +4,45 @@
 
 ```c
 //client.c
+#include <unistd.h>
 #include <stdio.h>
-#include <stdlib.h>
-
-#include <string.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <unistd.h>
-int main(int argc, char *argv[])
-{
-	//创建套接字
-	int lfd = socket(AF_INET,SOCK_STREAM,0);
-	//绑定
-	struct sockaddr_in addr;
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(8000);
-	//	addr.sin_addr.s_addr = INADDR_ANY;//绑定的是通配地址
-	//服务器的IP
-	inet_pton(AF_INET,"192.168.100.11",&addr.sin_addr.s_addr);
-	int ret = bind(lfd,(struct sockaddr *)&addr,sizeof(addr));
-	if(ret < 0)
-	{
-		perror("");
-		exit(0);
 
-	}
-	//监听
-	listen(lfd,128);
-	//提取
-	struct sockaddr_in cliaddr;
-	socklen_t len = sizeof(cliaddr);
-	int cfd = accept(lfd,(struct sockaddr *)&cliaddr,&len);
-	char ip[16]="";
-	printf("new client ip=%s port=%d\n",inet_ntop(AF_INET,&cliaddr.sin_addr.s_addr,
-				ip,16),	ntohs(cliaddr.sin_port));
-	//读写
-	char buf[1024]="";
-	while(1)
-	{
-		bzero(buf,sizeof(buf));
-	//	int n = read(STDIN_FILENO,buf,sizeof(buf));
-	//	write(cfd,buf,n);
-		int n =0;
-		n = read(cfd,buf,sizeof(buf));
-		if(n ==0 )//如果read返回等于0,代表对方关闭 
-		{
-			printf("client close\n");
-			break;
-		}
-		printf("%s\n",buf);
-	
-	}
-	//关闭
-	close(lfd);
-	close(cfd);
-	return 0;
+int main() {
+
+    //1 创建套接字
+    int sock_fd;
+    // int socket(int domain, int type, int progcctocol);  //成功：返回文件描述符
+    sock_fd = socket(AF_INET,SOCK_STREAM,0);
+
+    //2 连接服务器
+    // int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+    struct sockaddr_in addr; 
+    addr.sin_family = AF_INET;  //设置协议
+    addr.sin_port = htons(8000); //将端口转成大端  设置端口
+    // int inet_pton(int af, const char *src, void *dst);
+    // 该功能将字符串src转换为af地址族中的网络地址结构
+    inet_pton(AF_INET,"192.168.100.11",&addr.sin_addr.s_addr);
+    connect(sock_fd,(struct sockaddr *)&addr,sizeof(addr));  //将addr强制转换
+    
+    //3 读写数据
+    char buf[1024] = "";
+    while(1) 
+    {
+        //获取数据
+        int n = read(STDIN_FILENO,buf,sizeof(buf));
+        // 发送数据给服务器写出来
+        write(sock_fd,buf,n);
+        //获取服务端的数据
+        n = read(sock_fd,buf,sizeof(buf));
+        write(STDOUT_FILENO,buf,n);
+        printf("\n");
+    }
+
+    //4 关闭
+    close(sock_fd);
+    return 0 ;
 }
+
 ```
