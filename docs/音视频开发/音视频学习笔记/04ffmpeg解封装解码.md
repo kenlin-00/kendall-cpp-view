@@ -19,4 +19,16 @@ av_seek_frame():定位文件
 
 ![](./img/ffmpeg解封装01png.png)
 
+## 2.AAC格式
+
+AAC⾳频格式：Advanced Audio Coding(⾼级⾳频解码)，是⼀种由MPEG-4标准定义的有损⾳频压缩格式，由Fraunhofer发展，Dolby, Sony和AT&T是主要的贡献者。
+
+ADIF：Audio Data Interchange Format ⾳频数据交换格式。这种格式的特征是可以确定的找到这个⾳频数据的开始，不需进⾏在⾳频数据流中间开始的解码，即它的解码必须在明确定义的开始处进⾏。故这种格式常⽤在磁盘⽂件中。
+
+ADTS的全称是Audio Data Transport Stream。是AAC⾳频的传输流格
+式。AAC⾳频格式在MPEG-2（ISO-13318-7 2003）中有定义。AAC后来
+⼜被采⽤到MPEG-4标准中。这种格式的特征是它是⼀个有同步字的⽐特
+流，解码可以在这个流中任何位置开始。它的特征类似于mp3数据流格式。
+
+简单说，ADTS可以在任意帧解码，也就是说它每⼀帧都有头信息。ADIF只有⼀个统⼀的头，所以必须得到所有的数据后解码。
 
