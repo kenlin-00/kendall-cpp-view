@@ -9,6 +9,7 @@
 
 * FFmpeg
   * [01ffmpeg数据结构](/音视频开发/ffmpeg/01ffmpeg数据结构.md)
+  * [02ffmpeg内存模型](/音视频开发/ffmpeg/02ffmpeg内存模型.md)
 
 * 音视频开发
   * 音视频学习笔记(自己用)
