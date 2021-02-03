@@ -1,0 +1,286 @@
+## 1.智能指针介绍
+
+我们知道除了静态内存和栈内存外，每个程序还有一个内存池，这部分内存被称为自由空间的堆。程序用堆来存储在程序运行时分配的对象，当动态对象不再使用时，我们的代码必须显示的销它们。
+
+由于C++语言没有自动内存回收机制，程序员每次`new`出来的内存都要手动`delete`。但这样动态管理内存经常会出现两个问题：
+- 一种是忘记释放内存，会造成内存泄漏
+- 一种还有指针引用内存的情况下就释放掉了它，会产生引用非法内存的指针。
+
+用智能指针可以有效的缓解这类问题，智能指针的行为类似常规指针，重要的区别是它负责自动释放所指向的对象。常见的指针指针有如下几个：
+
+```cpp
+std::auto_ptr
+boost::scoped_ptr
+boost::shared_ptr
+boost::scoped_array
+boost::shared_array
+boost::weak_ptr
+boost::intrusive_ptr
+```
+
+## 2.几种智能指针的使用
+
+对于编译器来说，智能指针实际上是一个栈对象，并非指针类型，在栈对象生命周期即将结束的时候，智能指针通过析构函数释放掉它管理的堆内存。
+
+所有智能指针都重载了`operator->`操作符，直接返回对象的引用，用以操作对象。访问智能指针**原来的方法**则使用“`.`”操作符。
+
+智能指针包含的方法：
+
+> - `p.get()` --> 返回`p`中保存的指针，但是注意，如果智能指针释放了对象，返回的指针指向的对象也就消失了。
+> - `reset()`--> 如果不传递参数或者传递 NULL，则智能指针会释放当前管理的内存，如果传递一个对象，则智能指针会释放当前对象，来管理新传入的对象。
+
+我们编写一个测试类来进行后面的测试
+
+```cpp
+class Simple
+{
+public:
+	Simple(int param = 0)
+	:_number(param)
+	{
+		cout << "Simple(int param = 0)" << endl;
+		cout << "_number = " << _number << endl;
+	}
+	~Simple()
+	{
+		cout << "~Simple()" << endl;
+	}
+	void printSimple()
+	{
+		cout << "printSimple : " << info_extend.c_str() <<endl;
+
+	}
+
+// private:
+	std::string info_extend;
+	int _number = 0;
+
+};
+```
+
+### 2.1 std::auto_ptr
+
+std::auto_ptr 能够方便的管理单个堆内存对象,包含头文件 `#include<memory>` 便可以使用。
+
+```cpp
+//测试std::auto_ptr  管理单个堆内存对象
+void TestAutoPtr1()
+{
+	std::auto_ptr<Simple> my_memory(new Simple(1));// 创建对象，输出：Simple：1
+	//判断智能指针是否为空
+	if(my_memory.get())
+	{
+		// 使用 operator-> 调用智能指针对象中的函数
+		my_memory->printSimple(); 
+		// 使用 get() 返回裸指针，然后给内部对象赋值
+		my_memory.get()->info_extend = "message";
+		//打印 查看是否复制成功
+		my_memory->printSimple();
+
+		// 使用 operator* 返回智能指针内部对象，然后用“.”调用智能指针对象中的函数
+		(*my_memory).info_extend  += " other";
+
+		my_memory->printSimple();
+	}
+}
+```
+运行结果
+
+```
+Simple(int param = 0)
+_number = 1
+printSimple :
+printSimple : message
+printSimple : message other
+~Simple()
+```
+
+从上面使用`std::auto_ptr`的代码可以看出，我们可以不同手动去使用`delete`了。但是存在一个问题，见下面的代码：
+
+```cpp
+void TestAutoPtr2()
+{
+	std::auto_ptr<Simple> my_memory(new Simple(2));
+	if(my_memory.get())
+	{
+		//再次创建一个对象
+		std::auto_ptr<Simple> my_memory2;
+		my_memory.get()->info_extend = "message";
+		// 复制my_memory给my_memory2
+		my_memory2 = my_memory;
+		//输出信息，复制非成功
+		cout << "----------" <<endl;
+		my_memory2->printSimple();  //printSimple : Addtion
+		cout << "----------" <<endl;
+		//崩溃
+		my_memory->printSimple();
+	}
+}
+```
+上面的代码出现崩溃的原因出现在`my_memory2 = my_memory;`这条语句中，这行代码` my_memory2` 完全夺取了 `my_memory` 的内存管理所有权，导致 `my_memory` 悬空，最后使用时导致崩溃。
+
+所以，使用 `std::auto_ptr` 时，绝对不能使用`operator=`操作符。
+
+除此之外，还有一个问题：
+
+```cpp
+void TestAutoPtr3()
+{
+	std::auto_ptr<Simple> my_memory(new Simple(3));
+	if(my_memory.get())
+	{
+		// //释放掉内存
+		my_memory.release();  //对象不会被析构
+
+		//正确做法
+		// 使用完成后就归还，而不是等my_memory结束生命周期后才归还内存
+		// Simple *temp_simple = my_memory.release();
+		// delete temp_simple;
+
+		//或者
+		// my_memory.reset(); //释放my_memory内部管理的内存
+	}
+}
+```
+
+执行结果：
+
+```
+Simple(int param = 0)
+_number = 3
+```
+
+从运行结果中可以很明显看出来我们创建出来的对象没有被析构，没有输出`~Simple()`，当我们不想让 `my_memory` 继续生存下去，我们调用` release()` 函数释放内存，结果却导致内存泄漏。
+
+在内存受限系统中，如果`my_memory`占用太多内存，我们会考虑在使用完成后，立刻归还，而不是等到 `my_memory` 结束生命期后才归还。
+
+`std::auto_ptr` 的` release()` 函数只是让出内存所有权，这显然也不符合 C++ 编程思想。
+
+所以使用`std::auto_ptr`会受到很多约束：
+- 尽量不要使用`operator=`，如果使用了，请不要再使用先前对象。
+- 记住 `release()` 函数不会释放对象，仅仅归还所有权。
+- 由于 `std::auto_ptr` 的`operator=`问题，有其管理的对象不能放入 `std::vector`等容器中。
+- 。。。
+
+> 由于`std::auto_ptr`存在很多问题，部分设计还不符合 C++ 编程思想，因此引出了 `boost` 的智能指针，可以解决上述存在的问题。		
+> **注意**：`auto_ptr`已经在` C++ 17` 中移除，对于面向未来的程序员来说，最好减少在代码中出现该使用的频次吧
+
+备注：
+>
+> `boost`在 linux 的安装;
+>
+> `apt-cache search boost` ==>>  `sudo apt-get install libboost-all-dev`
+>
+> 如果使用编译编译安装自行网上查阅
+
+### 2.2 boost::scoped_ptr
+
+`boost::scoped_ptr`定义在`namespce boost`中，引入头文件 `#include<boost/smart_ptr.hpp>` 便可以使用。
+
+`boost::scoped_ptr` 跟 `std::auto_ptr` 一样，可以方便的管理单个堆内存对象，但是 `boost::scoped_ptr` 独享所有权。
+
+注意：
+
+> `scoped_ptr`没有 `release()`函数,`scoped_ptr` 没有重载 `operator=`,明确拒绝用户写`my_memory2 = my_memory`之类的语句,不会导致所有权转移。
+
+```cpp
+void TestScopedPtr1()
+{
+	boost::scoped_ptr<Simple> my_memory(new Simple(1));
+	if(my_memory.get())
+	{
+		my_memory->printSimple();
+		my_memory.get()->info_extend = "message";
+		my_memory->printSimple();
+		my_memory->info_extend += " other";
+		my_memory->printSimple();
+
+		// my_memory.release();           // 编译 error: scoped_ptr 没有 release 函数
+	}
+	boost::scoped_ptr<Simple> my_memory2(new Simple(2));
+	// 编译 error: scoped_ptr 没有重载 operator=，不会导致所有权转移
+	// my_memory2 = my_memory;
+}
+```
+运行结果：
+
+```
+Simple(int param = 0)
+_number = 1
+printSimple :
+printSimple : message
+printSimple : message other
+Simple(int param = 0)
+_number = 2
+~Simple()
+~Simple()
+```
+
+由于 `boost::scoped_ptr` 独享所有权，当我们真正需要复制智能指针时，需求便满足不了了，如此我们再引入一个智能指针，专门用于处理复制，参数传递的情况，这便是如下的 `boost::shared_ptr`。
+
+### 2.3 boost::shared_ptr
+
+`boost::shared_ptr` 属于 `boost` 库，定义在` namespace boost` 中，包含头文件`#include<boost/smart_ptr.hpp>` 便可以使用。在上面我们看到 `boost::scoped_ptr` 独享所有权，不允许赋值、拷贝，`boost::shared_ptr` 是专门用于共享所有权的，由于要共享所有权，其在内部使用了**引用计数**。`boost::shared_ptr` 也是用于管理单个堆内存对象的。
+
+```cpp
+void TestSharedPtr(boost::shared_ptr<Simple> memory)
+{
+	memory->printSimple();
+	cout << "TestSharedPtr UseCount: " << memory.use_count() <<endl;
+}
+void TestSharedPtr1()
+{
+	boost::shared_ptr<Simple> my_memory(new Simple(1));
+	if(my_memory.get())
+	{
+		
+		my_memory->printSimple();
+		my_memory.get()->info_extend = "message";
+		my_memory->printSimple();
+		my_memory->info_extend += " other";
+		my_memory->printSimple();
+	}
+	cout << "==> TestScopedPtr1 UseCount" << my_memory.use_count() << endl; // 1
+	TestSharedPtr(my_memory);  //此处进行一次复制，引用计数变成 2
+	cout << "==> TestScopedPtr1 UseCount" << my_memory.use_count() <<endl; // 1
+	//my_memory.release();// 编译 error: 同样，shared_ptr 也没有 release 函数
+	//my_memory.release();
+}
+```
+
+执行结果：
+
+```
+Simple(int param = 0)
+_number = 1
+printSimple :
+printSimple : message
+printSimple : message other
+==> TestScopedPtr1 UseCount1
+printSimple : message other
+TestSharedPtr UseCount: 2
+==> TestScopedPtr1 UseCount1
+~Simple()
+```
+`boost::shared_ptr` 没有 `release()` 函数。关键的一点，`boost::shared_ptr` 内部维护了一个引用计数，由此可以支持复制、参数传递等。
+
+`boost::shared_ptr` 提供了一个函数 `use_count()` ，此函数返回 `boost::shared_ptr` 内部的引用计数。查看执行结果，我们可以看到在 `TestSharedPtr1` 函数中，引用计数为 1，传递参数后（此处进行了一次复制），在函数 `TestSharedPtr` 内部，引用计数为 2，在 `TestSharedPtr` 返回后，引用计数又降低为 1。当我们需要使用一个共享对象的时候，boost::shared_ptr 是个很好的选择。
+
+此外，`boost::shared_ptr` 还可以使用`make_shared`来创建，使用make_shared宏能加速创建的过程。因为`shared_ptr`主动分配内存并且保存引用计数`(reference count)`,`make_shared` 以一种更有效率的方法来实现创建工作。
+
+```cpp
+void main( )
+{
+	// 第一种：
+	boost::shared_ptr<Simple> my_memory(new Simple(1));
+	// 第二种：
+	boost::shared_ptr<Simple> my_memory2 = make_shared<Simple>(2);
+}
+```
+
+
+
+
+
+
+
