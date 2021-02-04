@@ -179,7 +179,7 @@ void av_packet_test2()
 }
 ```
 
-如果如果`free`之前调用了`init`，`init`会把`pkt`的`buf`置空，`free`中也会调用`init`。`void av_init_packet`仅仅是把pkt的参数设为默认值，要求`pkt`的内存已经分配好了，如果为`NULL`，则此处会崩溃.
+如果`free`之前调用了`init`，`init`会把`pkt`的`buf`置空，`free`中也会调用`init`。`void av_init_packet`仅仅是把pkt的参数设为默认值，要求`pkt`的内存已经分配好了，如果为`NULL`，则此处会崩溃.
 
 ![](./img/ffmpeg内存模型10.png)
 
