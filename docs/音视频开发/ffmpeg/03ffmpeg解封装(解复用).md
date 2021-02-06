@@ -7,7 +7,7 @@
 
 |  函数原型   | 介绍 |
 |  ----  | ----  |
-| `*avformat_alloc_context`  | 分配一个`AVFormatContext`,并进行简单初始化 (调用者不一定需非调用) |
+| `avformat_alloc_context`  | 分配一个`AVFormatContext`,并进行简单初始化 (调用者不一定需非调用) |
 | `avformat_free_context`  | 释放掉`AVFormatContext`和其里面的流数据 |
 |  `avformat_close_input`   | 关闭解复用器，关闭后就不再需要使用`avformat_free_context `进行释放 |
 |  `avformat_open_input`   | 打开输入流 (音视频文件) |
@@ -36,8 +36,118 @@
 
 ### 3.1 对视频文件MP4进行解封装
 
+```c
+#pragma execution_character_set("utf-8")
+#include <stdio.h>
+#include <libavformat/avformat.h>
 
-## 代码示例3
+/**
+* @brief 将一个AVRational类型的分数转换为double类型的浮点数
+* @param r:r为一个AVRational类型的结构体变量，成员num表示分子，成员den表示分母，r的值即为(double)r.num / (double)r.den。
+*           用这种方法表示可以最大程度地避免精度的损失
+* @return 如果变量r的分母den为0，则返回0（为了避免除数为0导致程序死掉）;其余情况返回(double)r.num / (double)r.den
+*/
+static double r2d(AVRational r)
+{
+    return r.den == 0 ? 0 : (double)r.num / (double)r.den;
+
+}
+
+int main(int argc,char **argv)
+{
+    //mp4文件路径
+    const char *path = argv[1];
+    //初始化所有组件，调用了该函数，才能使用复用器和编解码器。否则，调用函数avformat_open_input会失败，无法获取媒体文件的信息
+    av_register_all();
+    //打开网络流。这里如果只需要读取本地媒体文件，不需要用到网络功能，可以不用加上这一句
+    avformat_network_init();
+    AVDictionary *opts = NULL;
+    //AVFormatContext是描述一个媒体文件或媒体流的构成和基本信息的结构体
+    AVFormatContext *ic = NULL;
+    //打开媒体文件
+    //媒体打开函数，调用该函数可以获得路径为path的媒体文件的信息，
+    //并把这些信息保存到指针ic指向的空间中（调用该函数后会分配一个空间，让指针ic指向该空间）
+    int ret = avformat_open_input(&ic,path,NULL,&opts);
+    if(ret < 0)
+    {
+        char buf[1024] = { 0 };
+        av_strerror(ret,buf,sizeof(buf)-1);
+        printf("open %s failed:%s\n",path,buf);
+    }
+    else  //打开成功
+    {
+        printf("open media file %s success\n",path);
+        //调用该函数可以进一步读取一部分视音频数据并且获得一些相关的信息。
+        //调用avformat_open_input之后，我们无法获取到正确和所有的媒体参数，
+        //所以还得要调用avformat_find_stream_info进一步的去获取
+        avformat_find_stream_info(ic,NULL);
+        printf("the media name is:%s\n",ic->filename);
+        printf("stream number: %d\n",ic->nb_streams);
+        printf("The average bitrate of media files %lldbps\n",ic->bit_rate);
+
+        int total_seconds,hours,minute,second;
+        total_seconds = (ic->duration) / AV_TIME_BASE;
+        hours = total_seconds / 3600;
+        minute = (total_seconds % 3600) / 60;
+        second = (total_seconds % 60);
+        printf("the time of media is %dh %dm %ds\n",hours,minute,second);
+
+        printf("\n");
+
+        //通过遍历的方式读取媒体文件视频和音频的信息，新版本的FFmpeg新增加了函数av_find_best_stream，
+        //也可以取得同样的效果，但这里为了兼容旧版本还是用这种遍历的方式
+        for(int i=0;i<ic->nb_streams;++i)
+        {
+            AVStream *as = ic->streams[i]; //音频流，视频流，字幕流
+            if(AVMEDIA_TYPE_AUDIO == as->codecpar->codec_type) //如果是音频流，则打印音频的信息
+            {
+                printf("Audio Info：\n");
+                //如果一个媒体文件既有音频，又有视频，则音频index的值一般为1。但该值不一定准确，
+                //所以还是得通过as->codecpar->codec_type判断是视频还是音频
+                printf("index = %d\n",as->index);
+                //音频编码的采样率，单位是HZ
+                printf("sample_rate = %dHZ\n",as->codecpar->sample_rate);
+                //音频采样格式
+                if(AV_SAMPLE_FMT_FLTP == as->codecpar->format)
+                {
+                    printf("audio format:  AV_SAMPLE_FMT_FLTP\n");
+                }
+                else if(AV_SAMPLE_FMT_S16P == as->codecpar->format)
+                {
+                    printf("audio format:  AV_SAMPLE_FMT_S16P\n");
+                }
+                //音频信道数目
+                printf("channels of audio: %d\n",as->codecpar->channels);
+                //音频压缩编码格式
+                if(AV_CODEC_ID_AAC == as->codecpar->codec_id)
+                {
+                    printf("codec_id of audio: AAC\n");
+                }
+                else if(AV_CODEC_ID_MP3 == as->codecpar->codec_id)
+                {
+                    printf("codec_id of audio: MP3\n");
+                }
+                //音频总时长，单位为秒。注意如果把单位放大为毫秒或者微妙，音频总时长跟视频总时长不一定相等的
+                int DurationAudio = (as->duration) * r2d(as->time_base);
+                //将音频总时长转换为时分秒的格式打印到控制台上
+                printf("time of audio ：%dh %dm %ds\n", DurationAudio / 3600, (DurationAudio % 3600) / 60, (DurationAudio % 60));
+                printf("\n");
+            }
+        }
+
+    }
+    if(ic)
+        avformat_close_input(&ic);
+
+    return 0;
+}
+```
+
+![](./img/ffmpeg解封装04.png)
+
+上述代码同样适合MP3格式解封装
+
+### 3.2 示例2
 
 ```c
 #include <stdio.h>
@@ -49,7 +159,7 @@ int main(int argc,char **argv)
     //打开网络流,如果只是打开本地文件则不需要这一行语句
     avformat_network_init();
 
-    const char *default_filename = "believe.mp4";
+    const char *default_filename = "believe.flv";
 
     //设置日志级别
     av_log_set_level(AV_LOG_INFO);
