@@ -23,7 +23,7 @@
 > 即使是向外部设备写入数据，也不用考虑字节序，正常写入一个值即可。外部设备会自己处理字节序的问题。
 
 - 网络字节序和主机字节序的转换函数
-  
+
 ```c
 #include <arpa/inet.h>
 
@@ -32,6 +32,7 @@ uint16_t htons(uint16_t hostshort);
 uint32_t ntohl(uint32_t netlong);
 uint16_t ntohs(uint16_t netshort);
 ```
+
 h表示host，n表示network，l表示32位长整数，s表示16位短整数。
 
 > [参考](http://www.ruanyifeng.com/blog/2016/11/byte-order.html)
@@ -49,6 +50,7 @@ h表示host，n表示network，l表示32位长整数，s表示16位短整数。
 #include <sys/socket.h>
 int socket(int domain, int type, int protocol);
 ```
+
 - domain：哪个底层协议族？
   * `AF_INET` 这是大多数用来产生socket的协议，使用TCP或UDP来传输，用IPv4的地址
   * `AF_INET6 `与上面类似，不过是来用IPv6的地址
@@ -65,6 +67,7 @@ int socket(int domain, int type, int protocol);
 - 成功：返回指向新创建的socket的文件描述符，失败：返回-1，设置errno
 
 #### 1.2.2 bind函数
+
 ```c
 #include <sys/types.h> /* See NOTES */
 #include <sys/socket.h>
