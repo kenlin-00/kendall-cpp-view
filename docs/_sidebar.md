@@ -1,4 +1,4 @@
-* [C++男孩东游记](/README.md)
+* [C++男孩那点记忆](/README.md)
 
 * 寻offer面试
   * [Cpp面试题01](/寻offer面试/Cpp基础/Cpp面试题01.md)

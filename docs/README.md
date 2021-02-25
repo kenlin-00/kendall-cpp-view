@@ -1,4 +1,4 @@
-# C++男孩东游记
+# C++男孩那点记忆
 
 [项目GitHub：https://github.com/linKge-web/kendall-cpp](https://github.com/linKge-web/kendall-cpp)
 
