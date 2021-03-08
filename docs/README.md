@@ -6,7 +6,7 @@
 
 开源项目感谢大家的参与，如果觉得文章对你有帮助，麻烦 [赏个star](https://github.com/linKge-web/kendall-cpp)，你们的支持是我们最大的动力。感谢有你！！！
   
-如果在`GitHub`加载很慢，可以到 [码云](https://gitee.com/linKge-web/kendall-cpp/docs) 进行查看,或者[在线阅读](https://linkge-web.gitee.io/kendall-cpp/#/)。
+如果在`GitHub`加载很慢，可以到 [码云](https://gitee.com/linKge-web/kendall-cpp/tree/main/docs) 进行查看,或者[在线阅读](https://linkge-web.gitee.io/kendall-cpp/#/)。
    
 
 ### 关于我们
