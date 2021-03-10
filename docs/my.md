@@ -1,7 +1,6 @@
 <div style="background-color: #0080cb;width: 100%;">
-	<h4 style="color: white;text-align: right;padding: 5px;">林声肯 -- 研发工程师</h4>
+	<h4 style="color: white;text-align: right;padding: 5px;">林声肯 -- 研发实习</h4>
 </div>
-
 <div style="float: left;display: flex;flex-wrap: wrap;width: 75%;justify-content: space-between;">
     <div style="width: 45%;font-weight: 500;color: #4c4c4c;font-size: 14px;margin: 5px;">姓名： 林声肯</div>
     <div style="width: 45%;font-weight: 500;color: #4c4c4c;font-size: 14px;margin: 5px;">毕业院校： 云南农业大学</div>
