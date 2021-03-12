@@ -277,3 +277,99 @@ public:
     }
 };
 ```
+
+## 5.判断链表是否有环
+
+[题目来源](https://www.nowcoder.com/practice/650474f313294468a4ded3ce0f7898b9?tpId=190&tqId=35179&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high-rd%2Fquestion-ranking&tab=answerKey)
+
+
+判断给定的链表中是否有环。如果有环则返回`true`，否则返回`false`。
+你能给出空间复杂度`O(1)`的解法么？
+
+使用快指针和慢指针
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool hasCycle(ListNode *head) {
+        if(head==nullptr || head->next==nullptr) return false;
+        if(head->next == head) return true;
+        //定义快指针和慢指针
+        ListNode *fast = head;
+        ListNode *slow = head;
+        while(fast!=nullptr && fast->next != nullptr) {
+            fast = fast->next->next;
+            slow = slow->next;
+            if(slow == fast) return true;
+        }
+        return false;
+    }
+};
+```
+
+## 6.实现二叉树先序、中序、后续遍历
+
+[题目来源](https://www.nowcoder.com/practice/a9fec6c46a684ad5a3abd4e365a9d362?tpId=190&tqId=35221&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high-rd%2Fquestion-ranking&tab=answerKey)
+
+分别按照二叉树先序，中序和后序打印所有的节点。
+
+解法一：使用递归
+```cpp
+/**
+ * struct TreeNode {
+ *	int val;
+ *	struct TreeNode *left;
+ *	struct TreeNode *right;
+ * };
+ */
+
+class Solution {
+public:
+    /**
+     * 
+     * @param root TreeNode类 the root of binary tree
+     * @return int整型vector<vector<>>
+     */
+    vector<vector<int> > threeOrders(TreeNode* root) {
+        vector<vector<int>> res;
+        if(root == nullptr || (!root->left && !root->right)) 
+            return res;
+        preorder(root);
+        midorder(root);
+        postorder(root);
+        res = {pre,mid,post};
+        return res;
+    }
+    //前序遍历
+    void preorder(TreeNode* root) {
+        if(root == nullptr) return;
+        pre.push_back(root->val);
+        if(root->left) preorder(root->left);
+        if(root->right) preorder(root->right);
+    }
+    //中序遍历
+    void midorder(TreeNode* root) {
+        if(root == nullptr) return;
+        if(root->left) midorder(root->left);
+        mid.push_back(root->val);
+        if(root->right) midorder(root->right);
+    }
+    //后序遍历
+    void postorder(TreeNode* root) {
+        if(root == nullptr) return;
+        if(root->left) postorder(root->left);
+        if(root->right) postorder(root->right);
+        post.push_back(root->val);
+    }
+private:
+    vector<int> pre,mid,post;
+};
+```
