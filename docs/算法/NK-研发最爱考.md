@@ -373,3 +373,80 @@ private:
     vector<int> pre,mid,post;
 };
 ```
+
+## 7.最小的K个数
+[题目来源](https://www.nowcoder.com/practice/6a296eb82cf844ca8539b57c23e6e9bf?tpId=190&tqId=35976&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high-rd%2Fquestion-ranking&tab=answerKey)
+
+给定一个数组，找出其中最小的K个数。例如数组元素是`4,5,1,6,2,7,3,8`这`8`个数字，则最小的`4`个数字是`1,2,3,4`。如果`K>数组的长度`，那么返回一个空的数组。
+
+示例：
+```cpp
+输入：
+[4,5,1,6,2,7,3,8],4
+输出
+[1,2,3,4]
+```
+
+题解一：使用`sort`排序
+
+```cpp
+class Solution {
+public:
+    vector<int> GetLeastNumbers_Solution(vector<int> input, int k) {
+        vector<int> res;
+        if(k>input.size()) return res;
+        sort(input.begin(), input.end());
+        for(int i=0;i<k;++i) {
+            res.push_back(input[i]);
+        }
+        return res;
+    }
+};
+```
+
+题解二：基于快排思想
+
+对数组`[l, r]`一次快排`partition`过程可得到，`[l, p), p`, `[p+1, r)`三个区间,`[l,p)`为小于等于`p`的值
+`[p+1,r)`为大于等于`p`的值。
+然后再判断`p`，利用二分法
+
+- 1.如果`[l,p`), `p`，也就是`p+1`个元素（因为下标从`0`开始），如果`p+1 == k`, 找到答案
+- 2.如果`p+1 < k`, 说明答案在`[p+1, r)`区间内，
+- 3.如果`p+1 > k` , 说明答案在`[l, p)`内
+
+```cpp
+class Solution {
+public:
+    int partition(vector<int> &input,int l,int r) {
+        int pivot = input[r-1];
+        int i = l;
+        for (int j=l; j<r-1; ++j) {
+            if (input[j] < pivot) {
+                swap(input[i++], input[j]);
+            }
+        }
+        swap(input[i], input[r-1]);
+        return i;
+    }
+    
+    vector<int> GetLeastNumbers_Solution(vector<int> input, int k) {
+        vector<int> ret;
+        if(k == 0 || k > input.size()) return ret;
+        int l=0,r = input.size();
+        while(l < r) {
+            int p = partition(input,l,r) ;
+            if(p+1 ==  k) {
+               return vector<int>({input.begin(), input.begin()+k});
+            }
+            if(p+1<k) {
+                l = p + 1;
+            }
+            else {
+                r = p;
+            }
+        }
+        return ret;
+    }
+};
+```
+
