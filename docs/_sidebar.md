@@ -34,6 +34,7 @@
   * [02ffmpeg内存模型](/音视频开发/ffmpeg/02ffmpeg内存模型.md)
   * [03ffmpeg解封装(解复用)](/音视频开发/ffmpeg/03ffmpeg解封装(解复用).md)
   * [04AAC_ADTS格式分析](/音视频开发/ffmpeg/04AAC_ADTS格式分析.md)
+  * [05ffmpeg音频解码](/音视频开发/ffmpeg/05ffmpeg音频解码.md)
 
 
 * C++算法
