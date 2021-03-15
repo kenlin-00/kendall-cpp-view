@@ -1,5 +1,5 @@
 <div style="background-color: #0080cb;width: 100%;">
-<h4 style="color: white;text-align: right;padding: 5px;">林声肯 -- 开发实习</h4>
+<h4 style="color: white;text-align: right;padding: 5px;">林声肯 -- C++开发实习</h4>
 </div>
 <div style="float: left;display: flex;flex-wrap: wrap;width: 75%;justify-content: space-between;">
     <div style="width: 45%;font-weight: 500;color: #4c4c4c;font-size: 14px;margin: 5px;">姓名： 林声肯</div>
@@ -24,7 +24,7 @@
 
 - 熟练使用`C++`编程语言，熟悉`STL`下常见容器的数据结构，了解`python`、`JS`。
 - 熟悉数据结构常见算法，比如排序算法(快速排序、归并排序、堆排序等)。
-- 熟悉`OSI`七层模型，掌握`HTTP`、`TCP/UDP`、`IP`、`ARP`等常见协议。
+- 熟悉`OSI`七层模型，掌握 `HTTP`、`TCP/UDP`、`ARP`等常见协议。
 - 对`Linux`下`I/O`复用技术有深刻理解，能够利用`Socket`套接字进行网络编程。
 - 具有**音视频开发**编码经验，理解音视频相关概念，熟悉`H264`、`AAC`、`MP3`等编码，了解 `FFmpeg` 编解码技术。
 - 了解`SQL`在整个架构中的执行过程、`MySQL`存储引擎、索引等。
@@ -86,7 +86,7 @@
 #### 2019.6~2019.11　　　　　　　　　　　　　　　  广州地面科技有限公司
 初级开发实习生
 
-- 工作描述：参与“铺点点”中店铺数据模块的研发，前期负责在各大找铺平台进行数据采集。后期考虑到增强产品用户体验度向项目经理提出了加入视频播放功能并参与研发。
+- 工作描述：参与“铺点点”中店铺数据模块的研发，前期负责在各大找铺平台进行数据采集。后期考虑到增强产品用户体引入音视频展示店铺详情模块并参与其研发。
 - 个人收获：接触并了解了音视频开发相关技术，学习了`RTMP`、`HLS`等流媒体相关协议。并由此确定了以后往技术研发方向深造。
 
 
