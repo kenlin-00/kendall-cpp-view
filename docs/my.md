@@ -1,13 +1,5 @@
 <div style="background-color: #0080cb;width: 100%;">
-<<<<<<< HEAD
-	<h4 style="color: white;text-align: right;padding: 5px;">林声肯 -- C++开发实习</h4>
-=======
-<<<<<<< HEAD
-	<h4 style="color: white;text-align: right;padding: 5px;">林声肯 -- 音视频相关</h4>
-=======
-	<h4 style="color: white;text-align: right;padding: 5px;">林声肯 -- 开发实习</h4>
->>>>>>> 4be6e9cc806ea451baeb49e9261610ef516f1336
->>>>>>> 49456062de2651361f349a4c82f79324a24f7319
+<h4 style="color: white;text-align: right;padding: 5px;">林声肯 -- 开发实习</h4>
 </div>
 <div style="float: left;display: flex;flex-wrap: wrap;width: 75%;justify-content: space-between;">
     <div style="width: 45%;font-weight: 500;color: #4c4c4c;font-size: 14px;margin: 5px;">姓名： 林声肯</div>
