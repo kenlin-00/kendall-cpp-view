@@ -1,5 +1,5 @@
 <div style="background-color: #0080cb;width: 100%;">
-<h4 style="color: white;text-align: right;padding: 5px;">林声肯 -- 技术支持实习</h4>
+<h4 style="color: white;text-align: right;padding: 5px;">林声肯 -- 研发实习</h4>
 </div>
 <div style="float: left;display: flex;flex-wrap: wrap;width: 75%;justify-content: space-between;">
     <div style="width: 45%;font-weight: 500;color: #4c4c4c;font-size: 14px;margin: 5px;">姓名： 林声肯</div>
@@ -16,6 +16,7 @@
         <img src="my.jpg" width="120px" height="167px" style="box-shadow: 5px 5px 5px rgba(0,0,0,.5);">
     </div>
 </div>
+
 
 　　　　　　　　　　　　
 
