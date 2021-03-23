@@ -4,6 +4,7 @@
   * [Cpp知识点01](/寻offer总结/Cpp基础/Cpp知识点01.md)
   * [计算机网络01](/寻offer总结/计算机网络/计算机网络01.md) 
   * [操作系统01](/寻offer总结/操作系统/操作系统01.md) 
+  * [linux编程01](/寻offer总结/Linux编程/Linux面试题.md)
 
 * 读书笔记
   * [01TCP_IP网络编程](读书笔记/计算机网络读书笔记/01TCP_IP网络编程/TCP_IP网络编程读书笔记.md)
@@ -21,8 +22,7 @@
   * [09C++模板](/C++随记/09C++模板.md)
   * C++ STL
     * [01STL介绍](/C++随记/STL学习/01STL介绍.md)
-    * [02String容器](/C++随记/STL学习/02String容器.md)
-    * [03vetcot容器](/C++随记/STL学习/03vetcot容器.md)
+    * [02String简单使用](/C++随记/STL学习/02string简单使用.md)
 
 * 计算机网络
   * [OSI各层结构和功能](/计算机网络/OSI与TcpIp各层的结构和功能.md)
@@ -35,12 +35,7 @@
   * [01网络IO模型](/Linux/01网络IO模型.md)
   * [02IO多路复用技术](/Linux/02IO多路复用技术.md)
 
-* 数据库
-  * [SQL在整个架构中的执行过程](/数据库/SQL在整个架构中的执行过程.md)
-  * [MySQL的事务](/数据库/MySQL的事务.md)
-  * [数据库的索引](/数据库/数据库的索引.md)
-  * [数据库SQL优化总结](/数据库/数据库SQL优化总结.md)
-  * [数据库存储引擎](/数据库/数据库存储引擎.md)
+
 
 * FFmpeg
   * [01ffmpeg数据结构](/音视频开发/ffmpeg/01ffmpeg数据结构.md)
@@ -57,12 +52,5 @@
   * [04树](/算法/04树.md)
   * [NK-研发最爱考](/算法/NK-研发最爱考.md)
 
-* 寻offer总结
-  * [Cpp知识点01](/寻offer总结/Cpp基础/Cpp知识点01.md)
-  * [计算机网络01](/寻offer总结/计算机网络/计算机网络01.md) 
-  * [操作系统01](/寻offer总结/操作系统/操作系统01.md) 
-  * Linux编程
-    * [A.Linux系统编程](/寻offer/linux编程/Linux系统编程1.md) 
-    * [B.Linux网络编程](/寻offer/linux编程/Linux网络编程1.md) 
 
 
