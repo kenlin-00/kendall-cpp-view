@@ -278,4 +278,129 @@ int main(){
 ```
 
 
+### 6.32
 
+关于返回引用的例子
+```cpp
+#include <iostream>
+
+using namespace std;
+
+char &get_val(string &a,int x) {  //返回类型是非长隆引用
+    return a[x];
+
+}
+
+int main() {
+    string a = "hello";
+    cout << a << endl;
+    for(int i=0;i<a.size();++i) {
+        get_val(a,i) =  get_val(a,i) - 32;
+    }
+    cout << a << endl;
+    return 0;
+}
+
+//hello
+// HELLO
+```
+
+### 6.33
+```cpp
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+void get_val(const vector<int>  &vec,int ix) {
+    if(ix < 0) {
+        return ;
+    }
+    cout << vec[ix] << " ";
+    get_val(vec,--ix);
+}
+
+int main() {
+    vector<int> vec;
+    for(int i=0;i<=10;++i){
+        vec.push_back(i);
+    }
+    get_val(vec,vec.size()-1);
+    cout <<endl;
+    return 0;
+}
+```
+
+### 6.34
+
+```cpp
+int (*func(int val))[10];//括号要对，并且维数必须标明
+/************************************************************
+     type (*function_name(parameter list))[dimension] 
+逐层的理解：func(int i),名为func的函数有一个int型的参数i
+  (*func(int i)),表明我们可以对函数返回的结果进行解引用操作
+  (*func(int i))[10],表明对函数的解引用可以得到大小为10的数组
+  int (*func(int i))[10],表示数组中的元素是int类型
+************************************************************/
+
+```
+
+本题答案：
+```cpp
+string (&func(string (&arrStr)[10]))[10]
+```
+
+### 6.33
+
+```cpp
+
+using ArrT = string[10];
+ArrT& func1(ArrT& arr);//使用类型别名
+ 
+auto func2(ArrT& arr) -> string(&)[10]; //使用尾置返回类型
+ 
+string arrS[10];
+decltype(arrS)& func3(ArrT& arr);//使用decltype关键字
+
+```
+
+### 6.47
+
+知识点1：预处理宏`assert(expr)：`包含一个表达式，`expr`为真时，`assert`什么也不做，为假时输出信息并终止程序。包含在`cassert`头文件中。通常用于检查不能发生的条件
+
+知识点2：`assert`依赖于一个`NDEBUG`的预处理变量的状态，如果定义了`NDEBUG`，`assert`什么也不做，默认状态下`NDEBUG`是未定义的。编译器也可以预先定义该变量。
+
+知识点3：也可以使用`NDEBUG`编写自己的条件调试代码，如果`NDEBUG`未定义，将执行`#ifndef`到`#endif之`间的代码，如果定义了`NDEBUG`，这些代码将被忽略。
+
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// #define NDEBUG
+
+void get_val(const vector<int>  &vec,int ix) {
+#ifndef NDEBUG
+    cout << "func_name" << __func__ << endl;
+    cout << "line:" << __LINE__<< endl;
+    cout << "vec ix: " << ix << endl;
+
+#endif
+    if(ix < 0) {
+        return ;
+    }
+    cout << vec[ix] << " ";
+    get_val(vec,--ix);
+}
+
+int main() {
+    vector<int> vec;
+    for(int i=0;i<=10;++i){
+        vec.push_back(i);
+    }
+    get_val(vec,vec.size()-1);
+    cout <<endl;
+    return 0;
+}
+```
