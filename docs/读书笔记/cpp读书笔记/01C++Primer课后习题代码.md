@@ -404,3 +404,96 @@ int main() {
     return 0;
 }
 ```
+
+### 6.49
+```cpp
+#include <iostream>
+using namespace std;
+
+void f() {
+    cout << "f() " << endl;
+}
+void f(int a) {
+    cout << "f(int a) " << endl;
+}
+void f(int a,int b) {
+    cout << "f(int a,int b) " << endl;
+}
+void f(double d1,double d2) {
+    cout << "f(double d1,double d2) " << endl;
+}
+
+int main() {
+    // f(2.56,42); //call to 'f' is ambiguous
+    f(42);  //f(int a) 
+    f(42,0);//f(int a,int b) 
+    f(2.56,4.14);  //f(double d1,double d2) 
+
+    return 0;
+}
+```
+
+### 6.54
+
+函数指针指向的是函数并非对象。想要声明一个指向函数的指针只要用指针替代函数名即可
+
+```cpp
+bool (*pf) (const string &.const string &);
+```
+
+如果我们把一个函数名当做一个值来使用，那么这个函数自动转化成指针。
+
+给指针赋予nullptr或者0时，指针不指向任何函数。
+
+虽然不能返回一个函数，但是可以返回一个指向函数的指针。
+```cpp
+int (*f(int))(int,int);
+//f有形参列表，f是个函数，f的返回值为指针，指针本身又有参数列表，因此指针指向的是函数，该函数的类型为int
+```
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+
+int intFunc(int a,int b){
+    return a+b;
+}
+int main() {
+    typedef int(*pInfFunc)(int,int);  //只是把指针替换了函数名
+    //声明函数指针，未初始化,pInfFunc为指向函数的指针。使用typedef的声明语句定义的不再是变量而是类型别名
+	//就是将变量转化为类型别名的一种方式，pInfFunc原来是指向函数的指针变量，
+    //现在变成了指向函数的指针变量的类型别名
+    vector<pInfFunc> a;
+    return 0;
+}
+```
+
+### 6.55 6.56
+
+```cpp
+#include <iostream>
+#include<string>
+#include<vector>
+using namespace std;
+ 
+int add(int a, int b)
+{
+	return a+b;
+}
+int subtract(int a, int b) { return a - b; }
+int multiply(int a, int b) { return a * b; }
+int divide(int a, int b) { return b != 0 ? a / b : 0; }//声明定义函数
+ 
+int main(int argc, char** argv)
+{
+	typedef int(*p)(int a, int b);	//声明函数指针，未初始化,p为指向函数的指针。
+    //使用typedef的声明语句定义的不再是变量而是类型别名
+	//就是将变量转化为类型别名的一种方式，p原来是指向函数的指针变量，现在变成了指向函数的指针变量的类型别名
+	vector<p> vec{add, subtract, multiply, divide};//vector初始化的C++11新特性
+	for (auto f : vec)
+		cout << f(2, 2) <<endl;
+	return 0;
+}
+```
