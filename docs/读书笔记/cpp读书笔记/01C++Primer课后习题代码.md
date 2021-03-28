@@ -497,3 +497,208 @@ int main(int argc, char** argv)
 	return 0;
 }
 ```
+
+-------
+-------
+
+## 第七章
+### 7.1 
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+//使用类定义
+class Students1 {
+    //构造函数
+    Students1(string name,int age,int score);
+
+    void showStu() {
+        cout << "name = " << _name << " age = " << _age << " score = " << _score << endl;
+    }
+    string _name;
+    int _age;
+    int _score;
+//上面默认是private
+public:
+private:
+protected:
+};
+Students1::Students1(string name,int age,int score):_name(name),_age(age),_score(score) { }
+
+//使用strcut定义
+struct Students2 {
+    //构造函数
+    Students2(string name,int age,int score);
+
+    void showStu() {
+        cout << "name = " << _name << " age = " << _age << " score = " << _score << endl;
+    }
+    string _name;
+    int _age;
+    int _score;
+//上面默认是public
+public:
+private:
+protected:
+};
+Students2::Students2(string name,int age,int score):_name(name),_age(age),_score(score) { }
+
+int main() {
+
+    // Students1 stu1("kendall",20,100); //错误，虽然已声明，但是不可访问。成员没有限定public,默认都是private，外部不可访问
+    Students2 stu2("kendall",20,100);
+
+    stu2.showStu();
+    return 0;
+}
+```
+
+此题答案：
+
+```cpp
+#include <iostream>
+#include<string>
+#include<vector>
+using namespace std;
+struct Sales_data {
+	Sales_data();
+	string bookNo;
+	unsigned units_sold ;
+	double revenue ;//类内部的变量成员不允许在定义时初始化，必须使用构造函数
+};
+Sales_data::Sales_data()
+{
+	units_sold = 0;
+	revenue = 0.0;
+}
+ 
+int main(int argc, char **argv)
+{
+	Sales_data total;//此部分和第一章21页的内容相同
+	if (cin >> total.bookNo >> total.units_sold >> total.revenue) {
+		Sales_data trans;
+		while (cin >> trans.bookNo >> trans.units_sold >> trans.revenue) {
+			if (total.bookNo == trans.bookNo) {
+				total.units_sold += trans.units_sold;
+				total.revenue += trans.revenue;//第三题的使用修改之处
+			}
+			else {
+				cout << total.bookNo << " " << total.units_sold << " "
+					<< total.revenue << endl;
+				total = trans;
+			}
+		}
+		cout << total.bookNo << " " << total.units_sold << " " << total.revenue
+			<< endl;
+	}
+	else {
+		std::cerr << "No data?!" << std::endl;
+		return -1;
+	}
+	return 0;
+}
+```
+
+### 7.4
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Person {
+public:
+    Person(string name,string addr)
+    :_name(name)
+    ,_addr(addr)
+    {}
+    Person();
+    const string& getName() const {
+        return _name;
+    }
+    const string& getAddr() const {
+        return _addr;
+    }
+private:
+    string _name;
+    string _addr;
+};
+```
+
+### 7.9
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Person {
+public:
+    Person(string name,string addr)
+    :_name(name)
+    ,_addr(addr)
+    {}
+    Person();
+    // Person() = default; //或者这样写
+
+    const string& getName() const {
+        return _name;
+    }
+    const string& getAddr() const {
+        return _addr;
+    }
+    void showPerson() {
+        cout << "name = " << getName() << " address = " << getAddr() << endl;
+    }
+
+private:
+    string _name;
+    string _addr;
+};
+
+int main() {
+
+    Person p1("kendall","Beijing");
+    p1.showPerson();
+    return 0;
+}
+```
+
+### 7.15 
+
+> 见7.4
+
+### 7.23 7.24
+
+```cpp
+#include <iostream>
+#include <string>
+using  namespace std;
+
+class Screen {
+    using pos = string::size_type;
+    //默认构造函数
+    Screen()= default;
+
+    Screen(pos width,pos height,char ch):_width(width),_height(height),_contents(width * height,ch)  //ch初始化窗口的内容
+    {
+
+    }
+    char get() const {
+        return _contents[_cursor];
+    }
+
+    char get(pos r,pos c) const {
+        return _contents[r + _width + c];
+    }
+
+private:
+    pos _cursor = 0;
+    pos _height = 0,_width = 0;
+    string _contents;
+};
+```
+
+
+
