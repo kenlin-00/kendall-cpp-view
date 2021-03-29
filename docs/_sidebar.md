@@ -2,6 +2,7 @@
 
 * 寻offer总结
   * [Cpp知识点01](/寻offer总结/Cpp基础/Cpp知识点01.md)
+  * [Cpp知识点02](/寻offer总结/Cpp基础/Cpp知识点02.md)
   * [计算机网络01](/寻offer总结/计算机网络/计算机网络01.md) 
   * [操作系统01](/寻offer总结/操作系统/操作系统01.md) 
   * [linux编程01](/寻offer总结/linux编程/Linux面试题.md)
