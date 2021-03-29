@@ -74,27 +74,58 @@ Inode size:               256
 
 ------
 一、发现问题：
+
 　　在一台配置较低的Linux服务器（内存、硬盘比较小）的/data分区内创建文件时，系统提示磁盘空间不足，用df -h命令查看了一下磁盘使用情况，发现/data分区只使用了66%，还有12G的剩余空间，按理说不会出现这种问题。
 
 二、分析问题：
-　　后来用df -i查看了一下/data分区的索引节点(inode)，发现已经用满(IUsed=100%)，导致系统无法创建新目录和文件。
+
+　　后来用`df -i`查看了一下`/data`分区的索引节点(`inode`)，发现已经用满(`IUsed=100%`)，导致系统无法创建新目录和文件。
 
 ![](./img/inode01.jpg)
 
 三、查找原因：
-　　/data/cache目录中存在数量非常多的小字节缓存文件，占用的Block不多，但是占用了大量的inode。
+　　`/data/cache`目录中存在数量非常多的小字节缓存文件，占用的`Block`不多，但是占用了大量的`inode`。
 
 四、解决方案：
 
-　　1、删除/data/cache目录中的部分文件，释放出/data分区的一部分inode。
+1、删除`/data/cache`目录中的部分文件，释放出`/data`分区的一部分`inode`。
 
-　　2、用软连接将空闲分区/opt中的newcache目录连接到/data/cache，使用/opt分区的inode来缓解/data分区inode不足的问题：
+2、用软连接将空闲分区`/opt`中的`newcache`目录连接到`/data/cache`，使用`/opt`分区的`inode`来缓解`/data`分区inode不足的问题：
+
 　　`ln -s /opt/newcache /data/cache`
 
-　　3、更换服务器，用高配置的服务器替换低配置的服务器。很多时候用钱去解决问题比用技术更有效，堆在我办公桌上5台全新的 DELL PowerEdge 1950 服务器即将运往IDC机房。
+3、更换服务器，用高配置的服务器替换低配置的服务器。
 
-https://blog.csdn.net/xuz0917/article/details/79473562
-
-https://blog.csdn.net/SOJUE/article/details/48769389
 ------
 
+## 4.`inode `号码
+
+每个`inode`都有一个号码，操作系统用`inode`号码来识别不同的文件。
+
+**Unix/Linux系统内部不使用文件名，而使用`inode`号码来识别文件。对于系统来说，文件名只是`inode`号码便于识别的别称或者绰号**。
+
+表面上，用户通过文件名，打开文件。实际上，系统内部这个过程分成三步：
+
+- 首先，系统找到这个文件名对应的`inode`号码；
+
+- 其次，通过`inode`号码，获取`inode`信息；
+
+- 最后，根据`inode`信息，找到文件数据所在的`block`，读出数据。
+
+查看文件对应的`Inode`号码
+```
+$ ls -i hello.c 
+14242783 hello.c
+```
+
+## 5.目录文件
+
+在`Linux`系统中，一切皆文件，因此目录（directory）也是一种文件。打开目录，实际上就是打开目录文件。
+
+目录文件的结构非常简单，就是一系列目录项（dirent）的列表。每个目录项，由两部分组成：所包含文件的文件名，以及该文件名对应的`inode`号码。
+
+`ls`命令只列出目录文件中的所有文件名，`ls -i`命令列出整个目录文件，即文件名和`inode`号码：
+
+
+
+https://blog.csdn.net/SOJUE/article/details/48769389
