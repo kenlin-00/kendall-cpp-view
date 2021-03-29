@@ -7,10 +7,6 @@
   * [操作系统01](/寻offer总结/操作系统/操作系统01.md) 
   * [linux编程01](/寻offer总结/linux编程/Linux面试题.md)
 
-* 读书笔记
-  * [01TCP_IP网络编程](读书笔记/计算机网络读书笔记/01TCP_IP网络编程/TCP_IP网络编程读书笔记.md)
-  * [02C++Primer习题代码](读书笔记/cpp读书笔记/01C++Primer课后习题代码.md)
-
 * C++随记
   * [01理解命名空间](/C++随记/01理解命名空间.md)
   * [02关于const关键字](/C++随记/02关于const关键字.md)
@@ -25,6 +21,10 @@
   * C++ STL
     * [01STL介绍](/C++随记/STL学习/01STL介绍.md)
     * [02String简单使用](/C++随记/STL学习/02string简单使用.md)
+
+* 操作系统
+  * [01linux中inode理解](/操作系统/01linux中inode理解.md)
+  * [02superBlock](/操作系统/02superBlock.md)
 
 * 计算机网络
   * [OSI各层结构和功能](/计算机网络/OSI与TcpIp各层的结构和功能.md)
@@ -54,5 +54,7 @@
   * [04树](/算法/04树.md)
   * [NK-研发最爱考](/算法/NK-研发最爱考.md)
 
-
+* 读书笔记
+  * [01TCP_IP网络编程](读书笔记/计算机网络读书笔记/01TCP_IP网络编程/TCP_IP网络编程读书笔记.md)
+  * [02C++Primer习题代码](读书笔记/cpp读书笔记/01C++Primer课后习题代码.md)
 
