@@ -24,7 +24,7 @@
 
 * 操作系统
   * [01linux中inode理解](/操作系统/01linux中inode理解.md)
-  * [02superBlock](/操作系统/02superBlock.md)
+  * [02文件系统的理解](/操作系统/02文件系统的理解.md)
 
 * 计算机网络
   * [OSI各层结构和功能](/计算机网络/OSI与TcpIp各层的结构和功能.md)
