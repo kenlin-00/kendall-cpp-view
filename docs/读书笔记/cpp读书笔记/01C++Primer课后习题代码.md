@@ -700,5 +700,281 @@ private:
 };
 ```
 
+## 第九章
 
+### 9.4
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
 
+bool findInt(vector<int>::iterator a ,vector<int>::iterator b ,int const target) {
+    for(;a!=b;a++) {
+        if(*a == target) return true;
+    }
+    return false;
+}
+
+int main() {
+    vector<int> vec;
+    int num = 9;
+    for(int i=0;i<10;++i) {
+        vec.push_back(i);
+    }
+
+    if(findInt(vec.begin(),vec.end(),num)) {
+        cout << num << " in vec" << endl;
+    }
+    else {
+        cout << num << " not in vec" << endl;
+    }
+    return 0;
+}
+```
+
+### 9.5
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+vector<int>::iterator findInt(vector<int>::iterator a ,vector<int>::iterator b ,int const target) {
+    for(;a!=b;a++) {
+        if(*a == target) return a;
+    }
+    return b;
+}
+
+int main() {
+    vector<int> vec;
+    int num = 9;
+    for(int i=0;i<10;++i) {
+        vec.push_back(i);
+    }
+
+    if(findInt(vec.begin(),vec.end(),num) != vec.end()) {
+        cout << num << " in vec" << endl;
+    }
+    else {
+        cout << num << " not in vec" << endl;
+    }
+    return 0;
+}
+```
+
+### 9.11
+```cpp
+vector<int> vec;  //0
+vector<int> vec(10);  //0
+vector<int> vec(10,1);  //1
+vector<int> vec{1,2,3,4};
+vector<int> vec{other_vec};
+vector<int> vec(other_vec.begin(),other_vec.end());
+```
+
+### 9.13
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <list>
+using namespace std;
+
+int main() {
+
+    list<int> list1(10,1);
+    vector<int> vec2(10,2);
+
+    //初始化
+    vector<double> dvec1(list1.begin(),list1.end());
+    vector<double> dvec2(vec2.begin(),vec2.end());
+
+    //验证
+    vector<double>::iterator d1 = dvec1.begin();
+    vector<double>::iterator d2 = dvec2.begin();
+
+    for(;d1!=dvec1.end();++d1) {
+        cout << *d1 << " ";
+    }
+    cout << endl;
+    for(;d2!=dvec2.end();++d2) {
+        cout << *d2 << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```
+
+### 9.13
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <list>
+using namespace std;
+
+int main() {
+
+    list<const char *> list(10,"hello world");
+    vector<string>  vec;
+    vec.assign(list.begin(),list.end());
+    for(auto a: vec) {
+        cout << a << endl;
+    }
+    cout << endl;
+    return 0;
+}
+```
+
+### 9.16
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <list>
+using namespace std;
+
+int main() {
+
+    vector<int> vec1{1,2,3,4,5,5};
+    vector<int> vec2{1,2,4,4,5};
+    if(vec1 == vec2) {
+        cout << "vec1 = vec2" << endl;
+    }
+    else {
+        cout << "vec1 != vec2" << endl;
+    }
+    return 0;
+}
+```
+
+### 9.16
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <list>
+using namespace std;
+
+int main() {
+    list<int> list{1,2,4,4,5,};
+    // 将list转成vector
+    vector<int> listVec(list.begin(),list.end());
+    vector<int> vec{1,2,4,4,5};
+    if(listVec == vec) {
+        cout << "listVec = vec" << endl;
+    }
+    else {
+        cout << "listVec != vec" << endl;
+    }
+    return 0;
+}
+```
+
+### 9.18
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <list>
+#include <queue>
+using namespace std;
+
+int main() {
+    string word;
+    deque<string> que;
+    while ( cin >> word) {
+        if(word == "0") break;
+        que.push_back(word);
+    }
+    deque<string>::iterator a = que.begin();
+    for(;a!=que.end();++a) {
+        cout << *a << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```
+
+### 9.19
+
+改变类型就可以了
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <list>
+#include <queue>
+using namespace std;
+
+int main() {
+    string word;
+    list<string> que;
+    while ( cin >> word) {
+        if(word == "0") break;
+        que.push_back(word);
+    }
+    list<string>::iterator a = que.begin();
+    for(;a!=que.end();++a) {
+        cout << *a << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```
+
+### 9.20
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <deque>
+#include <list>
+
+using namespace std;
+
+int main() {
+
+    list<int> li{1,2,3,4,5,6,7,8,9};
+    deque<int> que1;
+    deque<int> que2;
+    list<int>::iterator a = li.begin();
+    for(;a!=li.end();++a) {
+        if((*a) % 2 == 0) {
+            que1.push_back(*a);
+        }
+        else {
+            que2.push_back(*a);
+        }
+    }
+    for(auto q: que1) {
+        cout << q << endl;
+    }
+    cout << "------------- " << endl;
+    for(auto q:que2) {
+        cout << q << endl;
+    }
+    
+    
+    return 0;
+}
+```
+
+### 9.24
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> vec{1,2,3};
+    cout << vec.at(0) << endl;
+    cout << vec[0] << endl;
+    cout << vec.front() << endl;
+    cout << *(vec.begin()) << endl;
+    
+    return 0;
+}
+```
