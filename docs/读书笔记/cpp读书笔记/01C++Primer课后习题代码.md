@@ -978,3 +978,445 @@ int main() {
     return 0;
 }
 ```
+
+### 9.26
+```cpp
+#include<iostream>
+#include<fstream>
+#include<sstream>
+#include<string>
+#include<vector>
+#include<list>
+using namespace std;
+ 
+int main(int argc, char**argv)
+{
+	int ia[] ={0,1,1,2,3,5,8,13,21,55,89};
+	
+	vector<int> vec1(ia,ia+9);//拷贝操作
+	list<int> list1(ia,ia+9);
+ 
+	vector<int>::iterator it1 = vec1.begin();//使用迭代器
+	list<int>::iterator it2 = list1.begin();
+ 
+	while (it1 != vec1.end())//删除操作
+	{
+		if ((*it1)%2 == 0)
+		{
+			it1 = vec1.erase(it1);//将删除位置更新
+		}
+		else//若判断非偶数，则移到下一位置
+		{
+			++it1;
+		}
+	}
+ 
+	while (it2 != list1.end())
+	{
+		if (*it2%2 != 0)
+		{
+			it2 = list1.erase(it2);//将删除位置更新
+		}
+		else//若判断非偶数，则移到下一位置
+		{
+			++it2;
+		}
+	}
+	
+	//验证结果
+	vector<int>::iterator it3 = vec1.begin();//需要重新定义临时迭代器
+	list<int>::iterator it4 = list1.begin();
+	for (it3;it3 != vec1.end(); ++it3)
+	{
+		cout<<*it3<<" ";
+	}
+	cout<<endl;
+	for (it4;it4 != list1.end(); ++it4)
+	{
+		cout<<*it4<<" ";
+	}
+	
+	return 0;
+}
+```
+
+## 第十章
+
+### 10.1 
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    vector<int> vec{1,2,3,4,5,9,6,7,8,9,9};
+    int val = 9;
+    cout << "count = " << count(vec.begin(),vec.end(),val) << endl;;
+    return 0;
+}
+```
+
+### 10.2
+```cpp
+#include <iostream>
+#include <vector>
+#include <list>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    list<string> vec{"hello","hello","hello","hello","good","kendall"};
+    string val = "hello";
+    cout << "count = " << count(vec.begin(),vec.end(),val) << endl;;
+    return 0;
+}
+```
+
+### 10.3
+```cpp
+#include <iostream>
+#include <vector>
+#include <list>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+int main() {
+    vector<int> vec{1,2,3,4,5,6,7,8,9,10};
+    int sum = accumulate(vec.begin(),vec.end(),0);
+    cout<< sum << endl;
+    return 0;
+}
+```
+
+### 10.4
+
+会将`double`转成`int`,损失精度
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <list>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+int main() {
+    vector<double> vec{1.1,2.2,3.3,4.4};
+    auto sum = accumulate(vec.begin(),vec.end(),0);
+    cout << sum << endl;
+    return 0;
+}
+```
+
+### 10.6
+```cpp
+#include <iostream>
+#include <vector>
+#include <list>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+int main() {
+    int a[10] = {0,1,2,3,4,5,6,7,8,9};
+    vector<int> vec(a,a+10);
+	cout<<"修改前：";
+	for(int i = 0; i<10 ;++i)
+	{
+		cout<<vec[i];
+    }
+    cout << endl;
+    fill_n(vec.begin(),vec.size(),0) ;
+	cout<<"修改后：";
+	for(int i = 0; i<10 ;++i)
+	{
+		cout<<vec[i];
+    }
+    cout << endl;
+    return 0;
+}
+```
+### 10.9
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <list>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+int main() {
+
+    vector<int> vec{1,2,34,3,1,4,4,4,4,4,2,34,44,34,2};
+    for(int i = 0; i<vec.size() ;++i)
+	{
+		cout<<vec[i] << " " ;
+    }
+    cout << endl;
+    vector<int>::iterator end_unique = unique(vec.begin(),vec.end());
+    for(int i = 0; i<vec.size() ;++i)
+	{
+		cout<<vec[i] << " ";
+    }
+    cout << endl;
+    vec.erase(end_unique,vec.end());
+    for(int i = 0; i<vec.size() ;++i)
+	{
+		cout<<vec[i] << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```
+结果：
+```
+1 2 34 3 1 4 4 4 4 4 2 34 44 34 2 
+1 2 34 3 1 4 2 34 44 34 2 34 44 34 2 
+1 2 34 3 1 4 2 34 44 34 2 
+```
+
+### 10.11
+```cpp
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+bool isSorter(const string &s1,const string &s2) {
+    return s1.size() < s2.size();
+}
+void elimDups(vector<string> &s) {
+    cout << "排序前：";
+    for(int i=0;i<s.size();++i) {
+        cout << s[i] << " ";
+    }
+    cout << endl << "排序后：" ;
+    sort(s.begin(),s.end());
+    for(int i=0;i<s.size();++i) {
+        cout << s[i] << " ";
+    }
+    cout << endl ;
+
+    //使用unique删除
+    auto end_unique = unique(s.begin(),s.end());
+    cout << endl << "unique后：" ;
+    for(int i=0;i<s.size();++i) {
+        cout << s[i] << " ";
+    }
+    cout << endl ;
+    //使用erase删除
+    s.erase(end_unique,s.end());
+    cout << endl << "erase删除后：" ;
+    for(int i=0;i<s.size();++i) {
+        cout << s[i] << " ";
+    }
+    cout << endl;
+}
+int main() {
+    vector<string> vec{"kendall","C++","primer","primer","kendall","kendall","kendall"};
+    elimDups(vec);
+    cout << endl << "stable_sort删除后：" ;
+    stable_sort(vec.begin(),vec.end(),isSorter);  //先按照字典排序再按照长度排序
+    for(int i=0;i<vec.size();++i) {
+        cout << vec[i] << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```
+结果：
+```cpp
+排序前：kendall C++ primer primer kendall kendall kendall 
+排序后：C++ kendall kendall kendall kendall primer primer 
+
+unique后：C++ kendall primer kendall kendall  primer 
+
+erase删除后：C++ kendall primer 
+
+stable_sort删除后：C++ primer kendall 
+```
+
+### 10.13
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+bool compareIsbn(const string &s) {
+    if(s.size() > 5) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+int main() {
+
+    string a[10] = {"diuwudh","udh","diudh","wudh","diuwu","h","diuw","diuwudhg257","h","d"};
+    vector<string> vec1(a,a+10);
+    vector<string>::iterator it1 = vec1.begin();
+    vector<string>::iterator it2;
+    it2 = partition(vec1.begin(),vec1.end(),compareIsbn); //排序
+    cout<<"排序后的vector中大于5的元素:";
+	for(; it1 != it2; ++it1)
+	{
+		cout<<*it1<<" ";
+	}
+    cout << endl;
+    return 0;
+}
+```
+
+### 10.14
+
+上一题中使用`lambda`表达式
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+int main() {
+
+    string a[10] = {"diuwudh","udh","diudh","wudh","diuwu","h","diuw","diuwudhg257","h","d"};
+    vector<string> vec1(a,a+10);
+    vector<string>::iterator it1 = vec1.begin();
+    vector<string>::iterator it2;
+    // it2 = partition(vec1.begin(),vec1.end(),compareIsbn); //排序
+    it2 = partition(vec1.begin(),vec1.end(),[](const string &s){return s.size() > 5 ; });
+    cout<<"排序后的vector中大于5的元素:";
+	for(; it1 != it2; ++it1)
+	{
+		cout<<*it1<<" ";
+	}
+    cout << endl;
+    return 0;
+}
+```
+
+本题题解：
+```cpp
+[](int &a,int &b){cout<<a+b;}
+```
+
+### 10.15
+```
+[a](const int &b){return a+ b;}
+```
+
+### 10.16
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+void elimDups(vector<string> &s) {
+    sort(s.begin(),s.end());
+    auto end_unique = unique(s.begin(),s.end()); //unique排序
+    s.erase(end_unique,s.end());
+}
+void biggies(vector<string> &word,vector<string>::size_type sz) {
+    elimDups(word);  //字典排序，删除重复
+    //按照长度排序
+    stable_sort(word.begin(),word.end(),[](const string &a,const string &b){return a.size() > b.size() ;});
+    //排序后大于sz的数
+    vector<string>::iterator it1 = partition(word.begin(),word.end(),[sz](const string &s){return s.size() <=sz;});
+    for(;it1!=word.end();++it1) {
+        cout << *it1 << " ";
+    }
+}
+
+int main() {
+    string a[10] = {"diuwudh","udh","diudh","wudh","diuwu","h","diuw","diuwudhg257","h","d"};
+	vector<string> vec1(a,a+10);//利用数组初始化vector
+	biggies(vec1,4);//找出长度大于4的字符串
+    cout << endl;
+    return 0;
+}   
+```
+
+### 10.19
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+void elimDups(vector<string> &s) {
+    sort(s.begin(),s.end());
+    auto end_unique = unique(s.begin(),s.end()); //unique排序
+    s.erase(end_unique,s.end());
+}
+void biggies(vector<string> &word,vector<string>::size_type sz) {
+    elimDups(word);  //字典排序，删除重复
+    //按照长度排序
+    stable_sort(word.begin(),word.end(),[](const string &a,const string &b){return a.size() > b.size() ;});
+    //排序后大于sz的数
+    // vector<string>::iterator it1 = partition(word.begin(),word.end(),[sz](const string &s){return s.size() <=sz;});
+    auto it1 = stable_partition(word.begin(),word.end(),[sz](const string & s){return s.size() <= sz;});
+    for(;it1!=word.end();++it1) {
+        cout << *it1 << " ";
+    }
+}
+
+int main() {
+    string a[10] = {"diuwudh","udh","diudh","wudh","diuwu","h","diuw","diuwudhg257","h","d"};
+	vector<string> vec1(a,a+10);//利用数组初始化vector
+	biggies(vec1,4);//找出长度大于4的字符串
+    cout << endl;
+    return 0;
+}   
+```
+
+### 10.20
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+
+int main() {
+	string a[10] = {"diuwudh","udh","dewiudh","wudh","diutrwu","h","diuw","diuwudhg257","h","d"};
+    vector<string> vec(a,a+10);
+    cout << "长度大于6的字符串有" << count_if(vec.begin(),vec.end(),[](const string &s){return s.size() > 6;});
+    cout << endl;
+    return 0;
+}
+```
+
+### 10.21
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <numeric>
+using namespace std;
+int main() {
+    int i = 10;
+    auto f = [&i]()->bool {
+        if(i==0) {
+            return true;
+        }else{
+            --i;
+            return false;
+        }
+    };//引用捕获、尾置返回类型
+    int j = f();
+    cout << j << endl;
+    return 0;
+}
+```
