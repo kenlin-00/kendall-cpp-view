@@ -1420,3 +1420,47 @@ int main() {
     return 0;
 }
 ```
+
+### 15.3
+```cpp
+#ifdef QUOTE_H
+#define QUOTE_H
+
+#include <iostream>
+using namespace std;
+class Quote {
+    //定义成友元函数
+    friend double print_total(ostream &,const Quote&,size_t);
+public:
+	/*	Quote() = default;//C++11新特性*/
+    Quote();  //默认虚构函数
+    Quote(const string& book,double sales_price):bookNo(book),price(sales_price) {
+
+    }
+    string isbn() const; ///保存每本书的编号
+    //定义成虚函数，让派生类自己定价
+    virtual double net_price(size_t) const;
+private:
+    stirng bookNo;
+protected:
+    double price; //普通状态下不打折的价格，C++11不支持非静态变量的类内初始化
+};
+//实现友元函数
+double print_total(ostream &os,Qutoe &item,size_t n) {
+    //动态绑定实例
+    double ret = item.net_price(n);
+    os << "ISBN = " << item.isbn() << endl;
+    os<< "sold" << n << " total price" << ret << endl;
+    return ret;
+}
+class bulk_quote : public Quote
+{
+public:
+	virtual double net_price(size_t) const;//重新声明
+	double net_price(size_t) const override;//允许派生类显示的注明它将使用哪个成员函数改写基类的虚函数
+};
+
+
+#endif QUOTE_H
+```
+
