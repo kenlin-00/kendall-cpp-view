@@ -267,3 +267,563 @@ int main()
 需求：在官方用例的基础上增加功能：当用户输入exit四个字母时，不做回显，直接退出程序
 
 ![](./img/zinx测试-01.png)
+
+
+```cpp
+#include <zinx.h>
+#include <iostream>
+using namespace std;
+
+
+//创建标准输出通道
+class TestStdout : public Ichannel
+{
+	// 通过 Ichannel 继承
+	virtual bool Init() override
+	{
+		return true;
+	}
+	virtual bool ReadFd(std::string & _input) override
+	{
+		return false;
+	}
+	virtual bool WriteFd(std::string & _output) override
+	{
+		cout << _output << endl;
+		return true;
+	}
+	virtual void Fini() override
+	{
+	}
+	virtual int GetFd() override
+	{
+		//标准输入是0，标准输出是1，错误是2
+		return 1;
+	}
+	virtual std::string GetChannelInfo() override
+	{
+		return "stdout";
+	}
+	virtual AZinxHandler * GetInputNextStage(BytesMsg & _oInput) override
+	{
+		return nullptr;
+	}
+} * poOut = new TestStdout();
+
+//写功能处理
+class Echo : public AZinxHandler
+{
+	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
+	{
+		//然后_oInput
+		GET_REF2DATA(BytesMsg, input, _oInput);
+		//cout << input.szData << endl;
+		//使用框架的标准输出
+
+		//这里需要做一个判断，先创建一个退出框架类
+		//ExitFramework
+
+		ZinxKernel::Zinx_SendOut(input.szData, *poOut);  //使用标准输出通道,需要插件标准输出通道
+		return nullptr;
+	}
+	virtual AZinxHandler * GetNextHandler(IZinxMsg & _oNextMsg) override
+	{
+		return nullptr;
+	}
+} *poEcho = new Echo();
+
+
+//输出exit就退出框架的类
+class ExitFramework : public AZinxHandler
+{
+	// 通过 AZinxHandler 继承
+	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
+	{
+		//获取_output的字符串
+		GET_REF2DATA(BytesMsg, obyte, _oInput);
+		if (obyte.szData == "exit") {
+			ZinxKernel::Zinx_Exit(); //退出
+			return NULL;
+		}
+		//如果不是就要交给下一个环节处理
+		//创建交给下一个环节处理的数据,直接创建输出即可
+		return new BytesMsg(obyte);  //使用拷贝构造封装成原始对象
+	}
+	//还需要获取下一个处理者
+	virtual AZinxHandler * GetNextHandler(IZinxMsg & _oNextMsg) override
+	{
+		return poEcho;
+	}
+}* poExit = new ExitFramework();
+
+
+//3.写通道类 标准输入
+class TestStdin : public Ichannel
+{
+	// 通过 Ichannel 继承
+	virtual bool Init() override
+	{
+		return true;
+	}
+	virtual bool ReadFd(std::string & _input) override
+	{
+		cin >> _input;
+		return true;  //写入成功
+	}
+	virtual bool WriteFd(std::string & _output) override
+	{
+		return false;
+	}
+	virtual void Fini() override
+	{
+	}
+	virtual int GetFd() override
+	{
+		//标准输入是0，标准输出是1，错误是2
+		return 0;
+	}
+	virtual std::string GetChannelInfo() override
+	{
+		return "stdin";
+	}
+	virtual AZinxHandler * GetInputNextStage(BytesMsg & _oInput) override
+	{
+		//把标准输入的数据直接交给退出类先判断
+		return poExit;
+	}
+};
+
+int main()
+{
+	//1.初始化
+	ZinxKernel::ZinxKernelInit();
+
+	//4.将通道添加到框架
+	TestStdin * poStdin = new TestStdin();
+	ZinxKernel::Zinx_Add_Channel(*poStdin); //标准输入
+	ZinxKernel::Zinx_Add_Channel(*poOut);  //标准输出
+
+	//5.运行框架
+	ZinxKernel::Zinx_Run();
+
+
+	//去初始化
+	ZinxKernel::ZinxKernelFini();
+
+	return 0;
+}
+```
+
+### 3.3.3用例3-关闭输出
+
+```cpp
+#include <zinx.h>
+#include <iostream>
+using namespace std;
+
+
+//创建标准输出通道
+class TestStdout : public Ichannel
+{
+	// 通过 Ichannel 继承
+	virtual bool Init() override
+	{
+		return true;
+	}
+	virtual bool ReadFd(std::string & _input) override
+	{
+		return false;
+	}
+	virtual bool WriteFd(std::string & _output) override
+	{
+		cout << _output << endl;
+		return true;
+	}
+	virtual void Fini() override
+	{
+	}
+	virtual int GetFd() override
+	{
+		//标准输入是0，标准输出是1，错误是2
+		return 1;
+	}
+	virtual std::string GetChannelInfo() override
+	{
+		return "stdout";
+	}
+	virtual AZinxHandler * GetInputNextStage(BytesMsg & _oInput) override
+	{
+		return nullptr;
+	}
+} * poOut = new TestStdout();
+
+//写功能处理
+class Echo : public AZinxHandler
+{
+	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
+	{
+		//然后_oInput
+		GET_REF2DATA(BytesMsg, input, _oInput);
+		//cout << input.szData << endl;
+		//使用框架的标准输出
+
+		//这里需要做一个判断，先创建一个退出框架类
+		//ExitFramework
+
+		ZinxKernel::Zinx_SendOut(input.szData, *poOut);  //使用标准输出通道,需要插件标准输出通道
+		return nullptr;
+	}
+	virtual AZinxHandler * GetNextHandler(IZinxMsg & _oNextMsg) override
+	{
+		return nullptr;
+	}
+} *poEcho = new Echo();
+
+
+//输出exit就退出框架的类
+class ExitFramework : public AZinxHandler
+{
+	// 通过 AZinxHandler 继承
+	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
+	{
+		//获取_output的字符串
+		GET_REF2DATA(BytesMsg, obyte, _oInput);
+		if (obyte.szData == "exit") {
+			ZinxKernel::Zinx_Exit(); //退出
+			return NULL;
+		}
+		//如果不是就要交给下一个环节处理
+		//创建交给下一个环节处理的数据,直接创建输出即可
+		return new BytesMsg(obyte);  //使用拷贝构造封装成原始对象
+	}
+	//还需要获取下一个处理者
+	virtual AZinxHandler * GetNextHandler(IZinxMsg & _oNextMsg) override
+	{
+		return poEcho;
+	}
+}* poExit = new ExitFramework();
+
+
+//添加关闭和输出类
+class CmdHandler : public AZinxHandler
+{
+	// 通过 AZinxHandler 继承
+	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
+	{
+		//获取字符串
+		GET_REF2DATA(BytesMsg, oBytes, _oInput);
+		if (oBytes.szData == "close") {
+			//移除标准输出
+			ZinxKernel::Zinx_Del_Channel(*poOut);
+			return nullptr;
+		}
+		else if (oBytes.szData == "open") {
+			//添加标准输出
+			ZinxKernel::Zinx_Add_Channel(*poOut);
+			return nullptr;
+		}
+		//封装回 交给下一个环节
+		return new BytesMsg(oBytes);
+	}
+	//_oNextMsg 是return new BytesMsg(oBytes); 传下来的
+	virtual AZinxHandler * GetNextHandler(IZinxMsg & _oNextMsg) override
+	{
+		GET_REF2DATA(BytesMsg, oBytes, _oNextMsg);
+		if (oBytes.szData == "exit") {
+			return poExit;
+		}
+		return poEcho;
+	}
+} *poCmd = new CmdHandler();
+
+//3.写通道类 标准输入
+class TestStdin : public Ichannel
+{
+	// 通过 Ichannel 继承
+	virtual bool Init() override
+	{
+		return true;
+	}
+	virtual bool ReadFd(std::string & _input) override
+	{
+		cin >> _input;
+		return true;  //写入成功
+	}
+	virtual bool WriteFd(std::string & _output) override
+	{
+		return false;
+	}
+	virtual void Fini() override
+	{
+	}
+	virtual int GetFd() override
+	{
+		//标准输入是0，标准输出是1，错误是2
+		return 0;
+	}
+	virtual std::string GetChannelInfo() override
+	{
+		return "stdin";
+	}
+	virtual AZinxHandler * GetInputNextStage(BytesMsg & _oInput) override
+	{
+		//把标准输入的数据直接交给关闭和输出类
+		return poCmd;
+	}
+};
+
+int main()
+{
+	//1.初始化
+	ZinxKernel::ZinxKernelInit();
+
+	//4.将通道添加到框架
+	TestStdin * poStdin = new TestStdin();
+	ZinxKernel::Zinx_Add_Channel(*poStdin); //标准输入
+	ZinxKernel::Zinx_Add_Channel(*poOut);  //标准输出
+
+	//5.运行框架
+	ZinxKernel::Zinx_Run();
+
+	//去初始化
+	ZinxKernel::ZinxKernelFini();
+
+	return 0;
+}
+```
+
+### 创建添加日期类
+
+输入`data`打印日期，输入`cleardate`关闭日期显示
+
+```cpp
+#include <zinx.h>
+#include <iostream>
+#include <string>
+using namespace std;
+
+
+//创建标准输出通道
+class TestStdout : public Ichannel
+{
+	// 通过 Ichannel 继承
+	virtual bool Init() override
+	{
+		return true;
+	}
+	virtual bool ReadFd(std::string & _input) override
+	{
+		return false;
+	}
+	virtual bool WriteFd(std::string & _output) override
+	{
+		cout << _output << endl;
+		return true;
+	}
+	virtual void Fini() override
+	{
+	}
+	virtual int GetFd() override
+	{
+		//标准输入是0，标准输出是1，错误是2
+		return 1;
+	}
+	virtual std::string GetChannelInfo() override
+	{
+		return "stdout";
+	}
+	virtual AZinxHandler * GetInputNextStage(BytesMsg & _oInput) override
+	{
+		return nullptr;
+	}
+} * poOut = new TestStdout();
+
+//写功能处理
+class Echo : public AZinxHandler
+{
+	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
+	{
+		//然后_oInput
+		GET_REF2DATA(BytesMsg, input, _oInput);
+		//cout << input.szData << endl;
+		//使用框架的标准输出
+
+		//这里需要做一个判断，先创建一个退出框架类
+		//ExitFramework
+
+		ZinxKernel::Zinx_SendOut(input.szData, *poOut);  //使用标准输出通道,需要插件标准输出通道
+		return nullptr;
+	}
+	virtual AZinxHandler * GetNextHandler(IZinxMsg & _oNextMsg) override
+	{
+		return nullptr;
+	}
+} *poEcho = new Echo();
+
+
+//输出exit就退出框架的类
+class ExitFramework : public AZinxHandler
+{
+	// 通过 AZinxHandler 继承
+	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
+	{
+		//获取_output的字符串
+		GET_REF2DATA(BytesMsg, obyte, _oInput);
+		if (obyte.szData == "exit") {
+			ZinxKernel::Zinx_Exit(); //退出
+			return NULL;
+		}
+		//如果不是就要交给下一个环节处理
+		//创建交给下一个环节处理的数据,直接创建输出即可
+		return new BytesMsg(obyte);  //使用拷贝构造封装成原始对象
+	}
+	//还需要获取下一个处理者
+	virtual AZinxHandler * GetNextHandler(IZinxMsg & _oNextMsg) override
+	{
+		return poEcho;
+	}
+}* poExit = new ExitFramework();
+
+//添加如期前缀类
+class AddDate : public AZinxHandler
+{
+	// 通过 AZinxHandler 继承
+	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
+	{
+		GET_REF2DATA(BytesMsg, oBytes, _oInput);
+		//string newSz = "xiao ming shuo: " + oBytes.szData;
+
+		//获取时间
+		time_t tmp;
+		time(&tmp);
+		//转成字符串拼接
+		string newSz = string(ctime(&tmp)) + oBytes.szData;
+
+		//重新包装成BytesMsg返回出去
+		BytesMsg *pret = new BytesMsg(oBytes);
+		pret->szData = newSz;
+
+		return pret;
+	}
+	virtual AZinxHandler * GetNextHandler(IZinxMsg & _oNextMsg) override
+	{
+		return poEcho;
+	}
+} *poAddDate = new AddDate();
+
+//添加关闭和输出类
+class CmdHandler : public AZinxHandler
+{
+
+	//定义一个状态，如果是0表示不填加，如果是1表示添加
+	int status = 1;
+
+	// 通过 AZinxHandler 继承
+	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
+	{
+		//获取字符串
+		GET_REF2DATA(BytesMsg, oBytes, _oInput);
+		if (oBytes.szData == "close") {
+			//移除标准输出
+			ZinxKernel::Zinx_Del_Channel(*poOut);
+			return nullptr;
+		}
+		else if (oBytes.szData == "open") {
+			//添加标准输出
+			ZinxKernel::Zinx_Add_Channel(*poOut);
+			return nullptr;
+		}
+		else if (oBytes.szData == "date") {
+			status = 1;
+			return nullptr;
+		}
+		else if (oBytes.szData == "cleardate") {
+			status = 0;
+			return nullptr;
+		}
+		//封装回 交给下一个环节
+		return new BytesMsg(oBytes);
+	}
+	//_oNextMsg 是return new BytesMsg(oBytes); 传下来的
+	virtual AZinxHandler * GetNextHandler(IZinxMsg & _oNextMsg) override
+	{
+		GET_REF2DATA(BytesMsg, oBytes, _oNextMsg);
+		if (oBytes.szData == "exit") {
+			return poExit;
+		}
+		else
+		{
+			if (0 == status) return poEcho;
+			else return poAddDate;
+		}
+	}
+} *poCmd = new CmdHandler();
+
+
+
+//3.写通道类 标准输入
+class TestStdin : public Ichannel
+{
+	// 通过 Ichannel 继承
+	virtual bool Init() override
+	{
+		return true;
+	}
+	virtual bool ReadFd(std::string & _input) override
+	{
+		cin >> _input;
+		return true;  //写入成功
+	}
+	virtual bool WriteFd(std::string & _output) override
+	{
+		return false;
+	}
+	virtual void Fini() override
+	{
+	}
+	virtual int GetFd() override
+	{
+		//标准输入是0，标准输出是1，错误是2
+		return 0;
+	}
+	virtual std::string GetChannelInfo() override
+	{
+		return "stdin";
+	}
+	virtual AZinxHandler * GetInputNextStage(BytesMsg & _oInput) override
+	{
+		//把标准输入的数据直接交给关闭和输出类
+		return poCmd;
+	}
+};
+
+int main()
+{
+	//1.初始化
+	ZinxKernel::ZinxKernelInit();
+
+	//4.将通道添加到框架
+	TestStdin * poStdin = new TestStdin();
+	ZinxKernel::Zinx_Add_Channel(*poStdin); //标准输入
+	ZinxKernel::Zinx_Add_Channel(*poOut);  //标准输出
+
+	//5.运行框架
+	ZinxKernel::Zinx_Run();
+
+	//去初始化
+	ZinxKernel::ZinxKernelFini();
+
+	return 0;
+}
+```
+
+## zinx 学习
+
+zinx 框架的用法
+
+![](./img/zinx框架-01.png)
+
+### 三层重构原有功能
+
+![](./img/zinx框架-02.png)
+
