@@ -276,3 +276,52 @@ public:
 ```
 
 ## 781. 森林中的兔子
+
+## 88.合并两个有序数组
+[题目来源](https://leetcode-cn.com/problems/merge-sorted-array/)
+
+给你两个有序整数数组 `nums1` 和 `nums2`，请你将 `nums2` 合并到 `nums1` 中，使 `nums1` 成为一个有序数组。
+
+初始化 `nums1` 和 `nums2` 的元素数量分别为 `m` 和 `n` 。你可以假设 `nums1` 的空间大小等于 `m + n`，这样它就有足够的空间保存来自 `nums2` 的元素。
+
+ 
+
+示例 1：
+```
+输入：nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3
+输出：[1,2,2,3,5,6]
+
+输入：nums1 = [1], m = 1, nums2 = [], n = 0
+输出：[1]
+```
+
+题解：
+
+第一种方法，合并后后再排序，第二种方法，第二种方法，用一个新的数组来保存排序后的序列，最后再替换会`num1`.
+
+第三种方法，采用逆向指针，从后往前比较和存储。
+
+```cpp
+class Solution {
+public:
+    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+        int pos = m + n -1;
+        --m;
+        --n;
+        while(m >= 0 && n >= 0) {
+            if(nums1[m] > nums2[n]) nums1[pos] = nums1[m--];
+            else nums1[pos] = nums2[n--];
+            --pos;
+        }
+        while(n >= 0) {
+            nums1[pos--] = nums2[n--];
+        }
+    }
+};
+```
+时间复杂度：$O(m+n)$。
+
+指针移动单调递减，最多移动 $m+n$ 次，因此时间复杂度为 $O(m+n)$。
+
+空间复杂度：$O(1)$
+
