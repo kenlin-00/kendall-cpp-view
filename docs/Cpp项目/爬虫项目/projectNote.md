@@ -77,7 +77,7 @@
 
 配置文件规则
 
-key=value
+`key=value`
 
 配置项设置
 
@@ -101,3 +101,47 @@ key=value
 ![](./img/系统结果图07.png)
 
 ![](./img/系统结果图08.png)
+
+
+```cpp
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include <list>
+using namespace std;
+
+class ConfigParser
+{
+public:
+	ConfigParser();
+	int loder(char * conf_filepath);  //0表示成功，1表示失败，参数是配置文件的路径
+
+	//for single
+	ConfigParser* instance();
+
+	//opertons
+	int getJobNum();
+	char getUrlSeed();
+	int getDeep();
+	int getLogLevel();
+	char * getModulePath();
+	list<string> getModules();
+	list<string> getFileTypes();
+
+private:
+	ConfigParser();
+	static ConfigParser* _self;
+	
+
+private:
+	int job_num;
+	char* seed;
+	int deeps;
+	int log_level;
+	char* Module_path;
+	list<string> Module_name;
+	list<string> file_type;
+
+};
+```
+
