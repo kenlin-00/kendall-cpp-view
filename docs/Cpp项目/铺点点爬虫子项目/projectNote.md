@@ -227,6 +227,24 @@ url格式：http://www.baidu.com/code/index.html
 
 ![](./img/epoll08.png)
 
+例如：
+
+
+
+\1. 我们已经把一个用来从管道中读取数据的文件句柄添加到`epoll`描述符
+
+\2. 这个时候从管道的另一端被写入了`2KB`的数据
+
+\3. 调用`epoll_wait(2)`，并且它会返回文件句柄，说明它已经准备好读取操作。
+
+\-4 然后我们读取了`1KB`的数据
+
+\-5 调用`epoll_wait(2)`
+
+
+
+![](./img/epoll15.png)
+
 默认模式
 
 ![](./img/epoll09.png)
