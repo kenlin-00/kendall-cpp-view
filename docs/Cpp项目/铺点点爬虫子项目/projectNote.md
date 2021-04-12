@@ -168,6 +168,8 @@ url格式：http://www.baidu.com/code/index.html
 
 ![](./img/URL维护模块设计02.png)
 
+通过URL去查找url库里面是不是存在了，这时候我们需要设置一个url 哈希值转换，为了提高查找的效率，添加一个map
+
 ![](./img/URL维护模块设计03.png)
 
 ![](./img/URL维护模块设计04.png)
@@ -311,7 +313,7 @@ url 是怎么管理的
 
 关于主控模块
 
-工作流程，epoll，多线程是怎么实现的，thread这个库，有没有用到线程同步的技术，怎么得到url（dns解析）
+工作流程，epoll，多线程是怎么实现的，kselect这个库，有没有用到线程同步的技术，怎么得到url（dns解析）
 
 现阶段不要求
 

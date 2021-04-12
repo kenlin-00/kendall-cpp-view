@@ -14,7 +14,7 @@
 ```cpp
 //string 转 char*
 string str = "kendall";
-constchar* cstr = str.c_str();
+const char* cstr = str.c_str();
 //char* 转 string 
 char* s = "kendall";
 string sstr(s);
