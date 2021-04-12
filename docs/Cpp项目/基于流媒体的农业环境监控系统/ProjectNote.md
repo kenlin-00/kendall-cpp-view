@@ -93,10 +93,54 @@
 
 ### 视频解码
 
+视频解码过程如下图所示：
+
+⼀般解出来的是420p
+
+![](./img/project/视频解码流程.jpg) 
+
+**FFmpeg流程**
+
+![](./img/project/视频解码流程01.jpg) 
+
+**关键函数说明**：
+
+- avcodec_find_decoder：根据指定的AVCodecID查找注册的解码器。
+- av_parser_init：初始化AVCodecParserContext。
+- avcodec_alloc_context3：为AVCodecContext分配内存。
+- avcodec_open2：打开解码器。
+- av_parser_parse2：解析获得⼀个Packet。
+- avcodec_send_packet：将AVPacket压缩数据给解码器。
+- avcodec_receive_frame：获取到解码后的AVFrame数据。
+- av_get_bytes_per_sample: 获取每个sample中的字节数。
+
+**关键数据结构说明**：
+
+`AVCodecParser`：⽤于解析输⼊的数据流并把它分成⼀帧⼀帧的压缩编码数据。⽐较形象的说法就是把⻓⻓的⼀段连续的数据“切割”成⼀段段的数据。
+
+⽐如`H264 aac_parse`
+```cpp
+ AVCodecParser ff_h264_parser = {
+ 	.codec_ids = { AV_CODEC_ID_H264 },
+ 	.priv_data_size = sizeof(H264ParseContext),
+ 	.parser_init = init,
+ 	.parser_parse = h264_parse,
+ 	.parser_close = h264_close,
+ 	.split = h264_split,
+ };
+ ```
+从`AVCodecParser`结构的实例化我们可以看出来，不同编码类型的`parser`是和`CODE_ID`进⾏绑定的。所以也就可以解释
+
+```cpp
+parser = av_parser_init(AV_CODEC_ID_H264);
+```
+可以通过`CODE_ID`查找到对应的码流 `parser`
 
 ### H264 格式
 
 ### YUV 格式
+
+https://blog.csdn.net/iva_brother/article/details/84036877
 
 ### AAC 格式
 
@@ -131,6 +175,7 @@
 [RTMP规范简单分析](https://blog.csdn.net/leixiaohua1020/article/details/11694129)
 
 [RTMP流媒体播放过程](https://blog.csdn.net/leixiaohua1020/article/details/11704355)
+
 
 
 
