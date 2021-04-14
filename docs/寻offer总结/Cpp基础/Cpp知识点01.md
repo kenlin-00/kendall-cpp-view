@@ -110,7 +110,7 @@ int main() {
 
 第一种就是内存对齐的情况，如图
 
-![](./img/内存对齐01.png)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/内存对齐01.png)
 
 一字节的`char`占用了四个字节，空了三个字节的内存地址，`int`数据从地址`4`开始。
 
@@ -118,7 +118,7 @@ int main() {
 
 第二种是没有内存对齐的情况如图：
 
-![](./img/内存对齐02.png)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/内存对齐02.png)
 
 `char`型的数据和`int`型的数据挨在一起，这个`int`数据从地址`1`开始，那么`CPU`想要读这个数据的话,来看看需要几步操作：
 
