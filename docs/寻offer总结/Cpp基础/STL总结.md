@@ -1,6 +1,6 @@
-### STL源码中的`hash`表的实现
+## STL源码中的`hash`表的实现
 
-`STL`中的hash表就`unordered_map`。使用的是哈希进行实现（注意与`map`的区别）。它记录的键是元素的哈希值，通过对比元素的哈希值来确定元素的值。
+`STL`中的`hash`表就`unordered_map`。使用的是哈希进行实现（注意与`map`的区别）。它记录的键是元素的哈希值，通过对比元素的哈希值来确定元素的值。
 
 `unordered_map`的底层实现是`hashtable`，采用开链法（也就是用桶）来解决哈希冲突，当桶的大小超过`8`时，就自动转为红黑树进行组织。
 
@@ -8,7 +8,7 @@
 
 哈希算法的主要思想是根据结点的关键值来确定其存储地址：以关键值`key`为自变量，通过一定的函数关系`H(Key)`(称为散列函数)，计算出对应的函数值来，把这个值解释为结点的存储地址，将结点存入到相应的存储单元中。检索时，用同样的方法计算地址，然后到相应的存储单元里去取要找的结点。通过散列方法可以对结点进行快速检索。散列（`hash`，也称“哈希”）是一种重要的存储方式，也是一种常见的检索方法。
 
-#### 常见的散列函数（hash函数）
+### 常见的散列函数（hash函数）
 
 - 直接定址法
 
@@ -33,80 +33,29 @@
 
 > https://blog.csdn.net/u012835097/article/details/79407591
 
-#### STL中hashtable的实现？
+### STL中hashtable的实现？
 
-STL中的hashtable使用的是**开链法**解决hash冲突问题，如下图所示。
+STL中的hashtable使用的是**开链法**解决`hash`冲突问题，如下图所示。
 
 ![](https://cdn.jsdelivr.net/gh/forthespada/mediaImage1@1.6.4.2/202102/1566639786045.png)
 
-hashtable中的bucket所维护的list既不是list也不是slist，而是其自己定义的由hashtable_node数据结构组成的linked-list，而bucket聚合体本身使用vector进行存储。hashtable的迭代器只提供前进操作，不提供后退操作
+`hashtable`中的`bucket`所维护的`list`既不是`list`也不是`slist`，而是其自己定义的由`hashtable_node`数据结构组成的`linked-list`，而`bucket`聚合体本身使用`vector`进行存储。`hashtable`的迭代器只提供前进操作，不提供后退操作
 
-在hashtable设计bucket的数量上，其内置了28个质数[53, 97, 193,...,429496729]，在创建hashtable时，会根据存入的元素个数选择大于等于元素个数的质数作为hashtable的容量（vector的长度），其中每个bucket所维护的linked-list长度也等于hashtable的容量。如果插入hashtable的元素个数超过了bucket的容量，就要进行重建table操作，即找出下一个质数，创建新的buckets vector，重新计算元素在新hashtable的位置。
+在`hashtable`设计`bucket`的数量上，其内置了`28`个质数`[53, 97, 193,...,429496729]`，在创建`hashtable`时，会根据存入的元素个数选择大于等于元素个数的质数作为`hashtable`的容量（`vector`的长度），其中每个`bucket`所维护的`linked-list`长度也等于`hashtable`的容量。如果插入`hashtable`的元素个数超过了`bucket`的容量，就要进行重建`table`操作，也就是找出下一个质数，创建新的`buckets vector`，重新计算元素在新`hashtable`的位置。
 
 > 《STL源码解析》侯捷
 
+## 188、简单说一下STL中的traits技法
 
+`traits`技法利用“内嵌型别“的编程技巧与**编译器的`template`参数推导功能**，增强`C++`未能提供的关于型别认证方面的能力。常用的有`iterator_traits`和`type_traits`。
 
-#### 188、简单说一下STL中的traits技法
-
-traits技法利用“内嵌型别“的编程技巧与**编译器的template参数推导功能**，增强C++未能提供的关于型别认证方面的能力。常用的有iterator_traits和type_traits。
-
-**iterator_traits**
-
-被称为**特性萃取机**，能够方面的让外界获取以下5中型别：
-
-- value_type：迭代器所指对象的型别
-- difference_type：两个迭代器之间的距离
-- pointer：迭代器所指向的型别
-- reference：迭代器所引用的型别
-- iterator_category：三两句说不清楚，建议看书
-
-**type_traits**
-
-关注的是型别的**特性**，例如这个型别是否具备non-trivial defalt ctor（默认构造函数）、non-trivial copy ctor（拷贝构造函数）、non-trivial assignment operator（赋值运算符） 和non-trivial dtor（析构函数），如果答案是否定的，可以采取直接操作内存的方式提高效率，一般来说，type_traits支持以下5中类型的判断：
-
-```c++
-__type_traits<T>::has_trivial_default_constructor
-__type_traits<T>::has_trivial_copy_constructor
-__type_traits<T>::has_trivial_assignment_operator
-__type_traits<T>::has_trivial_destructor
-__type_traits<T>::is_POD_type
-
-
-
-```
-
-由于编译器只针对class object形式的参数进行参数推到，因此上式的返回结果不应该是个bool值，实际上使用的是一种空的结构体：
-
-```C++
-struct __true_type{};
-struct __false_type{};
-
-
-
-```
-
-这两个结构体没有任何成员，不会带来其他的负担，又能满足需求，可谓一举两得
-
-当然，如果我们自行定义了一个Shape类型，也可以针对这个Shape设计type_traits的特化版本
-
-```C++
-template<> struct __type_traits<Shape>{
-	typedef __true_type has_trivial_default_constructor;
-	typedef __false_type has_trivial_copy_constructor;
-	typedef __false_type has_trivial_assignment_operator;
-	typedef __false_type has_trivial_destructor;
-	typedef __false_type is_POD_type;
-};
-
-
-```
+https://mp.weixin.qq.com/s/srgj9KnxQrru_hMv-IVpWw
 
 > 《STL源码解析》侯捷 P103-P110
 
 
 
-#### 189、STL的两级空间配置器
+## 189、STL的两级空间配置器
 
 1、首先明白为什么需要二级空间配置器？
 
@@ -118,17 +67,17 @@ template<> struct __type_traits<Shape>{
 
 随着外部碎片增多，内存分配器在找不到合适内存情况下需要合并空闲块，浪费了时间，大大降低了效率。
 
-于是就设置了二级空间配置器，**当开辟内存<=128bytes时，即视为开辟小块内存，则调用二级空间配置器。**
+于是就设置了二级空间配置器，**当开辟内存`<=128bytes`时，即视为开辟小块内存，则调用二级空间配置器。**
 
 
 
-关于STL中一级空间配置器和二级空间配置器的选择上，一般默认**选择的为二级空间配置器**。 如果大于128字节再转去一级配置器器。
+关于STL中一级空间配置器和二级空间配置器的选择上，一般默认**选择的为二级空间配置器**。 如果大于`128`字节再转去一级配置器器。
 
-##### 一级配置器
+### 一级配置器
 
- **一级空间配置器**中重要的函数就是allocate、deallocate、reallocate 。 一级空间配置器是以malloc()，free()，realloc()等C函数执行实际的内存配置 。大致过程是：
+ **一级空间配置器**中重要的函数就是`allocate`、`deallocate`、`reallocate` 。 一级空间配置器是以`malloc()，free()，realloc()`等`C`函数执行实际的内存配置 。大致过程是：
 
-1、直接allocate分配内存，其实就是malloc来分配内存，成功则直接返回，失败就调用处理函数
+1、直接`allocate`分配内存，其实就是`malloc`来分配内存，成功则直接返回，失败就调用处理函数
 
 2、如果用户自定义了内存分配失败的处理函数就调用，没有的话就返回异常
 
@@ -138,13 +87,13 @@ template<> struct __type_traits<Shape>{
 
 
 
-##### 二级配置器
+### 二级配置器
 
 ![](https://cdn.jsdelivr.net/gh/forthespada/mediaImage1@1.6.4.2/202102//微信截图_20210201115831.png)
 
 
 
-1、维护16条链表，分别是0-15号链表，最小8字节，以8字节逐渐递增，最大128字节，你传入一个字节参数，表示你需要多大的内存，会自动帮你校对到第几号链表（如需要13bytes空间，我们会给它分配16bytes大小），在找到第你个链表后查看链表是否为空，如果不为空直接从对应的free_list中拔出，将已经拨出的指针向后移动一位。
+1、维护`16`条链表，分别是`0-15`号链表，最小8`字节，以`8`字节逐渐递增，最大`128`字节，你传入一个字节参数，表示你需要多大的内存，会自动帮你校对到第几号链表（如需要`13bytes`空间，我们会给它分配16bytes大小），在找到第你个链表后查看链表是否为空，如果不为空直接从对应的free_list中拔出，将已经拨出的指针向后移动一位。
 
 2、对应的free_list为空，先看其内存池是不是空时，如果内存池不为空：
 （1）先检验它剩余空间是否够20个节点大小（即所需内存大小(提升后) * 20），若足够则直接从内存池中拿出20个节点大小空间，将其中一个分配给用户使用，另外19个当作自由链表中的区块挂在相应的free_list下，这样下次再有相同大小的内存需求时，可直接拨出。
