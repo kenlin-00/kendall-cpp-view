@@ -32,7 +32,9 @@ public:
 ```
 
 ## 两数之和
-[题目来源](https://www.nowcoder.com/practice/20ef0972485e41019e39543e8e895b7f?tpId=188&tqId=38285&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high-week%2Fquestion-ranking&tab=answerKey）
+
+[题目来源](https://www.nowcoder.com/practice/20ef0972485e41019e39543e8e895b7f?tpId=188&tqId=38285&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high-week%2Fquestion-ranking&tab=answerKey)
+
 
 给出一个整数数组，请在数组中找出两个加起来等于目标值的数，
 你给出的函数twoSum 需要返回这两个数字的下标（index1，index2），需要满足 index1 小于index2.。注意：下标是从1开始的
@@ -84,3 +86,61 @@ public:
 };
 ```
 
+## 求二叉树的层次遍历
+
+[题目来源](https://www.nowcoder.com/practice/04a5560e43e24e9db4595865dc9c63a3?tpId=190&tqId=35337&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high-rd%2Fquestion-ranking&tab=answerKey)
+
+题解：
+
+使用队列是实现，`while`循环里面先去当前队列的长度，也就是每一层的节点数，再进入`for`循环。
+
+```cpp
+
+class Solution {
+public:
+    /**
+     * 
+     * @param root TreeNode类 
+     * @return int整型vector<vector<>>
+     */
+    vector<vector<int> > levelOrder(TreeNode* root) {
+        vector<vector<int> > result;
+        if(root == nullptr) return result;
+        vector<int> resTemp;
+        queue<TreeNode *> que;
+        que.push(root);
+        while(!que.empty()) {
+            int size = que.size();
+            resTemp = {};
+            for(int i=0;i<size;++i) {
+                TreeNode * node = que.front();
+                resTemp.push_back(node->val);
+                que.pop();
+                if(node->left) que.push(node->left);
+                if(node->right) que.push(node->right);
+            }
+            //遍历完一层
+            result.push_back(resTemp);
+        }
+        return result;
+    }
+};
+```
+
+
+## 寻找第 K 大
+
+[题目来源](https://www.nowcoder.com/practice/e016ad9b7f0b45048c58a9f27ba618bf?tpId=190&tqId=35209&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high-rd%2Fquestion-ranking&tab=answerKey)
+
+有一个整数数组，请你根据快速排序的思路，找出数组中第K大的数。
+
+给定一个整数数组a,同时给定它的大小n和要找的K(K在1到n之间)，请返回第K大的数，保证答案存在。
+
+示例
+
+```
+输入
+[1,3,5,2,2],5,3
+返回值
+2
+```
