@@ -270,7 +270,8 @@ HTTP协议支持文本和二进制文件传输。最常见的html格式的页面
 
 `epoll`是`Linux`内核为处理大批量文件描述符而作了改进的`poll`，是`Linux`下多路复用IO接口`select/poll`的增强版本，它能显著提高程序在大量并发连接中只有少量活跃的情况下的系统`CPU`利用率。
 
-> https://zhuanlan.zhihu.com/p/361750240
+> https://zhuanlan.zhihu.com/p/361750240      
+> https://blog.csdn.net/qq_34827674/article/details/115619261
 
 #### 常见`I/O`模型的特点
 

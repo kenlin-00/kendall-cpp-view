@@ -144,3 +144,42 @@ public:
 返回值
 2
 ```
+
+## 合并有序链表
+
+[题目来源](https://www.nowcoder.com/practice/a479a3f0c4554867b35356e0d57cf03d?tpId=190&tqId=35188&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high-rd%2Fquestion-ranking&tab=answerKey)
+
+将两个有序的链表合并为一个新链表，要求新的链表是通过拼接两个链表的节点来生成的，且合并后新链表依然有序。
+```
+示例1
+输入
+{1},{2}
+
+返回值
+{1,2}
+```
+
+```cpp
+ ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
+        if(l1 == nullptr) return l2;
+        if(l2 == nullptr) return l1;
+        ///////
+        ListNode* head = new ListNode(-1);
+        ListNode* pre = head;
+        while(l1 && l2) {
+            if(l1->val < l2->val) {
+                pre->next = l1;
+                l1 = l1->next;
+            }
+            else {
+                pre->next = l2;
+                l2 = l2->next;          
+            }
+             pre = pre->next;
+        }
+        pre->next = l1 ? l1 : l2;
+        return head->next;
+    }
+```
+
+
