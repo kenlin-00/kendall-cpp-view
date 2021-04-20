@@ -70,3 +70,41 @@ int main() {
     return 0;
 }
 ```
+
+## 小易的升级之路
+
+[题目来源](https://www.nowcoder.com/practice/fe6c73cb899c4fe1bdd773f8d3b42c3d?tpId=182&tqId=34277&rp=1&ru=%2Fta%2Fexam-all&qru=%2Fta%2Fexam-all%2Fquestion-ranking&tab=answerKey)
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+//求最大公约数
+int gcd (int m,int n){
+    if (n == 0)
+        return m;
+    else
+        return gcd(n,m%n);
+}
+
+int main(int argc, const char * argv[]) {
+    // insert code here...
+    int n, a, b;
+     
+//      while(~scanf("%d %d",&n,&a)){  //或者
+    while(scanf("%d%d", &n, &a) != EOF){
+        for(int i = 0; i < n; i++){
+            int b; 
+            scanf("%d", &b);
+            if(a >= b){
+                a += b;
+            }
+            else{
+                a += gcd(a, b);
+            }
+        }
+        printf("%d\n", a);
+    }
+    return 0;
+}
+```

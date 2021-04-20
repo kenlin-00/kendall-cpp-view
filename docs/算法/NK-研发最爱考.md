@@ -182,4 +182,73 @@ public:
     }
 ```
 
+## 用两个栈实现队列
+
+[题目来源](https://www.nowcoder.com/practice/54275ddae22f475981afa2244dd448c6?tpId=117&tqId=37774&rp=1&ru=%2Fta%2Fjob-code-high&qru=%2Fta%2Fjob-code-high%2Fquestion-ranking&tab=answerKey)
+
+思路：
+
+进队的时候，直接让栈1进栈就好
+
+出队的时候，先判断栈2是否为空，如果不空就从栈1中把元素灌到栈2中
+
+最后栈2出栈就是队列出队的元素
+
+[查看这里的动图，立马可以写出来了](https://mp.weixin.qq.com/s?__biz=MzUxNjY5NTYxNA==&mid=2247484505&idx=1&sn=1cd88bacb0c4df18bc1cbed5434c632d&scene=21#wechat_redirect)
+
+```cpp
+class Solution
+{
+public:
+    void push(int node) {
+        stack1.push(node);
+    }
+
+    int pop() {
+        if(stack2.empty()) {
+            while(!stack1.empty()) {
+                stack2.push(stack1.top());
+                //栈1出栈
+                stack1.pop();
+            }
+        }
+        int res = stack2.top();
+        stack2.pop();
+        return res;
+    }
+
+private:
+    stack<int> stack1;
+    stack<int> stack2;
+};
+```
+
+## 跳台阶
+
+[题目来源](https://www.nowcoder.com/practice/8c82a5b80378478f9484d87d1c5f12a4?tpId=117&tqId=37764&rp=1&ru=%2Fta%2Fjob-code-high&qru=%2Fta%2Fjob-code-high%2Fquestion-ranking&tab=answerKey)
+
+一只青蛙一次可以跳上1级台阶，也可以跳上2级。求该青蛙跳上一个n级的台阶总共有多少种跳法（先后次序不同算不同的结果）。
+
+- 题解一：递推
+
+1 -- 1
+2 -- 2
+3 -- 3
+4 -- 2 + 3 = 4
+5 -- 3 + 4 = 7
+
+```cpp
+class Solution {
+public:
+    int jumpFloor(int number) {
+        if(number == 1) return 1;
+        if(number == 2) return 2;
+        return jumpFloor(number - 1) + jumpFloor(number - 2);
+    }
+};
+```
+
+题解二：动态规划
+
+
 
