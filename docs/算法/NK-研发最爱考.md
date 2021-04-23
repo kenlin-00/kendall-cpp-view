@@ -250,5 +250,87 @@ public:
 
 题解二：动态规划
 
+## 链表中的节点每K个一组旋转
+
+[题目来源](https://www.nowcoder.com/practice/b49c3dc907814e9bbfa8437c251b028e?tpId=117&tqId=37746&rp=1&ru=%2Fta%2Fjob-code-high&qru=%2Fta%2Fjob-code-high%2Fquestion-ranking&tab=answerKey)
+
+将给出的链表中的节点每 `k`  个一组翻转，返回翻转后的链表
+如果链表中的节点数不是 `k` 的倍数，将最后剩下的节点保持原样
+你不能更改节点中的值，只能更改节点本身。
+要求空间复杂度  `O(1)`
+
+例如：
+
+给定的链表是`1→2→3→4→5`
+
+对于 `k=2`, 你应该返回 `2→1→4→3→5`
+
+对于 `k=3`, 你应该返回 `3→2→1→4→5`
+
+题解一：
+
+使用递归
+
+先找到需要翻转的结尾节点，再进行翻转，之后递归后面的
+
+```cpp
+/**
+ * struct ListNode {
+ *	int val;
+ *	struct ListNode *next;
+ * };
+ */
+
+class Solution {
+public:
+    /**
+     * 
+     * @param head ListNode类 
+     * @param k int整型 
+     * @return ListNode类
+     */
+    ListNode* reverseKGroup(ListNode* head, int k) {
+         if(head == nullptr || head->next == nullptr || k == 0) {
+             return head;
+         }
+        
+        //比如：[1，2，3，4，5] 3
+        //找到需要翻转的最后一个节点
+        ListNode* tail = head;
+        for(int i=0;i<k;++i) {
+            //如果不够长了就直接返回head
+            if(tail == nullptr) return head;
+            tail = tail->next;
+        }
+        //这时候 tail->4
+        
+        //进入翻转函数进行翻转，返回的是翻转后的头结点
+        ListNode* newHead = reverse(head,tail); //执行完之后head->1,taile->3,
+        //翻转的结果是：3，2，1 newHead->3
+        
+        //递归继续下一组
+        head->next = reverseKGroup(tail,k);
+        return newHead;
+    }
+    //翻转函数(画图看一下)
+    ListNode* reverse(ListNode* head,ListNode* tail) {
+        ListNode* next = head->next;
+        head->next = nullptr; //如果不加就会成为一个环形，如果不输出也不影响
+        while(next != tail) {
+            ListNode* node = next->next;
+            next->next = head;
+            head = next;
+            next = node;
+        }
+        return head;
+    }
+};
+```
+
+上述代码的逻辑图
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/25-01.1yi0v9303rr4.png)
+
+
 
 
