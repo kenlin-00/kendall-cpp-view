@@ -30,6 +30,144 @@ public:
     }
 };   
 ```
+## 排序
+
+###  快速排序
+
+[题目来源](https://www.nowcoder.com/practice/2baf799ea0594abd974d37139de27896?tpId=117&tqId=37851&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high%2Fquestion-ranking&tab=answerKey)
+
+```cpp
+class Solution {
+public:
+    vector<int> sortArray(vector<int>& nums) {
+        int left = 0,right = nums.size() - 1;
+        quickSort(nums,left,right);
+        return nums;
+    }
+    void quickSort(vector<int>& nums,int left,int right) {
+        if(left < right) { //相等就不用动了
+            //排序基准元素,返回排序号的位置
+            int index = partition(nums,left,right);
+            //排序左边
+            quickSort(nums,left,index - 1);
+            quickSort(nums,index + 1,right);
+        }
+    }
+    int partition(vector<int> &nums,int left,int right) {
+        //选择基准
+        // int pivot = nums[left];
+        swap( nums[left], nums[rand() % (right - left + 1) + left] );
+        // swap(nums[left],pivot);
+        int pivot = nums[left];
+        while(left < right) {
+            // 从右往左
+            while(left< right && nums[right] >= pivot) {
+                --right;
+            }
+            //填坑
+            nums[left] = nums[right];
+            //从右往左
+            while(left < right && nums[left] <= pivot) {
+                ++left;
+            }
+            //填坑
+            nums[right] = nums[left];
+        }
+        //把基准放到合适的位置
+        //这时候left = right
+        nums[left] = pivot;
+        return left;
+    }
+};
+```
+
+## 设计LRU缓存结构
+
+[](https://www.nowcoder.com/practice/e3769a5f49894d49b871c09cadd13a61?tpId=117&tqId=37804&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high%2Fquestion-ranking&tab=answerKey)
+
+若opt=1，接下来两个整数x, y，表示set(x, y)
+
+若opt=2，接下来一个整数x，表示get(x)，若x未出现过或已被移除，则返回-1
+
+对于每个操作2，输出一个答案
+
+```cpp
+class Solution {
+public:
+    /**
+     * lru design
+     * @param operators int整型vector<vector<>> the ops
+     * @param k int整型 the k
+     * @return int整型vector
+     */
+    vector<int> LRU(vector<vector<int> >& operators, int k) {
+        cap = k;  //缓冲区的长度
+        vector<int> ans;
+        for(auto &nums : operators) {  //nums是每个数组
+            if(nums[0] == 1) {
+                set(nums[1],nums[2]);
+            }else {  //获取
+                ans.push_back(get(nums[1]));
+            }
+        }
+        return ans;
+    }
+    //获取
+    //先查找哈希表，如果没有就结束，有就复制到头部，再删除原有位置元素
+    int get(int key) {
+        
+        auto it = mp.find(key);
+        //如果在哈希表中找不到，那就直接返回找不到
+        if(it == mp.end()) {
+            return -1;
+        }
+        
+        //如果存在
+        
+         //value的值
+        auto target_it = it->second;
+        //定义一个pari对
+        pair<int,int> n{target_it->first,target_it->second};
+        //缓冲区中先插入
+        cache.push_front(n);
+        // mp.emplace(key,cache.begin()); //不能写到这里
+        //删除
+        cache.erase(target_it);
+        mp.erase(key);
+        //哈希表中插入
+        mp.emplace(key,cache.begin());
+        
+        
+        return n.second;
+    }
+    //插入
+    //首先查找，如果有就删除，然后不管有没有都在队头插入
+    void set(int key,int value) {
+        auto it = mp.find(key);
+        
+        //如果有就删除
+        if(it != mp.end()) {
+            cache.erase(it->second);
+            mp.erase(key);
+        }
+        //然后再队头插入
+        pair<int, int> n{key,value};
+        cache.push_front(n);
+        mp.emplace(key,cache.begin());
+        
+        //如果有容量已经到达上限，就弹出队尾
+        if(cap < cache.size()) {
+            mp.erase(cache.back().first);
+            cache.pop_back();
+        }
+    }
+    
+private:
+    int cap = 0;
+    list<pair<int, int>> cache;
+    unordered_map<int, list<pair<int, int>>::iterator > mp;
+};
+```
 
 ## 两数之和
 
