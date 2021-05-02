@@ -469,7 +469,7 @@ free(pp); //错误释放，这里导致指针p出现指针悬挂现象
 
 ### `new/delete` 与 `malloc/free` 的异同
 
-他们都用于动态申请内存和释放。
+它们都用于动态申请内存和释放。
 
 - `new/delete` 是`C++`的运算符,`malloc/free`是`C/C++`标准库函数，
 - 在`C++`中分别使用`new` 和 `delete`来分配和释放内存。`new` 和 `delete`**是运算符，不是函数**。`new/delete`相对于`malloc/free`除了分配和释放内存之外还做了其他很多事情。
