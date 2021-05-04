@@ -169,6 +169,43 @@ private:
 };
 ```
 
+## 415.字符串相加
+
+[题目来源](https://leetcode-cn.com/problems/add-strings/)
+
+给定两个字符串形式的非负整数 num1 和num2 ，计算它们的和。
+
+ 
+
+提示：
+```
+num1 和num2 的长度都小于 5100
+num1 和num2 都只包含数字 0-9
+num1 和num2 都不包含任何前导零
+你不能使用任何內建 BigInteger 库， 也不能直接将输入的字符串转换为整数形式
+```
+
+题解
+
+```cpp
+class Solution {
+public:
+    string addStrings(string num1, string num2) {
+        string res = "";
+        int i = num1.size() - 1,j = num2.size() - 1;
+        int sum = 0;
+        while(i >= 0 || j >= 0 || sum ) {  //还要保证sum==0,因为最后一个也可能进十位
+            if(i >= 0 ) sum += num1[i--] - '0';
+            if(j >= 0 ) sum += num2[j--] - '0';
+            res = (char)('0' + sum % 10) + res;  //只加个位部分
+            //sum进十位
+            sum /= 10;
+        }
+        return res;
+    }
+};
+```
+
 ## 两数之和
 
 [题目来源](https://www.nowcoder.com/practice/20ef0972485e41019e39543e8e895b7f?tpId=188&tqId=38285&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high-week%2Fquestion-ranking&tab=answerKey)
