@@ -506,6 +506,53 @@ public:
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/25-01.1yi0v9303rr4.png)
 
+## 矩阵覆盖
+
+[剑指offer](https://www.nowcoder.com/practice/72a5a919508a4251859fb2cfb987a0e6?tpId=13&tqId=11163&rp=1&ru=%2Fta%2Fcoding-interviews&qru=%2Fta%2Fcoding-interviews%2Fquestion-ranking&tab=answerKey)
+
+> 这题就是找规律
+
+```cpp
+class Solution {
+public:
+    int rectCover(int number) {
+        if(number <= 2 ) return number;
+        int one = 1;
+        int two = 2;
+        int ret;
+        for(int i=3;i<=number;++i) {
+            ret = one + two;
+            one = two;
+            two = ret;
+        }
+        return ret;
+    }
+};
+```
+
+## 二进制中1的个数
+
+[剑指offer](https://www.nowcoder.com/practice/8ee967e43c2c4ec193b040ea7fbb10b8?tpId=13&tqId=11164&rp=1&ru=%2Fta%2Fcoding-interviews&qru=%2Fta%2Fcoding-interviews%2Fquestion-ranking&tab=answerKey)
+
+```cpp
+class Solution {
+public:
+     int  NumberOf1(int n) {
+         int ret = 0;
+         while(n>=1) {
+             int temp = n % 2;
+             if(temp == 1) ++ret;
+             n /= 2;
+         }
+         return ret;
+     }
+};
+```
+当然这种方法，对于大部分数据是对的，但是对于`-2147483648`,二进制为`1000...000`，一共有`31`个`0`.因为计算机使用补码存储二进制数据的。对于这个数据，我们的方***输出0，实际上为1.所以这种方法不对。
+
+未通过
+
+
 
 
 
