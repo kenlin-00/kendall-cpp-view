@@ -167,7 +167,7 @@ list的内存空间可以是不连续，它不支持随机访问，因此`list::
 
 ### map 、set、multiset、multimap的特点
 
-- `set`和`multiset`会根据特定的排序准则自动将元素排序，set中元素不允许重复，`multiset`可以重复。
+- `set`和`multiset`会根据特定的排序准则自动将元素排序，`set`中元素不允许重复，`multiset`可以重复。
 
 - `map`和m`ultimap`将`key`和`value`组成的`pair`作为元素，根据key的排序准则自动将元素排序（因为红黑树也是二叉搜索树，所以`map`默认是按`key`排序的），`map`中元素的`key`不允许重复，`multimap`可以重复。
 
