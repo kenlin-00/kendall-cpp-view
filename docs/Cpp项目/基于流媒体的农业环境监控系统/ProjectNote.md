@@ -86,9 +86,13 @@
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/音视频播放流程.574tor5xrrc0.png)
 
+### 音视频同步原理及实现
+
+[音视频同步原理及实现](https://blog.csdn.net/myvest/article/details/97416415)
+
 ### FFmpeg编解码模块流程
 
-### 视频解码
+#### 音频解码
 
 比如说音频解码，就是音频数据，比如 AAC格式通过解码器解码成 原始的音频数据，比如 PCM。
 
@@ -118,7 +122,7 @@
 - `avcodec_receive_frame`：获取到解码后的`AVFrame`数据。
 - `av_get_bytes_per_sample`: 获取每个`sample`中的字节数。
 
-### 视频解码
+#### 视频解码
 
 视频解码过程如下图所示：
 
