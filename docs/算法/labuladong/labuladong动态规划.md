@@ -178,5 +178,118 @@ public:
 
 > PS：为啥dp数组初始化为amount + 1呢，因为凑成amount金额的硬币数最多只可能等于amount（全用 1 元面值的硬币），所以初始化为amount + 1就相当于初始化为正无穷，便于后续取最小值。
 
+## 494.目标和
 
+[题目来源](https://leetcode-cn.com/problems/target-sum/)
+
+[题目来源](https://leetcode-cn.com/problems/target-sum/)
+
+给定一个非负整数数组，a1, a2, ..., an, 和一个目标数，S。现在你有两个符号 + 和 -。对于数组中的任意一个整数，你都可以从 + 或 -中选择一个符号添加在前面。
+
+返回可以使最终数组和为目标数 S 的所有添加符号的方法数。
+
+
+示例：
+```
+输入：nums: [1, 1, 1, 1, 1], S: 3
+输出：5
+解释：
+
+-1+1+1+1+1 = 3
++1-1+1+1+1 = 3
++1+1-1+1+1 = 3
++1+1+1-1+1 = 3
++1+1+1+1-1 = 3
+
+一共有5种方法让最终目标和为3。
+```
+
+### 回溯思路
+
+回溯算法框架：
+
+```
+def backtrack(路径, 选择列表):
+    if 满足结束条件:
+        result.add(路径)
+        return
+
+    for 选择 in 选择列表:
+        做选择
+        backtrack(路径, 选择列表)
+        撤销选择
+```
+
+关键就是搞清楚什么是「选择」，而对于这道题，**对于每个数字 `nums[i]`，我们可以选择给一个正号 `+` 或者一个负号 `-`**，然后利用回溯模板穷举出来所有可能的结果，数一数到底有几种组合能够凑出 `target` 不就行了嘛？
+
+```cpp
+class Solution {
+public:
+    int result = 0;  //记录了几种方法
+    int findTargetSumWays(vector<int>& nums, int target) {
+        if(nums.size() == 0) return 0;
+        backtrack(nums,0,target);
+        return result;
+    }
+    void backtrack(vector<int> &nums,int index,int target) {
+        //如果满足条件就退出
+        if(index == nums.size()) {
+            if(target == 0) {  //将target减到0了，说明就是组成target了
+                ++result;
+            }
+            return;
+        }
+        // for 选择 in 选择列表
+        // 选择
+        // 回溯
+        // 撤销选择
+        // 选择 - 号
+        target += nums[index];
+        //回溯
+        backtrack(nums,index + 1,target);
+        //选择撤销
+        target -= nums[index];
+
+        //选择 + 号
+        target -= nums[index];
+        backtrack(nums,index + 1,target);
+        target += nums[index];
+    }
+};
+```
+
+
+超出时间限制
+
+选择 - 的时候，为什么是 `rest += nums[i]`，选择 + 的时候，为什么是 `rest -= nums[i]` 呢，是不是写反了？
+
+不是的，「如何凑出 `target`」和「如何把 `target` 减到 0」其实是一样的。我们这里选择后者，因为前者必须给 `backtrack` 函数多加一个参数，我觉得不美观：
+
+
+
+### 消除重叠子问题
+
+如何发现重叠子问题？看否可能出现重复的「状态」。对于递归函数来说，函数参数中会变的参数就是「状态」，对于 backtrack 函数来说，会变的参数为 i 和 rest。
+
+**有一种一眼看出重叠子问题的方法**，先抽象出递归框架：
+
+```cpp
+void backtrack(int i, int rest) {
+    backtrack(i + 1, rest - nums[i]);
+    backtrack(i + 1, rest + nums[i]);
+}
+```
+
+举个简单的例子，如果 `nums[i] = 0`，会发生什么？
+
+```cpp
+void backtrack(int i, int rest) {
+    backtrack(i + 1, rest);
+    backtrack(i + 1, rest);
+}
+```
+
+你看，这样就出现了两个「状态」完全相同的递归函数，无疑这样的递归计算就是重复的。**这就是重叠子问题，而且只要我们能够找到一个重叠子问题，那一定还存在很多的重叠子问题**。
+
+因此，状态 `(i, rest) `是可以用备忘录技巧进行优化的：
 
