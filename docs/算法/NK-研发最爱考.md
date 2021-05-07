@@ -30,6 +30,38 @@ public:
     }
 };   
 ```
+
+递归法：
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+       ListNode* pre = NULL;
+       return reverse(pre,head);
+    }
+    ListNode* reverse(ListNode* pre,ListNode* cur) {
+        if(cur==NULL) {
+            return pre; //返回的是pre，不是cur
+        }
+        ListNode* curNext = cur->next; //记录下一个节点
+        cur->next = pre;  //指向前面的节点
+        return reverse(cur,curNext);
+    }
+};
+```
+
+
 ## 排序
 
 ###  快速排序
@@ -169,6 +201,56 @@ private:
 };
 ```
 
+
+ ## 21.合并两个有序链表
+
+[题目来源](https://leetcode-cn.com/problems/merge-two-sorted-lists/)
+
+```
+输入：l1 = [1,2,4], l2 = [1,3,4]
+输出：[1,1,2,3,4,4]
+```
+
+题解：
+
+
+
+[NK题目](https://www.nowcoder.com/practice/a479a3f0c4554867b35356e0d57cf03d?tpId=190&tqId=35188&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high-rd%2Fquestion-ranking&tab=answerKey)
+
+将两个有序的链表合并为一个新链表，要求新的链表是通过拼接两个链表的节点来生成的，且合并后新链表依然有序。
+```
+示例1
+输入
+{1},{2}
+
+返回值
+{1,2}
+```
+
+```cpp
+ ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
+        if(l1 == nullptr) return l2;
+        if(l2 == nullptr) return l1;
+        ///////
+        ListNode* head = new ListNode(-1);
+        ListNode* pre = head;
+        while(l1 && l2) {
+            if(l1->val < l2->val) {
+                pre->next = l1;
+                l1 = l1->next;
+            }
+            else {
+                pre->next = l2;
+                l2 = l2->next;          
+            }
+             pre = pre->next;
+        }
+        pre->next = l1 ? l1 : l2;
+        return head->next;
+    }
+```
+
+
 ## 415.字符串相加
 
 [题目来源](https://leetcode-cn.com/problems/add-strings/)
@@ -205,6 +287,8 @@ public:
     }
 };
 ```
+
+
 
 ## 两数之和
 
@@ -320,42 +404,6 @@ public:
 2
 ```
 
-## 合并有序链表
-
-[题目来源](https://www.nowcoder.com/practice/a479a3f0c4554867b35356e0d57cf03d?tpId=190&tqId=35188&rp=1&ru=%2Factivity%2Foj&qru=%2Fta%2Fjob-code-high-rd%2Fquestion-ranking&tab=answerKey)
-
-将两个有序的链表合并为一个新链表，要求新的链表是通过拼接两个链表的节点来生成的，且合并后新链表依然有序。
-```
-示例1
-输入
-{1},{2}
-
-返回值
-{1,2}
-```
-
-```cpp
- ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
-        if(l1 == nullptr) return l2;
-        if(l2 == nullptr) return l1;
-        ///////
-        ListNode* head = new ListNode(-1);
-        ListNode* pre = head;
-        while(l1 && l2) {
-            if(l1->val < l2->val) {
-                pre->next = l1;
-                l1 = l1->next;
-            }
-            else {
-                pre->next = l2;
-                l2 = l2->next;          
-            }
-             pre = pre->next;
-        }
-        pre->next = l1 ? l1 : l2;
-        return head->next;
-    }
-```
 
 ## 用两个栈实现队列
 

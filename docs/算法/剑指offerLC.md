@@ -1,0 +1,356 @@
+### 剑指 Offer 03. 数组中重复的数字
+
+[题目来源](https://leetcode-cn.com/problems/shu-zu-zhong-zhong-fu-de-shu-zi-lcof/)
+
+- 使用哈希表来解决
+
+```cpp
+class Solution {
+public:
+    int findRepeatNumber(vector<int>& nums) {
+        if(nums.size() == 0 || nums.size() == 1) return -1;
+        unordered_map<int,int> mp;
+        for(int i=0;i<nums.size();++i) {
+            if(mp.find(nums[i]) != mp.end()) {  //存在
+                return nums[i];
+            }
+            else {
+                mp.emplace(nums[i],nums[i]);
+            }
+        }
+        return -1;
+    }
+};
+```
+
+时间复杂度是 $O(n)$
+
+空间复杂度是 $O(n)$
+
+- 原地置换
+
+这种原地置换的想法确实挺精妙的。
+
+1、题目明确说明了数组长度为n，范围为 n-1，也就是若无重复元素排序后下标0123对应的数字就应该是0123；
+
+2、对数组排序，其实也就是让萝卜归位，1号坑要放1号萝卜，2号坑要放2号萝卜......排序过程中查找有无重复元素。先考虑没有重复元素的情况：
+```
+ nums[i]     3  1  0  2   萝卜   
+     i       0  1  2  3   坑  
+```
+0号坑说我要的是0号萝卜，不要3号萝卜，所以会去和3号坑的萝卜交换，因为如果0号坑拿了3号坑的3号萝卜，那说明3号坑装的也肯定是别人家的萝卜，所以要跟3号坑换，换完是这样的：
+```
+ nums[i]     2  1  0  3   萝卜  
+     i       0  1  2  3   坑 
+```
+然而0号坑还没找到自己的萝卜，它不要2号萝卜，又去和2号坑的萝卜交换，换完是这样的：
+```
+ nums[i]     0  1  2  3   萝卜 
+     i       0  1  2  3   坑 
+``` 
+这时候刚好就是一一对应的，交换过程也不会出现不同坑有相同编号的萝卜。要注意交换用的是while，也就是0号坑只有拿到0号萝卜，1号坑才能开始找自己的萝卜。
+
+3、如果有重复元素，例如：
+```
+ nums[i]     1  2  3  2    萝卜
+     i       0  1  2  3    坑
+```
+同样的，0号坑不要1号，先和1号坑交换，交换完这样的：
+```
+ nums[i]     2  1  3  2    萝卜
+     i       0  1  2  3    坑
+```     
+0号坑不要2号萝卜，去和2号坑交换，交换完这样的：
+```
+ nums[i]     3  1  2  2    萝卜
+     i       0  1  2  3    坑
+```    
+0号坑不要3号萝卜，去和3号坑交换，交换完这样的：
+```
+ nums[i]     2  1  2  3    萝卜
+     i       0  1  2  3    坑
+```
+0号坑不要2号萝卜，去和2号坑交换，结果发现你2号坑也是2号萝卜，那我还换个锤子，同时也说明有重复元素出现。
+
+4、总结
+
+其实这种原地交换就是为了降低空间复杂度，只需多要1个坑来周转交换的萝卜就好了，空间复杂度$O(1)$。时间复杂度是 $O(n)$
+
+```cpp
+class Solution {
+public:
+    int findRepeatNumber(vector<int>& nums) {
+        for(int i=0;i<nums.size();++i) {
+            while(i != nums[i]) {
+                if(nums[i] == nums[nums[i]]) {
+                    return nums[i];
+                }
+                else 
+                    swap(nums[i],nums[nums[i]]);  //交换之后就0号萝卜对应0号坑
+            }
+        }
+        return -1;
+    }
+};
+```
+
+### 剑指 Offer 04. 二维数组中的查找
+
+[题目来源](https://leetcode-cn.com/problems/er-wei-shu-zu-zhong-de-cha-zhao-lcof/)
+
+题解：
+
+从左下角开始找
+
+```cpp
+class Solution {
+public:
+    bool findNumberIn2DArray(vector<vector<int>>& matrix, int target) {
+        if(matrix.size() == 0) return false;
+        int i = matrix.size() - 1;
+        int j = 0;
+
+        while(i >= 0 && j < matrix[0].size()) {
+            if(matrix[i][j] == target) return true;
+            if(matrix[i][j] > target) --i;
+            else ++j;
+        }
+        return false;
+    }
+};
+```
+
+### 剑指 Offer 05. 替换空格
+
+[题目来源](https://leetcode-cn.com/problems/ti-huan-kong-ge-lcof/)
+
+题解：
+
+先算出有多少个空格，然后使用`s += string(count * 2,' ');`补充长度。最后从后面开始放置。
+
+```cpp
+class Solution {
+public:
+    string replaceSpace(string s) {
+        int len1 = s.size();
+        if(len1 == 0) return  s;
+
+        string ret;
+        
+        //先要算出有多少个空格
+        int count = 0;
+        for(int i=0;i<len1;++i) {
+            if(s[i] == ' ') ++count;
+        }
+        //如果没有空格直接返回
+        if(count == 0) return s;
+
+        //扩充长度
+        s += string(count * 2,' ');
+        int len2 = s.size();
+        int index = len2 - 1;
+        for(int i=len1 - 1;i>=0;--i) {
+            if(s[i] != ' ') s[index--] = s[i];
+            else {
+                s[index--] = '0';
+                s[index--] = '2';
+                s[index--] = '%';
+            }
+        }
+        return s;
+    }
+};
+```
+
+时间复杂度：$O(n)$。遍历字符串 s 一遍。
+
+空间复杂度：$O(n)$。额外创建字符数组，长度为 s 的长度的 3 倍。
+
+- 新开辟一个数组，然后使用`push_back`也行
+  
+> 先不自己写了
+
+```cpp
+class Solution {
+public:
+    string replaceSpace(string s) {     //字符数组
+        string array;   //存储结果
+        
+        for(auto &c : s){   //遍历原字符串
+            if(c == ' '){
+                array.push_back('%');
+                array.push_back('2');
+                array.push_back('0');
+            }
+            else{
+                array.push_back(c);
+            }
+        }
+        return array;
+    }
+};
+```
+###  剑指 Offer 06. 从尾到头打印链表
+
+[题目来源](https://leetcode-cn.com/problems/cong-wei-dao-tou-da-yin-lian-biao-lcof/)
+
+
+题解：
+
+- 存入数组在翻转
+
+```cpp
+class Solution {
+public:
+    vector<int> reversePrint(ListNode* head) {
+        if(head == nullptr) return {};
+        if(head->next == nullptr) return {head->val};
+
+        ListNode* p = head;
+         vector<int> res;
+        while(p) {
+            res.push_back(p->val);
+            p = p->next;
+        }
+        reverse(res.begin(),res.end());
+ 
+        return res;
+    }
+};
+```
+
+- 使用递归，直接跑到底，再逆回来
+
+```cpp
+class Solution {
+public:
+    vector<int> reversePrint(ListNode* head) {
+        if(head == nullptr) return {};
+        vector<int> res = reversePrint(head->next);
+        res.push_back(head->val);
+        return res;
+    }
+};
+```
+
+### 剑指 Offer 07. 重建二叉树
+
+[题目来源](https://leetcode-cn.com/problems/zhong-jian-er-cha-shu-lcof/)
+
+> [参考](https://mp.weixin.qq.com/s?__biz=MzUxNjY5NTYxNA==&mid=2247484950&idx=1&sn=3900f9433d36dd5406fc1ccb1df07703&scene=21#wechat_redirect)
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+        if(preorder.size() == 0) return NULL;
+
+        int rootVale = preorder[0];
+        TreeNode* root = new TreeNode(rootVale);
+
+        //如果只有一个节点
+        if(preorder.size() == 1) return root;
+
+        //找到前序遍历在中序遍历的位置
+        int index = 0;
+        for(;index<inorder.size();++index) {
+            if(inorder[index] == rootVale) break;
+        }
+
+        //切割中序遍历
+        vector<int> leftInorder(inorder.begin(),inorder.begin() + index);
+        vector<int> rightInorder(inorder.begin() + index + 1,inorder.end());
+
+        preorder.erase(preorder.begin());
+
+        // 切割前序
+        vector<int> leftPreorder(preorder.begin(),preorder.begin()+leftInorder.size());
+        vector<int> rightPreorder(preorder.begin()+leftInorder.size(),preorder.end());
+
+        root->left = buildTree(leftPreorder,leftInorder);
+        root->right = buildTree(rightPreorder,rightInorder);
+
+        return root;
+    }
+};
+```
+
+#### 106.从中序与后序遍历序列构造二叉树
+
+[题目来源](https://leetcode-cn.com/problems/construct-binary-tree-from-inorder-and-postorder-traversal/)
+
+> [参考](https://mp.weixin.qq.com/s?__biz=MzUxNjY5NTYxNA==&mid=2247484950&idx=1&sn=3900f9433d36dd5406fc1ccb1df07703&scene=21#wechat_redirect)
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) {
+
+        //终止条件
+        if(postorder.size() == 0) return nullptr;
+
+        // 找到根节点,也就是后续遍历的最后一个
+        int len =  postorder.size() - 1;
+        int rootValue = postorder[len];
+        // 创建二叉树
+        TreeNode* root = new TreeNode(rootValue);
+
+        //如果只有一个节点
+        if(postorder.size() == 1) return root;
+
+        // 找到后续的节点在中序遍历中的位置
+        int index;
+        for(index = 0;index < inorder.size();++index) {
+            if(inorder[index] == rootValue) break;
+        }
+        
+        //切割中序数组
+        // [0,inorderIndex)
+        vector<int> leftInorder(inorder.begin(),inorder.begin() + index);
+         // [inorderIndex+1,end)
+        vector<int> rightInorder(inorder.begin()+index + 1,inorder.end());
+
+        //后序遍历舍去根节点
+        postorder.resize(postorder.size() - 1);//调整容器大小，如果小于当前长度会删掉后面的
+
+        //切割后续遍历
+        // [0,inorderLeft)
+        vector<int> leftPostorder(postorder.begin(),postorder.begin() + leftInorder.size());
+        // [inorderLeft,end)
+        vector<int> rightPostorder(postorder.begin() + leftInorder.size(),postorder.end());//注意这里没有+1，因为已经删除了根节点了
+
+        root->left = buildTree(leftInorder,leftPostorder);
+        root->right = buildTree(rightInorder,rightPostorder);
+
+        return root;
+    }
+};
+```
+
+### 剑指 Offer 09. 用两个栈实现队列
+
+[题目来源](https://leetcode-cn.com/problems/yong-liang-ge-zhan-shi-xian-dui-lie-lcof/)
+
+
+
+
