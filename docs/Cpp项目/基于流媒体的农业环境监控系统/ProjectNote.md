@@ -90,6 +90,8 @@
 
 [音视频同步原理及实现](https://blog.csdn.net/myvest/article/details/97416415)
 
+[使用rtcp实现音视频同步](https://blog.csdn.net/fdsafwagdagadg6576/article/details/108717668)
+
 ### FFmpeg编解码模块流程
 
 #### 音频解码
