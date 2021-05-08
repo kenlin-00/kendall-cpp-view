@@ -23,14 +23,14 @@ ffmpeg的数据结构可以分为以下几类：
 	
 	三者的关系如下图:
 
-![](./img/ffmpeg数据结构02.png)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/ffmpeg数据结构02.2wmury82usk0.png)
 
 
 - (4)存数据
 
 	对于视频，每个结构一般是存一帧；音频可能有好几帧
-  * 解码前数据：AVPacket
-  * 解码后数据：AVFrame
+  * 解码前数据：`AVPacket`
+  * 解码后数据：`AVFrame`
 
 
 ## 2.各种结构体之间的关系
