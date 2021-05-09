@@ -4,6 +4,7 @@
 
 [题目来源](https://leetcode-cn.com/problems/fei-bo-na-qi-shu-lie-lcof/)
 
+[labuladong](https://mp.weixin.qq.com/s?__biz=MzAxODQxMDM0Mw==&mid=2247484731&idx=1&sn=f1db6dee2c8e70c42240aead9fd224e6&chksm=9bd7fb33aca07225bee0b23a911c30295e0b90f393af75eca377caa4598ffb203549e1768336&scene=21#wechat_redirect)
 
 这就是动态规划问题的第一个性质：**重叠子问题**
 
@@ -23,7 +24,7 @@ int fib(int N) {
 }
 ```
 
-优化只维护看个数
+优化只维护两个数
 
 ```cpp
 class Solution {
@@ -44,7 +45,7 @@ public:
 };
 ```
 
-## 凑零钱为题
+## 凑零钱问题
 
 [题目来源](https://leetcode-cn.com/problems/coin-change/)
 

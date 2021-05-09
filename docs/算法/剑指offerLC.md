@@ -197,7 +197,7 @@ public:
 
 题解：
 
-- 存入数组在翻转
+- 存入数组再翻转
 
 ```cpp
 class Solution {
@@ -291,17 +291,6 @@ public:
 > [参考](https://mp.weixin.qq.com/s?__biz=MzUxNjY5NTYxNA==&mid=2247484950&idx=1&sn=3900f9433d36dd5406fc1ccb1df07703&scene=21#wechat_redirect)
 
 ```cpp
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
- *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
- *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
- * };
- */
 class Solution {
 public:
     TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) {
@@ -351,6 +340,200 @@ public:
 
 [题目来源](https://leetcode-cn.com/problems/yong-liang-ge-zhan-shi-xian-dui-lie-lcof/)
 
+```cpp
+class CQueue {
+public:
 
 
+    CQueue() {
+
+    }
+    
+    void appendTail(int value) {
+        stack1.push(value);
+    }
+    
+    int deleteHead() {
+        //如果栈2为空，就先把栈1的数据全部放入到栈2中，再出栈2
+        //如果栈2不空，那就直接出栈2的数据
+        if(stack2.empty()) {  //如果栈2为空
+            while(!stack1.empty()) {
+                stack2.push(stack1.top());
+                stack1.pop();
+            }
+        }
+        //入栈之后如果栈2还是为空就返回-1
+        if(stack2.empty()) {
+            return -1;
+        }
+        else{
+            int res = stack2.top();
+            stack2.pop();
+            return res;
+        }
+    }
+    
+ 
+private:
+    stack<int> stack1;
+    stack<int> stack2;
+};
+
+```
+
+### 剑指 Offer 10- I. 斐波那契数列
+
+[题目来源](https://leetcode-cn.com/problems/fei-bo-na-qi-shu-lie-lcof/)
+
+只维护好两个数
+
+```cpp
+class Solution {
+public:
+    int fib(int n) {
+        if(n == 0) return 0;
+        if (n == 2 || n == 1) 
+            return 1;
+        int prev = 1,curr = 1;
+        for (int i = 3; i <= n; i++)  {
+            int sum = (prev + curr) % 1000000007;
+            prev = curr;
+            curr = sum;
+        }
+        return curr;
+    }
+```
+
+### 剑指 Offer 10- II. 青蛙跳台阶问题
+
+[题目来源](https://leetcode-cn.com/problems/qing-wa-tiao-tai-jie-wen-ti-lcof/)
+
+第n级台阶可以从第 n-1 级跳上来，也可以从第 n-2 级跳上来。所以直接算出 n-1 和 n-2 有多少种再相加即可。
+
+```cpp
+class Solution {
+public:
+    int numWays(int n) {
+        if(n == 0 || n == 1) return 1;
+        int one = 1;
+        int two = 1;
+        int res = 0;
+        for(int i=2;i<=n;++i) {
+            res = (one + two) % 1000000007;
+            one = two;
+            two = res;
+        }
+        return res;
+    }
+};
+```
+
+### 剑指 Offer 11. 旋转数组的最小数字
+
+[题目来源](https://leetcode-cn.com/problems/xuan-zhuan-shu-zu-de-zui-xiao-shu-zi-lcof/)
+
+看到旋转数组首先想到二叉查找,先看下面两题再做这题
+
+```cpp
+class Solution {
+public:
+    int minArray(vector<int>& nums) {
+
+        int left = 0,right = nums.size() - 1;
+        //如果相同就，舍去后面的直到满足二段性
+        while(left < right && nums[0] == nums[right]) {
+            --right;
+        }
+        //进行二分查找
+        while(left < right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] > nums[right]) //最小值在右边
+            {
+                left = mid + 1;
+            }else {
+                right = mid;
+            }
+        }
+        return nums[left];
+        
+    }
+};
+```
+
+#### 153.寻找旋转排序数组中的最小值
+
+[题目来源](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/)
+
+我们可以用中间的和**最右**的数进行对比，注意等号，如果：
+
+- `nums[mid] > nums[right]` 说明最小数在右边，有`left = mid + 1`
+- `nums[mid] <= nums[right]`说明最小数在左边, 有`right = mid`
+
+> 注意返回的是`num[left]`,当输入为[1]的时候，直接返回。
+
+```cpp
+class Solution {
+public:
+    int findMin(vector<int>& nums) {
+        int left = 0;
+        int right = nums.size() - 1;
+        while(left < right) {
+            int mid = left + (right - left) / 2;
+            //如果中间的数大于右边的数，那么最小数肯定在右边
+            if(nums[mid] > nums[right]){
+                left = mid + 1;
+            }
+            //如果中间的数不大于最右边的数，那么最小数就不在右边
+            else {
+                right = mid;  //也可能在中间
+            }
+        }
+        return nums[left];
+    }
+};
+```
+
+#### 154.寻找旋转排序数组中的最小值 II
+
+[题目来源](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array-ii/)
+
+如果旋转点使得不同元素进行分裂，也就是最前面和最后面不同，这样就满足二段性，就可以用二分法
+
+如果旋转点使得相同元素进行分裂，也就是最前面和最后面相同，这样就要舍去最后的直到满足二段性，再进行二分。
+
+满足二段性之后就可以用上题的思路了。
+
+[思路参考](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array-ii/solution/gong-shui-san-xie-xiang-jie-wei-he-yuan-7xbty/)
+
+```cpp
+class Solution {
+public:
+    int findMin(vector<int>& nums) {
+        int left = 0,right = nums.size() - 1;
+        //如果相同就，舍去后面的直到满足二段性
+        while(left < right && nums[0] == nums[right]) {
+            --right;
+        }
+        //进行二分查找
+        while(left < right) {
+            int mid = left + (right - left) / 2;
+            if(nums[mid] > nums[right]) //最小值在右边
+            {
+                left = mid + 1;
+            }else {
+                right = mid;
+            }
+        }
+        return nums[left];
+    }
+};
+```
+
+时间复杂度：恢复二段性处理中，最坏的情况下（考虑整个数组都是同一个数）复杂度是 $O(n)$，而之后的找旋转点是「二分」，复杂度为 $O(log{n})$。整体复杂度为 $O(n)$ 的。
+
+空间复杂度：$O(1)$。
+
+### 剑指 Offer 12.矩阵中的路径
+
+[题目来源](https://leetcode-cn.com/problems/ju-zhen-zhong-de-lu-jing-lcof/)
 
