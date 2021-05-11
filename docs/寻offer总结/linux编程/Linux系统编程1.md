@@ -26,9 +26,9 @@ find ./ -name "*llo" | xargs  grep -n -i "World"    # 加 -n 是显示行 加-i�
 
 - 查看主机名字
   - `hostname`
-  - hostname –d 显示机器所属域名
-  - hostname –f 显示完整的主机名和域名
-  - hostname –i 显示当前机器的 ip 地址
+    - hostname –d 显示机器所属域名
+    - hostname –f 显示完整的主机名和域名
+    - hostname –i 显示当前机器的 ip 地址
 - `ping`命令确认网络是否通畅
 - `telnet`命令，通过 `telnet` 协议连接目标主机，如果 `telnet` 连接可以在任一端口上完成就代表着两台主机间的连接良好。
   - `telnet hostname port` –-> 使用指定的端口 `telnet` 主机名。这通常用来测试主机是否在线或者网络是否正常。

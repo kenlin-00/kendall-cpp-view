@@ -1,6 +1,7 @@
 * [C++男孩那点记忆](/README.md)
 
 * 寻offer总结
+  * [面试准备](/寻offer总结/我要进大厂/面试准备.md)
   * [Cpp知识点01](/寻offer总结/Cpp基础/Cpp知识点01.md)
   * [Cpp知识点02](/寻offer总结/Cpp基础/Cpp知识点02.md)
   * [STL总结](/寻offer总结/Cpp基础/STL总结.md)
@@ -14,8 +15,7 @@
   * [linux系统编程01](/寻offer总结/linux编程/Linux系统编程1.md)
   * [手撕实现](/寻offer总结/数据结构_场景应用/手撕实现.md)
   * [常见排序算法](/寻offer总结/数据结构_场景应用/排序算法.md)
-  * [最想去的腾讯](/寻offer总结/最想去的公司/腾讯.md)
-  * [最想去的Shopee](/寻offer总结/最想去的公司/Shopee.md)
+  * [最想去的腾讯](/寻offer总结/我要进大厂/腾讯.md)
 
 * C++算法
   * [剑指offerLC](/算法/剑指offerLC.md)
