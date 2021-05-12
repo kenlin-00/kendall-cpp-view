@@ -42,17 +42,6 @@ bSTIterator.hasNext(); // 返回 False
 实际上就是写中序遍历，首先构造函数进程初始化，然后调用`next()`并返回中序遍历到的各个节点的值，如果不是左后一个元素`hasNext`返回`true`。
 
 ```cpp
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
- *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
- *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
- * };
- */
 class BSTIterator {
 private:
     TreeNode* cur;

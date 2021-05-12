@@ -1,7 +1,7 @@
 * [C++男孩那点记忆](/README.md)
 
 * 寻offer总结
-  * [面试准备](/寻offer总结/我要进大厂/面试准备.md)
+  * [面试准备01](/寻offer总结/我要进大厂/面试准备01.md)
   * [Cpp知识点01](/寻offer总结/Cpp基础/Cpp知识点01.md)
   * [Cpp知识点02](/寻offer总结/Cpp基础/Cpp知识点02.md)
   * [Cpp学习专栏](/寻offer总结/Cpp基础/Cpp学习专栏/Cpp学习笔记.md)
