@@ -4,6 +4,7 @@
   * [面试准备](/寻offer总结/我要进大厂/面试准备.md)
   * [Cpp知识点01](/寻offer总结/Cpp基础/Cpp知识点01.md)
   * [Cpp知识点02](/寻offer总结/Cpp基础/Cpp知识点02.md)
+  * [Cpp学习专栏](/寻offer总结/Cpp基础/Cpp学习专栏/Cpp学习笔记.md)
   * [STL总结](/寻offer总结/Cpp基础/STL总结.md)
   * [操作系统01](/寻offer总结/操作系统/操作系统01.md) 
   * [操作系统02](/寻offer总结/操作系统/操作系统02.md) 
