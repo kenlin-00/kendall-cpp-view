@@ -16,9 +16,8 @@
 - [链表中的节点每K个一组旋转](#链表中的节点每k个一组旋转)
 - [矩阵覆盖](#矩阵覆盖)
 - [二进制中1的个数](#二进制中1的个数)
-  - [1472. 设计浏览器历史记录](#1472-设计浏览器历史记录)
+- [1472. 设计浏览器历史记录](#1472-设计浏览器历史记录)
 - [1154.一年中的第几天](#1154一年中的第几天)
-- [1185.一周中的第几天](#1185一周中的第几天)
 
 -----
 
@@ -632,7 +631,9 @@ public:
 未通过
 
 
-### 1472. 设计浏览器历史记录
+## 1472. 设计浏览器历史记录
+
+[题目来源](https://leetcode-cn.com/problems/design-browser-history/)
 
 你有一个只支持单个标签页的 浏览器 ，最开始你浏览的网页是 homepage ，你可以访问其他的网站 url ，也可以在浏览历史中后退 steps 步或前进 steps 步。
 
@@ -666,17 +667,146 @@ browserHistory.back(2);                   // 你原本在浏览 "linkedin.com" �
 browserHistory.back(7);                   // 你原本在浏览 "google.com"， 你只能后退一步到 "leetcode.com" ，并返回 "leetcode.com"
 ```
 
+```cpp
+class BrowserHistory {
+private:
+    deque<string> d;
+    int index;  //当前页面索引
+public:
+    BrowserHistory(string homepage) {
+        d.push_back(homepage);
+        index = 0;
+    }
+    
+    void visit(string url) {
+        while(d.size() > index + 1) {  //+1的目的是为了来保存新的url
+            d.pop_back();
+        }
+        ++index;  //然后索引+1，指向新的位置
+        d.push_back(url);
+    }
+    
+    string back(int steps) {
+        while(steps > 0 && index > 0)  //只有一个页面的时候就不能回退了
+        {
+            --steps;
+            --index;
+        }
+        //返回当前页
+        return d.at(index);  //返回对双端队列容器对象中位置n处元素的引用
+     }
+    
+    string forward(int steps) {
+        while(steps > 0 && index < d.size() - 1) //最后一页就不能前进了 
+        {
+            --steps;
+            ++index;
+        }
+        return d.at(index);
+    }
+};
 
+/**
+ * Your BrowserHistory object will be instantiated and called as such:
+ * BrowserHistory* obj = new BrowserHistory(homepage);
+ * obj->visit(url);
+ * string param_2 = obj->back(steps);
+ * string param_3 = obj->forward(steps);
+ */
+```
 
 > https://blog.csdn.net/m0_37609579/article/details/100529801
 
 
-## 	1154.一年中的第几天  
+## 1154.一年中的第几天 
 
 [题目来源](https://leetcode-cn.com/problems/day-of-the-year/)
 
+给你一个按 YYYY-MM-DD 格式表示日期的字符串 date，请你计算并返回该日期是当年的第几天。
 
-## 1185.一周中的第几天
+通常情况下，我们认为 1 月 1 日是每年的第 1 天，1 月 2 日是每年的第 2 天，依此类推。每个月的天数与现行公元纪年法（格里高利历）一致。
 
-[题目来源](https://leetcode-cn.com/problems/day-of-the-week/)
+ 
+
+示例 1：
+```
+输入：date = "2019-01-09"
+输出：9
+```
+
+初始化一个数组，保存每个月的天数
+
+```cpp
+class Solution {
+public:
+    int dayOfYear(string date) {
+        vector<int> monday = {31,28,31,30,31,30,31,31,30,31,30,31};
+        vector<int> intdata;   //保存年月日，int型
+        string temp = "";
+        int ret = 0;
+        //分离日期字符串 年 月 日
+        for(int i=0;i<date.size();++i) {
+            if(date[i] == '-') {
+                intdata.push_back(stoi( temp ));//转成int型
+                temp = "";
+            }
+            else{
+                temp += date[i] ;  //2019 
+            }
+        }
+        //加上最后一个，日
+        intdata.push_back( stoi( temp) );
+
+        for(int i=1;i<= intdata[1] - 1;++i) {  //intdata[1] 是月份 这里的i就是月份
+            ret += monday[i-1];
+        }
+        //考虑闰年，只有当月份大于2才执行
+        if(intdata[1] > 2 && ( intdata[0] % 4 == 0 ) ) {
+            ret += intdata[2] + 1;  
+        }
+        else {
+            ret += intdata[2];  //加上日期，这个月的第几天
+        }
+        return ret;
+    }
+};
+```
+
+优化:
+
+初始化一个数组，保存每个月的最后一天是第几天
+
+```cpp
+class Solution {
+public:
+    int dayOfYear(string date) {
+        vector<int> monthDay = { 0,31,59,90,120,151,181,212,243,273,304,334 };;
+        int year = 0;
+        bool flag;  //是不是闰年
+        //取出年就可以了
+       for(int i=0;i<4;++i) {
+           if(date[i] != '-') {
+               year = year*10 + ( date[i] - '0' );
+           }
+       }
+        if(year % 4 == 0) { //如果是如年
+            flag = true;
+        }
+        else {
+            flag = false;
+        }
+        int month = ( date[5] - '0' ) * 10 + ( date[6] - '0' ); //月
+        int day =  ( date[8] - '0' ) * 10 + ( date[9] - '0' ); //日
+        if(month < 3) {
+            return monthDay[month - 1] + day;
+        }
+        else {
+            return monthDay[month - 1] + day + flag;
+        }
+    }
+};
+```
+
+
+
 
