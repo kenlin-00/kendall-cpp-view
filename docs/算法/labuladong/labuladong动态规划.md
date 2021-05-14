@@ -444,7 +444,7 @@ dp[i][j] = dp[i-1][j] + dp[i-1][j-nums[i-1]];
 - 当天允许交易的最大次数
 - 当前的持有状态（即之前说的 rest 的状态，我们不妨用 1 表示持有，0 表示没有持有）
 
-dp -- 最大利润
+> dp -- 最大利润
 
 比如说 `dp[3][2][1]` 的含义就是：今天是第三天，我现在手上持有着股票，至今最多进行 2 次交易。再比如 `dp[2][3][0]` 的含义：今天是第二天，我现在手上没有持有股票，至今最多进行 3 次交易。
 
@@ -463,19 +463,22 @@ dp -- 最大利润
 通过这个图可以很清楚地看到，每种状态（0 和 1）是如何转移而来的。根据这个图，我们来写一下状态转移方程：
 
 ```
-dp[i][k][0] = max( dp[i-1][k][0] + dp[i-1][k][1] + prices[i] )
+dp[i][k][0] = max( dp[i-1][k][0] + dp[i-1][k-1][1] + prices[i] )
               max(      选择 rest      选择 sell  )
 
 今天没有持有股票，有两种可能：
 1.昨天就没有持有，今天选择误操作 rest ,所以今天也是不持有
 2.昨天持有，今天卖出了，所以不持有了，价值也增加了
 
-dp[i][k][1] = max( dp[i-1][k][1] + dp[i-1][k][0] - prices[i] )
+
+dp[i][k][1] = max( dp[i-1][k][1] + dp[i-1][k-1][0] - prices[i] )
               max(      选择 rest      选择 buy  )
 今天持有，有两种可能：
 1.昨天就持有了，今天无操作，所以今天依然持有
 2.昨天没有持有，今天买入了，今天就持有了，价值也减少了
 ```
+
+**而且注意 k 的限制，我们在选择 buy 的时候，把最大交易数 k 减小了 1，很好理解吧，当然你也可以在 sell 的时候减 1，一样的**
 
 现在，我们已经完成了动态规划中最困难的一步：**状态转移方程**
 
@@ -488,11 +491,14 @@ dp[-1][k][0] = 0
 dp[-1][k][1] = -INT_MAX
 还没开始，是不可能有股票的，所以只能为负无穷
 
-dp[1][0][0] = 0
-开始第一天，然后一次都不能交易，固然利润也是0
 
-dp[1][0][1] = - INT_MAX
-开始第一天，一次都不能交易，是不可能持有的，因此只能是负无穷
+第 i 天
+
+dp[i][0][0] = 0
+第 i 天，k = 0,然后一次都不能交易，固然利润也是0
+
+dp[i][0][1] = - INT_MAX
+第 i 天，一次都不能交易，是不可能持有的，因此只能是负无穷
 ```
 
 **开始解题**：
@@ -514,6 +520,7 @@ dp[i][1][0] = max( dp[i-1][1][0], dp[i-1][1][1] + prices[i] )
 dp[i][1][1] = max( dp[[i-1][1][1], dp[i-1][1][0] - prices[i] ) 
 
 //k = 0 的 base bace，dp[i-1][0][0] = 0
+//第 i 天，k = 0,然后一次都不能交易，固然利润也是0
 
 // 现在 k =1,所以k并不会影响状态转移方程
 dp[i][0] = max( dp[i-1][0], dp[i-1][1] + prices[i] )
@@ -541,7 +548,7 @@ public:
             }
             //今天不持有
             dp[i][0] = max( dp[i-1][0], dp[i-1][1] + prices[i] );
-            //今天持有
+            //今天持有，卖出了，说明一次交易完成，k-1,所以dp[i-1][k-1][0] = dp[i-1][0][0] = 0
             dp[i][1] = max( dp[i-1][1], -prices[i] );
         }
         return dp[n-1][0];
@@ -560,15 +567,7 @@ public:
         // vector<vector<int>> dp(n,vector<int>(2));
         int dp_i_1 = INT_MIN,dp_i_0 = 0;
         for(int i=0;i<n;++i) {
-            if(i-1 < 0) {
-                dp_i_0 = 0;
-                dp_i_1 = -prices[i];
-                //    dp[i][1] = max( dp[-1][1], dp[-1][0] - prices[i] )
-                //  = dp[i][1] = max( -INT_MAX, 0-prices[i] )  
-                //  = -prices[i]
-                continue;
-
-            }
+            
             //今天不持有
             dp_i_0 = max(dp_i_0,dp_i_1 + prices[i]);
             //今天持有
@@ -579,6 +578,172 @@ public:
     }
 };
 ```
+
+### 122.买卖股票的最佳时机 II
+
+[题目来源](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii)
+
+给定一个数组 prices ，其中 prices[i] 是一支给定股票第 i 天的价格。
+
+设计一个算法来计算你所能获取的最大利润。你可以尽可能地完成更多的交易（多次买卖一支股票）。
+
+注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+
+示例 1:
+```
+输入: prices = [7,1,5,3,6,4]
+输出: 7
+解释: 在第 2 天（股票价格 = 1）的时候买入，在第 3 天（股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4 。
+     随后，在第 4 天（股票价格 = 3）的时候买入，在第 5 天（股票价格 = 6）的时候卖出, 这笔交易所能获得利润 = 6-3 = 3 。
+```
+
+这题 k 为正无穷，可以进行无穷次交易。
+
+那么就可以认为 k 和 k - 1 是一样的。可以这样改写框架：
+
+```
+dp[i][k][0] = max( dp[i-1][k][0] + dp[i-1][k-1][1] + prices[i] )
+              max(      选择 rest      选择 sell  )
+
+dp[i][k][1] = max( dp[i-1][k][1] + dp[i-1][k-1][0] - prices[i] )
+              max(      选择 rest      选择 buy  )
+
+我们可以看出 k 已经不会变了，所以 k 不会影响状态转移方程
+
+dp[i][0] = max( dp[i-1][0] + dp[i-1][1] + prices[i] )
+
+dp[i][1] = max( dp[i-1][1] + dp[i-1][0] - prices[i] )
+```
+
+题解：
+
+```cpp
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int day = prices.size();
+        vector<vector<int>> dp(day, vector<int>(2));
+        for(int i=0;i<day;++i) {
+            if(i-1 < 0) {
+                dp[i][0] = 0;
+                dp[i][1] = -prices[i];
+                continue;
+            }
+            
+            dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i]);
+            dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i]);
+        }
+        return dp[day-1][0];
+    }
+};
+```
+
+维护两个数即可
+
+```cpp
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int day = prices.size();
+        int dp_i_0 = 0, dp_i_1 = INT_MIN;
+        for(int i=0;i<day;++i) {
+            int temp = dp_i_0;
+            dp_i_0 = max(dp_i_0,dp_i_1 + prices[i]);
+            dp_i_1 = max(dp_i_1,temp - prices[i]);
+        }
+        return dp_i_0;
+    }
+};
+```
+
+### 123.买卖股票的最佳时机 III
+
+[题目来源](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iii)
+
+给定一个数组，它的第 i 个元素是一支给定的股票在第 i 天的价格。
+
+设计一个算法来计算你所能获取的最大利润。你最多可以完成 两笔 交易。
+
+注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+示例 1:
+```
+输入：prices = [3,3,5,0,0,3,1,4]
+输出：6
+解释：在第 4 天（股票价格 = 0）的时候买入，在第 6 天（股票价格 = 3）的时候卖出，这笔交易所能获得利润 = 3-0 = 3 。
+     随后，在第 7 天（股票价格 = 1）的时候买入，在第 8 天 （股票价格 = 4）的时候卖出，这笔交易所能获得利润 = 4-1 = 3 。
+```
+
+这题 k = 2
+
+```
+原始的状态转移，没有化简的地方
+dp[i][k][0] = max( dp[i-1][k][0] + dp[i-1][k-1][1] + prices[i] )
+              max(      选择 rest      选择 sell  )
+
+dp[i][k][1] = max( dp[i-1][k][1] + dp[i-1][k-1][0] - prices[i] )
+              max(      选择 rest      选择 buy  )
+```
+
+按照之前的代码，我们可能想当然这样写代码（错误的）
+
+```cpp
+int maxProfit(vector<int>& prices) {
+    int day = prices.size();
+    vector<vector<vector>>> dp(day,vector<vector>>(k+1,vector<int>(2)));
+    for(int i=0;i<day;++i) {
+        if(i-1<0) { /* 处理base case */}
+        dp[i][k][0] = max( dp[i][k][0],  dp[i][k][1] + prices[i] );
+        dp[i][k][1] = max( dp[i][k][1],  dp[i][k-1][0] - prices[i] );
+    }
+    return dp[day][k][0];
+}
+```
+
+为什么错误？我这不是照着状态转移方程写的吗？
+
+还记得前面总结的「穷举框架」吗？就在强调必须穷举所有状态。其实我们之前的解法，都在穷举所有状态，只是之前的题目中 k 都被化简掉了，所以没有对 k 的穷举。比如说第一题，k = 1：
+
+```cpp
+for(int i=0;i<day;++i)  //穷举天数
+
+//穷举持有状态
+dp[i][0]
+dp[i][1]
+```
+
+这道题由于没有消掉 k 的影响，所以必须要用 for 循环对 k 进行穷举才是正确的：
+
+```cpp
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int day = prices.size();
+        int max_k = 2;
+        vector< vector< vector<int> > > dp(day,vector< vector<int> >(max_k + 1,vector<int>(2)));
+        for(int i=0;i<day;++i) {
+            for(int k=max_k;k>0;--k) {
+                if(i-1<0) { 
+                    dp[i][k][0] = 0;
+                    dp[i][k][1] = -prices[i];
+                    continue;
+                }
+                dp[i][k][0] = max( dp[i-1][k][0],  dp[i-1][k][1] + prices[i] );
+                dp[i][k][1] = max( dp[i-1][k][1],  dp[i-1][k-1][0] - prices[i] );
+            }
+           
+        }
+        return dp[day-1][max_k][0];
+    }
+};
+```
+
+第二种解法：因为这里 k 取值范围比较小，所以也可以不用 for 循环，直接把 k = 1 和 2 的情况手动列举出来也是一样的
+
+
+
+
 
 
 
