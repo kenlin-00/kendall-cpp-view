@@ -20,13 +20,15 @@
   - [消除重叠子问题](#消除重叠子问题)
   - [动态规划](#动态规划)
 - [股票问题](#股票问题)
+  - [121. 买卖股票的最佳时机](#121-买卖股票的最佳时机)
   - [122.买卖股票的最佳时机 II](#122买卖股票的最佳时机-ii)
   - [123.买卖股票的最佳时机 III](#123买卖股票的最佳时机-iii)
   - [188.买卖股票的最佳时机 IV](#188买卖股票的最佳时机-iv)
   - [309. 最佳买卖股票时机含冷冻期](#309-最佳买卖股票时机含冷冻期)
   - [714. 买卖股票的最佳时机含手续费](#714-买卖股票的最佳时机含手续费)
-
-
+- [打家劫舍系列问题](#打家劫舍系列问题)
+  - [198. 打家劫舍](#198-打家劫舍)
+  - [213. 打家劫舍 II](#213-打家劫舍-ii)
 
 -------
 
@@ -37,7 +39,6 @@
 [labuladong](https://mp.weixin.qq.com/s?__biz=MzAxODQxMDM0Mw==&mid=2247484731&idx=1&sn=f1db6dee2c8e70c42240aead9fd224e6&chksm=9bd7fb33aca07225bee0b23a911c30295e0b90f393af75eca377caa4598ffb203549e1768336&scene=21#wechat_redirect)
 
 这就是动态规划问题的第一个性质：**重叠子问题**
-
 
 **带备忘录的递归解法**
 
@@ -71,7 +72,7 @@ public:
         }
         return curr;
     }
-    
+
 };
 ```
 
@@ -115,7 +116,6 @@ int dp(vector<int>& coins, int amount) {
 
 **最后明确 base case**，显然目标金额为 0 时，所需硬币数量为 0；当目标金额小于 0 时，无解，返回 -1：
 
-
 ```cpp
 class Solution {
 public:
@@ -125,7 +125,7 @@ public:
     int dp(vector<int>& coins, int amount) {
         if(amount == 0) return 0; //如果总额为0，那么需要0个货币
         if(amount < 0) return -1;
-        
+
         int res = INT_MAX;
         for(auto coin : coins) {
             // 算出前一个cois有几种(子问题)
@@ -164,7 +164,7 @@ public:
 
         if(amount == 0) return 0; //如果总额为0，那么需要0个货币
         if(amount < 0) return -1;
-        
+
         int res = INT_MAX;
         for(auto coin : coins) {
             // 算出前一个cois有几种(子问题)
@@ -217,13 +217,12 @@ public:
 
 [题目来源](https://leetcode-cn.com/problems/target-sum/)
 
-
 给定一个非负整数数组，a1, a2, ..., an, 和一个目标数，S。现在你有两个符号 + 和 -。对于数组中的任意一个整数，你都可以从 + 或 -中选择一个符号添加在前面。
 
 返回可以使最终数组和为目标数 S 的所有添加符号的方法数。
 
-
 示例：
+
 ```
 输入：nums: [1, 1, 1, 1, 1], S: 3
 输出：5
@@ -239,7 +238,6 @@ public:
 ```
 
 [参考](https://mp.weixin.qq.com/s?__biz=MzAxODQxMDM0Mw==&mid=2247485700&idx=1&sn=433fc5ec5e03a86064d458320332a688&chksm=9bd7f70caca07e1aad658333ac05df501796862a418d8f856b12bb6ca73a924552901ec86d9b&scene=21#wechat_redirect)
-
 
 ### 回溯思路
 
@@ -295,14 +293,11 @@ public:
 };
 ```
 
-
 超出时间限制
 
 选择 - 的时候，为什么是 `rest += nums[i]`，选择 + 的时候，为什么是 `rest -= nums[i]` 呢，是不是写反了？
 
 不是的，「如何凑出 `target`」和「如何把 `target` 减到 0」其实是一样的。我们这里选择后者，因为前者必须给 `backtrack` 函数多加一个参数，我觉得不美观：
-
-
 
 ### 消除重叠子问题
 
@@ -340,7 +335,7 @@ public:
         if(nums.size() == 0) return 0;
         return dp(nums,0,target);
     }
-    
+
     int dp(vector<int> &nums,int index,int target) {
         //如果满足条件就退出
         if(index == nums.size()) {
@@ -357,7 +352,7 @@ public:
         if(it != memo.end()) {  //如果存在，就直接返回这里的值
             return memo[key];
         }
-        
+
         //穷举 正号 + 负号
         int result = dp(nums,index+1,target - nums[index]) + dp(nums,index+1,target+nums[index]);
 
@@ -386,6 +381,7 @@ sum(A) + sum(A) = target + sum(B) + sum(A)
 综上，可以推出 `sum(A) = (target + sum(nums)) / 2`，也就是把原问题转化成：**nums 中存在几个子集 A，使得 A 中元素的和为 `(target + sum(nums)) / 2` ？**
 
 现在实现这么一个函数：
+
 ```cpp
 /* 计算 nums 中有几个子集的和为 sum */
 int subsets(int[] nums, int sum) {}
@@ -451,11 +447,12 @@ dp[i][j] = dp[i-1][j] + dp[i-1][j-nums[i-1]];
 注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
 
 示例 1：
+
 ```
 输入：k = 2, prices = [2,4,1]
 输出：2
 解释：在第 1 天 (股票价格 = 2) 的时候买入，在第 2 天 (股票价格 = 4) 的时候卖出，这笔交易所能获得利润 = 4-2 = 2 。
-````
+```
 
 题解：
 
@@ -530,7 +527,6 @@ dp[i][0][1] = - INT_MAX
 
 [题目来源](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/)
 
-
 直接套状态转移方程，根据 base case，可以做一些化简：
 
 ```cpp
@@ -588,7 +584,7 @@ public:
         // vector<vector<int>> dp(n,vector<int>(2));
         int dp_i_1 = INT_MIN,dp_i_0 = 0;
         for(int i=0;i<n;++i) {
-            
+
             //今天不持有
             dp_i_0 = max(dp_i_0,dp_i_1 + prices[i]);
             //今天持有
@@ -610,8 +606,8 @@ public:
 
 注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
 
-
 示例 1:
+
 ```
 输入: prices = [7,1,5,3,6,4]
 输出: 7
@@ -651,7 +647,7 @@ public:
                 dp[i][1] = -prices[i];
                 continue;
             }
-            
+
             dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i]);
             dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i]);
         }
@@ -689,6 +685,7 @@ public:
 注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
 
 示例 1:
+
 ```
 输入：prices = [3,3,5,0,0,3,1,4]
 输出：6
@@ -753,7 +750,7 @@ public:
                 dp[i][k][0] = max( dp[i-1][k][0],  dp[i-1][k][1] + prices[i] );
                 dp[i][k][1] = max( dp[i-1][k][1],  dp[i-1][k-1][0] - prices[i] );
             }
-           
+
         }
         return dp[day-1][max_k][0];
     }
@@ -792,6 +789,7 @@ public:
 
  
 示例 1：
+
 ```
 输入：k = 2, prices = [2,4,1]
 输出：2
@@ -827,7 +825,7 @@ public:
         }
         return dp[day-1][k][0];
     }
-    
+
     int maxProfit_k_inf(const vector<int> &prices) {
         int day = prices.size();
         int dp_i_0 = 0,dp_i_1 = INT_MIN;
@@ -893,6 +891,7 @@ public:
 注意：这里的一笔交易指买入持有并卖出股票的整个过程，每笔交易你只需要为支付一次手续费。
 
 示例 1:
+
 ```
 输入: prices = [1, 3, 2, 8, 4, 9], fee = 2
 输出: 8
@@ -905,7 +904,6 @@ public:
 ```
 
 **k 无穷次，并且有手续费**
-
 
 ```cpp
 class Solution {
@@ -925,3 +923,167 @@ public:
 };
 ```
 
+------
+
+## 打家劫舍系列问题
+
+### 198. 打家劫舍
+
+[题目来源](https://leetcode-cn.com/problems/house-robber/)
+
+你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警。
+
+给定一个代表每个房屋存放金额的非负整数数组，计算你 不触动警报装置的情况下 ，一夜之内能够偷窃到的最高金额。
+
+[我写的题解](https://leetcode-cn.com/problems/house-robber/solution/lian-wo-du-neng-kan-dong-de-dong-tai-gui-k9rt/?)
+
+示例 1：
+```
+输入：[1,2,3,1]
+输出：4
+解释：偷窃 1 号房屋 (金额 = 1) ，然后偷窃 3 号房屋 (金额 = 3)。
+     偷窃到的最高金额 = 1 + 3 = 4 。
+```
+
+- 使用动态数组 dp
+
+```cpp
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        if(nums.size() == 1) return nums[0];
+        vector<vector<int>> dp(nums.size() + 1,vector<int>(2));
+        //0代表0号房间，并不是1号房间
+        dp[0][0] = 0;
+        dp[0][1] = INT_MIN;
+        for(int i=1;i<=nums.size();++i) {
+            dp[i][0] = max( dp[i-1][1],dp[i-1][0] );
+            dp[i][1] = dp[i-1][0] + nums[i-1];  //num是从0开始的
+        }
+
+        return max(dp[nums.size() ][0],dp[nums.size()][1]);
+    }
+};
+```
+
+时间复杂度是：O(n)
+
+空间复杂度是：O(2n)
+
+- 维护两个数
+
+```cpp
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        if(nums.size() == 1) return nums[0];
+
+        int dp_i_0 = 0;
+        int dp_i_1 = INT_MIN;
+        for(int i=1;i<=nums.size();++i) {
+            int temp = dp_i_0; 
+            dp_i_0 = max( dp_i_1,dp_i_0 );
+            dp_i_1 = temp + nums[i-1];  //num是从0开始的
+        }
+
+        return max(dp_i_0,dp_i_1);
+    }
+};
+```
+
+时间复杂度是：O(n)
+
+空间复杂度是：O(1)
+
+- [参考`labuladong`的解法](https://mp.weixin.qq.com/s?__biz=MzAxODQxMDM0Mw==&mid=2247484800&idx=1&sn=1016975b9e8df0b8f6df996a5fded0af&chksm=9bd7fb88aca0729eb2d450cca8111abd8f861236b04125ce556171cb520e298ddec4d90823b3&scene=21#wechat_redirect)
+
+使用动态规划函数来做，取 偷 和 不偷 的最大值
+
+
+```cpp
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        return dp(nums,0);
+    }
+    int dp(vector<int> &nums,int start) {
+        if(start >= nums.size()) {
+            return 0;
+        }
+        // 偷或者不偷的最大值
+        int ret = max( 
+            dp(nums,start+1),  //不偷，去下家
+            nums[start] + dp(nums,start+2)  //偷，去下下家，下家肯定不能再偷了
+            );
+        return ret;
+    }
+};
+```
+
+有重叠子问题，超时
+
+使用哈希表来做备忘录，当然也可以使用数组。
+
+```cpp
+class Solution {
+public:
+    unordered_map<int,int> mp;
+
+    int rob(vector<int>& nums) {
+        return dp(nums,0);
+    }
+    int dp(vector<int> &nums,int start) {
+        if(start >= nums.size()) {
+            return 0;
+        }
+
+        //消除重叠子问题
+        if(mp.find( start ) != mp.end() ) return mp[start];
+        // 偷或者不偷的最大值
+        int ret = max( 
+            dp(nums,start+1),  //不偷，去下家
+            nums[start] + dp(nums,start+2)  //偷，去下下家，下家肯定不能再偷了
+            );
+        
+        //记入备忘录
+        mp[start] = ret;
+        return ret;
+    }
+};
+```
+
+### 213. 打家劫舍 II
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/213.3nts842w34o0.png)
+
+但是情况一明显取到的钱比情况二和三少。
+
+```cpp
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        if(nums.size() == 1) return nums[0];
+        if(nums.size() == 2) return max( nums[0],nums[1] );
+
+        int dp_i_0 = 0;
+        int dp_i_1 = INT_MIN;
+
+        int dp_j_0 = 0;
+        int dp_j_1 = INT_MIN;
+
+        for(int i=0,j=1;i<nums.size() - 1 && j < nums.size();++i,++j) {
+
+            // 算的是第一种情况
+            int temp = dp_i_0; 
+            dp_i_0 = max( dp_i_1,dp_i_0 );
+            dp_i_1 = temp + nums[i];  //num是从0开始的
+
+            //算的是第二种情况
+            int temp1 = dp_j_0; 
+            dp_j_0 = max( dp_j_1,dp_j_0 );
+            dp_j_1 = temp1 + nums[j];  //num是从0开始的
+        }
+        return max(max(dp_i_0,dp_i_1),max(dp_j_0,dp_j_1));
+    }
+};
+```
