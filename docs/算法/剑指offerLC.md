@@ -1,4 +1,19 @@
-### 剑指 Offer 03. 数组中重复的数字
+
+- [剑指 Offer 03.数组中重复的数字](#剑指-offer-03数组中重复的数字)
+- [剑指 Offer 04. 二维数组中的查找](#剑指-offer-04-二维数组中的查找)
+- [剑指 Offer 05. 替换空格](#剑指-offer-05-替换空格)
+- [剑指 Offer 06. 从尾到头打印链表](#剑指-offer-06-从尾到头打印链表)
+- [剑指 Offer 07. 重建二叉树](#剑指-offer-07-重建二叉树)
+  - [106.从中序与后序遍历序列构造二叉树](#106从中序与后序遍历序列构造二叉树)
+- [剑指 Offer 09. 用两个栈实现队列](#剑指-offer-09-用两个栈实现队列)
+- [剑指 Offer 10- I. 斐波那契数列](#剑指-offer-10--i-斐波那契数列)
+- [剑指 Offer 10- II. 青蛙跳台阶问题](#剑指-offer-10--ii-青蛙跳台阶问题)
+- [剑指 Offer 11. 旋转数组的最小数字](#剑指-offer-11-旋转数组的最小数字)
+  - [153.寻找旋转排序数组中的最小值](#153寻找旋转排序数组中的最小值)
+  - [154.寻找旋转排序数组中的最小值 II](#154寻找旋转排序数组中的最小值-ii)
+- [剑指 Offer 12.矩阵中的路径](#剑指-offer-12矩阵中的路径)
+
+### 剑指 Offer 03.数组中重复的数字
 
 [题目来源](https://leetcode-cn.com/problems/shu-zu-zhong-zhong-fu-de-shu-zi-lcof/)
 
@@ -537,3 +552,71 @@ public:
 
 [题目来源](https://leetcode-cn.com/problems/ju-zhen-zhong-de-lu-jing-lcof/)
 
+使用回溯法
+
+首先遍历行和列，
+
+**递归终止条件**
+
+- 失败退出
+  - 回溯到开始了，小于0就退出
+  - 越界了退出
+  - 如果当前格子的字符已经不等于 word 了，就退出
+  - 如果当前各自已经访问过了就退出
+- 成功退出
+  - 如果已经匹配到 word 结尾了，就表明成功了，返回 true
+
+**然后开始使用回溯模板进行递归回溯**
+
+
+
+```cpp
+class Solution {
+public:
+    vector<char> path;
+    bool exist(vector<vector<char>>& board, string word) {
+        if(word.size() == 0) return false;
+        int low = board.size();
+        int col = board[0].size();
+        int id = 0;
+        //这个属于排列问题，需要用used来记录已经访问过得
+        vector<vector<bool>> used(low,vector<bool>(col,false));
+        for(int i=0;i<low;++i) {
+            for(int j=0;j<col;++j) {
+                if(backtracking(board,i,j,word,id,used) ) {
+                    return true;
+                }
+            }
+        }
+        return  false;
+    }
+    bool backtracking(vector<vector<char>> &board,int i,int j,string word,int id,vector<vector<bool>> &used) {
+        //结束条件
+        // 回溯有成功推出和失败退出，如果越界会退出，如果回溯到小于0了也会退出,
+        //或者已经出现和word不相等了
+        //如果已经访问过了也退出
+        int low = board.size();
+        int col = board[0].size();
+        if(    i < 0 || i >= low 
+            || j < 0 || j >= col 
+            || board[i][j] != word[id] 
+            || used[i][j] == true
+            ) {
+            return false;
+        }
+        //成功退出,遍历完了
+        if(id == word.size() - 1) return true;
+        //选择
+        used[i][j] = true;  //遍历过了
+
+        //主要有一个返回true就可以了,遍历到这里说明前面都是对的 ，所以id+1
+        int flag = backtracking(board,i+1,j,word,id+1,used)
+            || backtracking(board,i-1,j,word,id+1,used)
+            || backtracking(board,i,j+1,word,id+1,used)
+            || backtracking(board,i,j-1,word,id+1,used);
+        //撤销
+        used[i][j] = false;  
+        return flag;
+    }
+};
+```

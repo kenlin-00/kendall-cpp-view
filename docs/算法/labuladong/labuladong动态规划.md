@@ -8,6 +8,27 @@
 
 只有列出正确的「**状态转移方程**」才能正确地穷举。
 
+------
+
+- [剑指 Offer 10- I.斐波那契数列](#剑指-offer-10--i斐波那契数列)
+- [凑零钱问题](#凑零钱问题)
+  - [暴力递归](#暴力递归)
+  - [带备忘录的递归](#带备忘录的递归)
+  - [dp 数组的迭代解法](#dp-数组的迭代解法)
+- [494.目标和](#494目标和)
+  - [回溯思路](#回溯思路)
+  - [消除重叠子问题](#消除重叠子问题)
+  - [动态规划](#动态规划)
+- [股票问题](#股票问题)
+  - [122.买卖股票的最佳时机 II](#122买卖股票的最佳时机-ii)
+  - [123.买卖股票的最佳时机 III](#123买卖股票的最佳时机-iii)
+  - [188.买卖股票的最佳时机 IV](#188买卖股票的最佳时机-iv)
+  - [309. 最佳买卖股票时机含冷冻期](#309-最佳买卖股票时机含冷冻期)
+  - [714. 买卖股票的最佳时机含手续费](#714-买卖股票的最佳时机含手续费)
+
+
+
+-------
 
 ## 剑指 Offer 10- I.斐波那契数列
 
@@ -598,7 +619,7 @@ public:
      随后，在第 4 天（股票价格 = 3）的时候买入，在第 5 天（股票价格 = 6）的时候卖出, 这笔交易所能获得利润 = 6-3 = 3 。
 ```
 
-这题 k 为正无穷，可以进行无穷次交易。
+**这题 k 为正无穷**，可以进行无穷次交易。
 
 那么就可以认为 k 和 k - 1 是一样的。可以这样改写框架：
 
@@ -675,7 +696,7 @@ public:
      随后，在第 7 天（股票价格 = 1）的时候买入，在第 8 天 （股票价格 = 4）的时候卖出，这笔交易所能获得利润 = 4-1 = 3 。
 ```
 
-这题 k = 2
+**这题 k = 2**
 
 ```
 原始的状态转移，没有化简的地方
@@ -739,9 +760,168 @@ public:
 };
 ```
 
-第二种解法：因为这里 k 取值范围比较小，所以也可以不用 for 循环，直接把 k = 1 和 2 的情况手动列举出来也是一样的
+第二种解法：因为这里 k 取值范围比较小，所以也可以不用 for 循环，直接把 k = 1 和 2 的情况手动列举出来也是一样的。
+
+```cpp
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int day = prices.size();
+        int dp_i10 = 0,dp_i11 = INT_MIN;
+        int dp_i20 = 0,dp_i21 = INT_MIN;
+        for(int i=0;i<day;++i) {
+            dp_i20 = max(dp_i20,dp_i21 + prices[i]);
+            dp_i21 = max(dp_i21,dp_i10 - prices[i]);  //k-1
+            dp_i10 = max(dp_i10,dp_i11 + prices[i]);
+            dp_i11 = max(dp_i11,- prices[i]);  //k-1
+        }
+        return dp_i20;
+    }
+};
+```
+
+### 188.买卖股票的最佳时机 IV
+
+[题目来源](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iv/)
+
+给定一个整数数组 prices ，它的第 i 个元素 prices[i] 是一支给定的股票在第 i 天的价格。
+
+设计一个算法来计算你所能获取的最大利润。你最多可以完成 k 笔交易。
+
+注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+ 
+示例 1：
+```
+输入：k = 2, prices = [2,4,1]
+输出：2
+解释：在第 1 天 (股票价格 = 2) 的时候买入，在第 2 天 (股票价格 = 4) 的时候卖出，这笔交易所能获得利润 = 4-2 = 2 。
+```
+
+**k 是任意数**
+
+思路：
+
+一次交易由买入和卖出构成，至少需要两天。所以说有效的限制次数 k 应该不超过 `day/2`，如果超过，就没有约束作用了，相当于 `k = +infinity`。这种情况是之前解决过的
+
+```cpp
+class Solution {
+public:
+    int maxProfit(int k, vector<int>& prices) {
+        int day = prices.size();
+        //相当于k是正无穷
+        if(k > day / 2) {
+            return maxProfit_k_inf(prices);
+        }
+        vector<vector<vector<int>>> dp(day,vector<vector<int>> (k+1,vector<int>(2)));
+        for(int i=0;i<day;++i) {
+            for(int ki = k;ki>0;--ki ) {
+                if(i-1<0) {
+                    dp[i][ki][0] = 0;
+                    dp[i][ki][1] = -prices[i];
+                    continue;
+                }
+                dp[i][ki][0] = max(dp[i-1][ki][0],dp[i-1][ki][1] + prices[i]);
+                dp[i][ki][1] = max(dp[i-1][ki][1],dp[i-1][ki-1][0] - prices[i]);
+            }
+        }
+        return dp[day-1][k][0];
+    }
+    
+    int maxProfit_k_inf(const vector<int> &prices) {
+        int day = prices.size();
+        int dp_i_0 = 0,dp_i_1 = INT_MIN;
+        for(int i=0;i<day;++i) {
+            int temp = dp_i_0;
+            dp_i_0 = max(dp_i_0,dp_i_1 + prices[i]);
+            dp_i_1 = max( dp_i_1, temp - prices[i] );
+        }
+        return dp_i_0;
+    }
+};
+```
+
+### 309. 最佳买卖股票时机含冷冻期
+
+[题目来源](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
+
+给定一个整数数组，其中第 i 个元素代表了第 i 天的股票价格 。​
+
+设计一个算法计算出最大利润。在满足以下约束条件下，你可以尽可能地完成更多的交易（多次买卖一支股票）:
+
+你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+卖出股票后，你无法在第二天买入股票 (即冷冻期为 1 天)。
+示例:
+
+```
+输入: [1,2,3,0,2]
+输出: 3 
+解释: 对应的交易状态为: [买入, 卖出, 冷冻期, 买入, 卖出]
+```
+
+**K 无穷次，并且有冷冻期**
+
+```cpp
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int day = prices.size();
+        if(day <= 1) return 0;
+        int dp_i_0 = 0,dp_i_1 = INT_MIN;
+        int dp_pre_0 = 0;
+        for(int i=0;i<day;++i) {
+            int temp = dp_i_0;
+            dp_i_0 = max( dp_i_0,dp_i_1 + prices[i] );
+            dp_i_1 = max( dp_i_1,dp_pre_0 - prices[i] );
+            dp_pre_0 = temp;
+        }
+        return dp_i_0;
+    }
+};
+```
+
+### 714. 买卖股票的最佳时机含手续费
+
+[题目来源](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/)
+
+给定一个整数数组 prices，其中第 i 个元素代表了第 i 天的股票价格 ；非负整数 fee 代表了交易股票的手续费用。
+
+你可以无限次地完成交易，但是你每笔交易都需要付手续费。如果你已经购买了一个股票，在卖出它之前你就不能再继续购买股票了。
+
+返回获得利润的最大值。
+
+注意：这里的一笔交易指买入持有并卖出股票的整个过程，每笔交易你只需要为支付一次手续费。
+
+示例 1:
+```
+输入: prices = [1, 3, 2, 8, 4, 9], fee = 2
+输出: 8
+解释: 能够达到的最大利润:  
+在此处买入 prices[0] = 1
+在此处卖出 prices[3] = 8
+在此处买入 prices[4] = 4
+在此处卖出 prices[5] = 9
+总利润: ((8 - 1) - 2) + ((9 - 4) - 2) = 8.
+```
+
+**k 无穷次，并且有手续费**
 
 
-
-
+```cpp
+class Solution {
+public:
+    int maxProfit(vector<int>& prices, int fee) {
+        int day = prices.size();
+        if(day <= 1) return 0;
+        int dp_i_0 = 0,dp_i_1 = INT_MIN;
+        for(int i=0;i<day;++i) {
+            int temp = dp_i_0;
+            dp_i_0 = max( dp_i_0, dp_i_1 + prices[i] );
+            //这里还需要支付手续费
+            dp_i_1 = max( dp_i_1,temp - prices[i] - fee );
+        }
+        return dp_i_0;
+    }
+};
+```
 
