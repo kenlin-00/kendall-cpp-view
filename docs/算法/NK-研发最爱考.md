@@ -5,6 +5,7 @@
 - [反转链表](#反转链表)
 - [排序](#排序)
   - [快速排序](#快速排序)
+  - [归并排序](#归并排序)
 - [设计LRU缓存结构](#设计lru缓存结构)
 - [21.合并两个有序链表](#21合并两个有序链表)
 - [415.字符串相加](#415字符串相加)
@@ -58,17 +59,11 @@ public:
 
 递归法：
 
+先进入第一个节点，接着第二个...
+
+最后出来的是最后一个。倒数第二个.....
+
 ```cpp
-/**
- * Definition for singly-linked list.
- * struct ListNode {
- *     int val;
- *     ListNode *next;
- *     ListNode() : val(0), next(nullptr) {}
- *     ListNode(int x) : val(x), next(nullptr) {}
- *     ListNode(int x, ListNode *next) : val(x), next(next) {}
- * };
- */
 class Solution {
 public:
     ListNode* reverseList(ListNode* head) {
@@ -88,6 +83,8 @@ public:
 
 
 ## 排序
+
+[题目来源](https://leetcode-cn.com/problems/sort-an-array/)
 
 ### 快速排序
 
@@ -137,6 +134,87 @@ public:
     }
 };
 ```
+
+### 归并排序
+
+思想：归并排序采用的是分治法思想，
+
+- 首相是将 `n` 个元素分治成 `n/2` 个元素的子序列
+- 用合并排序算法对两个子序列进行排序
+- 合并两个已经排序好的子序列
+- 递归以上的三个步骤，直到全部排好序
+
+动图演示：
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/归并排序.2xhvcwnpy060.gif)
+
+```cpp
+#include <iostream>
+#include<string>
+#include <vector>
+
+using  namespace std;
+
+
+
+void merge(vector<int>& nums,vector<int>& temp,int first,int mid,int last)
+{
+    int low1=first,low2=mid+1;
+    int index=first;
+    while(low1<=mid && low2<=last)
+    {
+        if(nums[low1]<=nums[low2])temp[index++]=nums[low1++];
+        else temp[index++]=nums[low2++];
+    }
+    // 如果剩下左边的
+    while(low1<=mid) temp[index++]=nums[low1++];
+    //如果剩下右边的
+    while(low2<=last) temp[index++]=nums[low2++];
+
+    //拷贝回 nums
+    for(index=first;index<=last;++index)
+    {
+        nums[index]=temp[index];
+    }
+}
+
+void mergeSort(vector<int>& nums,int first,int last,vector<int>& temp)
+{
+    if(first<last)
+    {
+        int mid=(first+last)/2;
+        //分治左边
+        mergeSort(nums,first,mid,temp);
+        //分治右边
+        mergeSort(nums,mid+1,last,temp);
+        //归并，左边的第一个和右边的第一个比
+        merge(nums,temp,first,mid,last);
+    }
+}
+
+vector<int> sortArray(vector<int>& nums) {
+    int n=nums.size();
+    if(n<=1)return nums;
+    vector<int> temp(n);
+    mergeSort(nums,0,n-1,temp);
+    return nums;
+}
+
+int main() {
+
+    vector<int> nums = { 5,2,3,1 };
+    sortArray(nums);
+    vector<int>::iterator it = nums.begin();
+    while (it != nums.end() )
+    {
+        cout << *it++ << " ";
+    }
+    cout << endl;
+    
+    return 0;
+}
+```
+
 
 ## 设计LRU缓存结构
 
@@ -352,12 +430,6 @@ public:
 ```cpp
 class Solution {
 public:
-    /**
-     * 
-     * @param numbers int整型vector 
-     * @param target int整型 
-     * @return int整型vector
-     */
     vector<int> twoSum(vector<int>& numbers, int target) {
         // write code here
         vector<int> res;
@@ -434,6 +506,57 @@ public:
 [1,3,5,2,2],5,3
 返回值
 2
+```
+
+倒序快排
+
+第 K 大一定在第 K-1 位置
+
+
+```cpp
+class Solution {
+public:
+    int ans = 0;
+    int partition(vector<int>& arr, int i, int j)
+    {
+        int pivot = arr[i];
+        //倒序
+        while (i < j)
+        {
+            while (i < j && arr[j] <= pivot) j--;
+            arr[i] = arr[j];
+            while (i < j && arr[i] >= pivot) i++;
+            arr[j] = arr[i];
+        }
+        //不需要保存基站数据了，也用不上
+        arr[i] = pivot;
+        return i;
+    }
+    //倒序排序
+    void quicksort(vector<int>& arr, int left, int right, int K)
+    {
+        if (left <= right)
+        {
+            int mid = partition(arr, left, right);
+            if (mid == K - 1) //第K大一定在 K-1 位置
+            {
+                ans = arr[mid];
+            }
+            else if (mid < K - 1)
+            {
+                quicksort(arr, mid + 1, right, K);
+            }
+            else
+            {
+                quicksort(arr, left, mid - 1, K);
+            }
+        }
+    }
+    int findKth(vector<int> a, int n, int K) {
+        quicksort(a, 0, n-1, K);
+        return ans;
+    }
+};
 ```
 
 
