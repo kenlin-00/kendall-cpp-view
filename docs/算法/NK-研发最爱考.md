@@ -18,6 +18,8 @@
 - [二进制中1的个数](#二进制中1的个数)
 - [1472. 设计浏览器历史记录](#1472-设计浏览器历史记录)
 - [1154.一年中的第几天](#1154一年中的第几天)
+  - [最长不含重复字符的子字符串](#最长不含重复字符的子字符串)
+  - [回文数字](#回文数字)
 
 -----
 
@@ -806,6 +808,18 @@ public:
     }
 };
 ```
+
+### 最长不含重复字符的子字符串  
+
+[题目来源](https://leetcode-cn.com/problems/zui-chang-bu-han-zhong-fu-zi-fu-de-zi-zi-fu-chuan-lcof)
+
+https://leetcode-cn.com/problems/longest-substring-without-repeating-characters
+
+### 回文数字
+
+几种思路
+
+
 
 
 
