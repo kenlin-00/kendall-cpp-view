@@ -19,8 +19,11 @@
 - [二进制中1的个数](#二进制中1的个数)
 - [1472. 设计浏览器历史记录](#1472-设计浏览器历史记录)
 - [1154.一年中的第几天](#1154一年中的第几天)
-  - [最长不含重复字符的子字符串](#最长不含重复字符的子字符串)
-  - [回文数字](#回文数字)
+- [最长不含重复字符的子字符串](#最长不含重复字符的子字符串)
+- [回文数字](#回文数字)
+- [链表两两反转](#链表两两反转)
+- [剑指 Offer 54.二叉搜索树的第k大节点](#剑指-offer-54二叉搜索树的第k大节点)
+- [k个数翻转](#k个数翻转)
 
 -----
 
@@ -936,15 +939,29 @@ public:
 };
 ```
 
-### 最长不含重复字符的子字符串  
+## 最长不含重复字符的子字符串  
 
 [题目来源](https://leetcode-cn.com/problems/zui-chang-bu-han-zhong-fu-zi-fu-de-zi-zi-fu-chuan-lcof)
 
 https://leetcode-cn.com/problems/longest-substring-without-repeating-characters
 
-### 回文数字
+## 回文数字
 
 几种思路
+
+## 链表两两反转
+
+> https://blog.csdn.net/plokmju88/article/details/102965953
+
+
+> https://hwdlei.github.io/%E7%AC%94%E8%AF%95%E9%9D%A2%E8%AF%95/2016/10/20/list-revert/
+
+
+## 剑指 Offer 54.二叉搜索树的第k大节点
+
+[题目来源](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-di-kda-jie-dian-lcof/)
+
+## k个数翻转
 
 
 
