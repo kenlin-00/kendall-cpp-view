@@ -19,11 +19,15 @@
 - [二进制中1的个数](#二进制中1的个数)
 - [1472. 设计浏览器历史记录](#1472-设计浏览器历史记录)
 - [1154.一年中的第几天](#1154一年中的第几天)
-- [最长不含重复字符的子字符串](#最长不含重复字符的子字符串)
-- [回文数字](#回文数字)
+- [剑指 Offer 48.最长不含重复字符的子字符串](#剑指-offer-48最长不含重复字符的子字符串)
+- [9.回文数](#9回文数)
 - [链表两两反转](#链表两两反转)
 - [剑指 Offer 54.二叉搜索树的第k大节点](#剑指-offer-54二叉搜索树的第k大节点)
 - [k个数翻转](#k个数翻转)
+- [构建子集](#构建子集)
+  - [写一个环形缓冲区](#写一个环形缓冲区)
+  - [二叉搜索树](#二叉搜索树)
+  - [未排序正数数组中累加和为给定值得最长子数组长度](#未排序正数数组中累加和为给定值得最长子数组长度)
 
 -----
 
@@ -939,13 +943,84 @@ public:
 };
 ```
 
-## 最长不含重复字符的子字符串  
+## 剑指 Offer 48.最长不含重复字符的子字符串
 
 [题目来源](https://leetcode-cn.com/problems/zui-chang-bu-han-zhong-fu-zi-fu-de-zi-zi-fu-chuan-lcof)
 
+请从字符串中找出一个最长的不包含重复字符的子字符串，计算该最长子字符串的长度。
+
+示例 1:
+```
+输入: "abcabcbb"
+输出: 3 
+解释: 因为无重复字符的最长子串是 "abc"，所以其长度为 3。
+```
+
+```cpp
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        int left = 0,right = 0;
+        unordered_map<char,int> window;
+        int res = 0;
+        while(right < s.size()) {
+            char c = s[right];
+            ++right;
+            window[c]++;
+
+            while(window[c] > 1) {
+                char d = s[left];
+                ++left;
+                window[d]--;
+            }
+            res = max(res,right - left);
+        }
+        return res;
+    }
+};
+```
+
+
+
 https://leetcode-cn.com/problems/longest-substring-without-repeating-characters
 
-## 回文数字
+## 9.回文数
+
+[题目来源](https://leetcode-cn.com/problems/palindrome-number/)
+
+
+给你一个整数 x ，如果 x 是一个回文整数，返回 true ；否则，返回 false 。
+
+回文数是指正序（从左向右）和倒序（从右向左）读都是一样的整数。例如，121 是回文，而 123 不是。
+
+ 
+
+示例 1：
+```
+输入：x = 121
+输出：true
+```
+
+- 第一种思路：转成字符串
+
+```cpp
+class Solution {
+public:
+    bool isPalindrome(int x) {
+        stringstream ss;
+        ss << x;
+        string s = ss.str();
+        int left = 0,right = s.size()  - 1;
+        while(left < right) {
+            if(s[left++] != s[right--]) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+```
+
 
 几种思路
 
@@ -963,8 +1038,40 @@ https://leetcode-cn.com/problems/longest-substring-without-repeating-characters
 
 ## k个数翻转
 
+## 构建子集
+
+对一个正数组成的数组，用最少的元素构建一个子集，满足该子集之和大于剩余元素之和。输出子集的一种情况即可。
+
+个人答案：
+
+直接从大到小排序，计算sum；注：排序面试官说用sort就行了。
+从前往后遍历将数组分成两部分，当前面部分比后面大时，输出前面数组。
 
 
+实现两个函数模拟EXCEL的列，一个是由数字到字母，一个是由字母到数字。即28->AC;AC->28。
+个人答案：
 
+就很基础，注意A对应的数字是1而不是0即可。
+```
+1
+string InttoName(int a);
+1
+int NametoInt(string s);
+```
 
+### 写一个环形缓冲区
+```
+// RingBuffer 一块连续的内存
+// Write
+// Read
+// 1、FIFO 2、读写不相互覆盖
 
+```
+
+### 二叉搜索树
+
+### 未排序正数数组中累加和为给定值得最长子数组长度
+
+> 这里全部算法题
+
+> https://www.nowcoder.com/discuss/640138?channel=-1&source_id=profile_follow_post_nctrack
