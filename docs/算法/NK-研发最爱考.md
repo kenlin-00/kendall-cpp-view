@@ -1001,7 +1001,7 @@ https://leetcode-cn.com/problems/longest-substring-without-repeating-characters
 输出：true
 ```
 
-- 第一种思路：转成字符串
+- 转成字符串
 
 ```cpp
 class Solution {
@@ -1021,15 +1021,134 @@ public:
 };
 ```
 
+- 翻转一半的数字
 
-几种思路
+用 `x > reverseNum` 作为条件
+
+```cpp
+class Solution {
+public:
+    bool isPalindrome(int x) {
+        if(x < 0 || (x % 10 == 0 && x != 0) ) {
+            return false;
+        }
+        //翻转一般的数字
+        int reverseNum = 0;
+        while(x > reverseNum) {
+            reverseNum = reverseNum * 10 + x % 10;
+            x /= 10;
+        }
+        // 当数字长度为奇数时，我们可以通过 revertedNumber/10 去除处于中位的数字。
+        // 例如，当输入为 12321 时，在 while 循环的末尾我们可以得到 x = 12，revertedNumber = 123，
+        // 由于处于中位的数字不影响回文（它总是与自己相等），所以我们可以简单地将其去除。
+
+        return x == reverseNum || x == reverseNum / 10;
+    }
+};
+```
+
+时间复杂度：O(logn)，对于每次迭代，我们会将输入除以 10，因此时间复杂度为 O(logn)。
+
+空间复杂度：O(1)。我们只需要常数空间存放若干变量。
+
 
 ## 链表两两反转
 
 > https://blog.csdn.net/plokmju88/article/details/102965953
 
 
-> https://hwdlei.github.io/%E7%AC%94%E8%AF%95%E9%9D%A2%E8%AF%95/2016/10/20/list-revert/
+第一种思路：交换两个节点的值
+
+```cpp
+
+#include <stdio.h>
+#include <iostream>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+
+ListNode* reverseTwo(ListNode* head) {
+    if(head == nullptr || head->next == nullptr ) return head;
+
+    ListNode* one = head;
+    ListNode* two = head->next;
+    while(one != nullptr && two != nullptr) {
+        swap(one->val,two->val);
+        if(two->next && two->next->next) {
+            one = one->next->next;
+            two = two->next->next;
+        }
+        else {
+            break;
+        }
+    }
+    return head;
+}
+
+int main() {
+    ListNode *head = new ListNode(0);
+    ListNode* p = head;
+    for(int i=1;i<11;++i ) {
+        ListNode* temp = new ListNode(i);
+        p->next = temp;
+        p = p->next;
+    }
+    p->next = NULL;
+    
+
+    p = head;
+    while (p != nullptr)    
+    {
+        cout << p->val << " ";
+        p = p->next;
+
+    }
+    cout << endl;
+    
+    ListNode* res =  reverseTwo(head);
+    p = head;
+    while (p != nullptr)    
+    {
+        cout << p->val << " ";
+        p = p->next;
+
+    }
+    cout << endl;
+
+    return 0;
+}
+```
+
+> 第二种思路：
+
+> 有  bug
+
+```cpp
+ ListNode* reverseTwo(ListNode *head) {
+     //表头增加虚拟节点 dumy
+     ListNode *dumy = new ListNode(-1);
+     dumy->next = head;
+     head = dumy;
+     //循环条件，注意链表结点数单双的情况
+     while(head->next != nullptr && head->next->next != nullptr) {
+         //开始反转
+         ListNode *one = head->next;
+         ListNode *two = one->next;
+         head->next = two;
+         one->next = two->next;
+         two->next = one;
+         //指针前移
+         head = one;
+     }
+     return dumy->next;
+ }
+```
+
 
 
 ## 剑指 Offer 54.二叉搜索树的第k大节点
