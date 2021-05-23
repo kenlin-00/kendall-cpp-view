@@ -1126,27 +1126,87 @@ int main() {
 
 > 第二种思路：
 
-> 有  bug
 
 ```cpp
- ListNode* reverseTwo(ListNode *head) {
-     //表头增加虚拟节点 dumy
-     ListNode *dumy = new ListNode(-1);
-     dumy->next = head;
-     head = dumy;
-     //循环条件，注意链表结点数单双的情况
-     while(head->next != nullptr && head->next->next != nullptr) {
-         //开始反转
-         ListNode *one = head->next;
-         ListNode *two = one->next;
-         head->next = two;
-         one->next = two->next;
-         two->next = one;
-         //指针前移
-         head = one;
-     }
-     return dumy->next;
- }
+ 
+#include <stdio.h>
+#include <iostream>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+ListNode* ReverseList(ListNode* head)// 两两反转链表
+{
+    if (head == NULL)
+          return NULL;
+    ListNode* cur = head;
+    //记录下下个结点，下次的置换在该结点和该结点的下一个结点间进行
+    ListNode * nexnex = cur->next->next;
+    //置换当前结点和下一个结点，例如，这一步后B指向A了，但是A依然指向B，目标是要A指向D。
+    ListNode * swaphead = cur->next;
+    swaphead->next = cur;
+    //递归,返回D
+    ListNode * swapnexnex = ReverseList(nexnex);
+    //使A指向D
+    cur->next = swapnexnex;
+    //最后返回B
+    return swaphead;
+}
+
+ListNode* Init(int num) // 创建链表
+{
+    if (num <= 0)
+        return NULL;
+    ListNode* cur = NULL;
+    ListNode* head = NULL;
+    ListNode* node = (ListNode*)malloc(sizeof(ListNode));
+    node->val = 1;
+    head = cur = node;
+    for (int i = 1; i < num; i++)
+    {
+        ListNode* node = (ListNode*)malloc(sizeof(ListNode));
+        node->val = i + 1;
+        cur->next = node;
+        cur = node;
+    }
+    cur->next = NULL;
+    return head;
+}
+
+void Display(ListNode *head)// 打印链表
+{
+    if (head == NULL)
+    {
+        cout << "the list is empty" << endl;
+        return;
+    }
+    else
+    {
+        ListNode *p = head;
+        while (p)
+        {
+            cout << p->val << " ";
+            p = p->next;
+        }
+    }
+    cout << endl;
+}
+
+int main( )
+{
+    ListNode* list = NULL;
+    list = Init(10);
+    Display(list);
+    ListNode* newlist = ReverseList(list);
+    Display(newlist);
+ 
+    return 0;
+
+}
 ```
 
 
