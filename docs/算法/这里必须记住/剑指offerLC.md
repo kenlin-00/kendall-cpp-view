@@ -12,7 +12,12 @@
   - [153.寻找旋转排序数组中的最小值](#153寻找旋转排序数组中的最小值)
   - [154.寻找旋转排序数组中的最小值 II](#154寻找旋转排序数组中的最小值-ii)
 - [剑指 Offer 12.矩阵中的路径](#剑指-offer-12矩阵中的路径)
-- [剑指offer所有翻转相关](#剑指offer所有翻转相关)
+- [剑指 Offer 13. 机器人的运动范围](#剑指-offer-13-机器人的运动范围)
+- [剑指 Offer 14- I. 剪绳子](#剑指-offer-14--i-剪绳子)
+  - [剑指 Offer 14- II. 剪绳子 II](#剑指-offer-14--ii-剪绳子-ii)
+- [剑指 Offer 15. 二进制中1的个数](#剑指-offer-15-二进制中1的个数)
+- [剑指 Offer 16. 数值的整数次方](#剑指-offer-16-数值的整数次方)
+- [剑指 Offer 58 - I. 翻转单词顺序](#剑指-offer-58---i-翻转单词顺序)
 
 ### 剑指 Offer 03.数组中重复的数字
 
@@ -622,4 +627,250 @@ public:
 };
 ```
 
-### 剑指offer所有翻转相关
+### 剑指 Offer 13. 机器人的运动范围
+
+[题目来源](https://leetcode-cn.com/problems/ji-qi-ren-de-yun-dong-fan-wei-lcof/)
+
+
+地上有一个m行n列的方格，从坐标 [0,0] 到坐标 [m-1,n-1] 。一个机器人从坐标 [0, 0] 的格子开始移动，它每次可以向左、右、上、下移动一格（不能移动到方格外），也不能进入行坐标和列坐标的数位之和大于k的格子。例如，当k为18时，机器人能够进入方格 [35, 37] ，因为3+5+3+7=18。但它不能进入方格 [35, 38]，因为3+5+3+8=19。请问该机器人能够到达多少个格子？
+
+示例 1：
+```
+输入：m = 2, n = 3, k = 1
+输出：3
+```
+
+> 参考：https://www.bilibili.com/video/BV1B5411s7tF?from=search&seid=3247245939495863812
+
+```cpp
+class Solution {
+public:
+    int dfs(vector<vector<bool>> &visited, int m, int n, int cur_m, int cur_n, int k)
+    {
+        int count = 0;
+        if (check(visited, m, n, cur_m, cur_n, k))
+        {
+            visited[cur_m][cur_n] = true;
+            count = 1 + dfs(visited, m, n, cur_m + 1, cur_n, k) 
+                    + dfs(visited, m, n, cur_m, cur_n + 1, k)
+                    + dfs(visited, m, n, cur_m - 1, cur_n, k) 
+                    + dfs(visited, m, n, cur_m, cur_n - 1, k);
+        }
+        return count;
+    }
+
+    //判断当前坐标是否符合条件
+    bool check(vector<vector<bool>> &visited, int m, int n, int cur_m, int cur_n, int k)
+    {
+        if (cur_m < m && cur_m >= 0 
+            && cur_n < n && cur_n >= 0 
+            && !visited[cur_m][cur_n]   // 房钱节点没有被访问过
+            && (checkSum(cur_m) + checkSum(cur_n) <= k))  //各位数的和小于等于k
+            return true;
+        return false;
+    }
+
+    //累加一个数的各位数值
+    int checkSum(int num)
+    {
+        int sum = 0;
+        while (num)
+        {
+            sum += num % 10;
+            num /= 10;
+        }
+        return sum;
+    }
+
+    //主函数
+    int movingCount(int m, int n, int k) {
+        if (m <= 0 || n <= 0 || k < 0) return 0;
+
+        vector<vector<bool>> visited(m, vector<bool>(n, false));    //布尔矩阵初始化
+        
+        // 0,0表示开始的位置
+        int count = dfs(visited, m, n, 0, 0, k);
+
+        return count;
+    }
+};
+```
+
+### 剑指 Offer 14- I. 剪绳子
+
+[题目来源](https://leetcode-cn.com/problems/jian-sheng-zi-lcof/)
+
+给你一根长度为 n 的绳子，请把绳子剪成整数长度的 m 段（m、n都是整数，`n>1`并且`m>1`），每段绳子的长度记为 `k[0],k[1]...k[m-1]` 。请问 `k[0]*k[1]*...*k[m-1]` 可能的最大乘积是多少？例如，当绳子的长度是8时，我们把它剪成长度分别为2、3、3的三段，此时得到的最大乘积是18。
+
+示例 1：
+```
+输入: 2
+输出: 1
+解释: 2 = 1 + 1, 1 × 1 = 1
+```
+
+> 和[343. 整数拆分](https://leetcode-cn.com/problems/integer-break/)一样
+
+> 参考：https://leetcode-cn.com/problems/integer-break/solution/343-zheng-shu-chai-fen-dong-tai-gui-hua-xiang-jie-/
+
+
+```cpp
+class Solution {
+public:
+    int cuttingRope(int n) {
+        vector<int> dp(n+1);
+        dp[2] = 1;
+        // 遍历 和 为 你
+        for(int i=0;i<=n;++i) {
+            for(int j=1;j<=i/2;++j) {  // 遍历到一半就行了，不用重复遍历
+                dp[i] = max(dp[i], max( j * (i-j),j * dp[i-j] ));  //i 和 j 可以拆也可以不拆，取最大值
+                //j是从1开始遍历，拆分j的情况，在遍历j的过程中其实都计算过了。所以 j  不用拆分了
+            }
+        }
+        return dp[n];
+    }
+};
+```
+
+#### 剑指 Offer 14- II. 剪绳子 II
+
+给你一根长度为 n 的绳子，请把绳子剪成整数长度的 m 段（m、n都是整数，n>1并且m>1），每段绳子的长度记为 k[0],k[1]...k[m - 1] 。请问 k[0]*k[1]*...*k[m - 1] 可能的最大乘积是多少？例如，当绳子的长度是8时，我们把它剪成长度分别为2、3、3的三段，此时得到的最大乘积是18。
+
+答案需要取模 `1e9+7（1000000007）`，如计算初始结果为：`1000000008`，请返回 `1`。 
+
+示例 1：
+```
+输入: 2
+输出: 1
+解释: 2 = 1 + 1, 1 × 1 = 1
+```
+
+> 和 [343. 整数拆分](https://leetcode-cn.com/problems/integer-break/) 相同
+
+这题和上题基本相同，唯一不同在于本题目涉及 “大数越界情况下的求余问题” 
+
+**DP会溢出，只能用上述规律这一种方法来做了**
+
+```cpp
+class Solution {
+public:
+    int cuttingRope(int n) {
+        if(n <= 3) return n-1;
+        if(n == 4) return n;
+        long res = 1;
+        while( n > 4) {
+            res *= 3;
+            res %=  1000000007;
+            n -= 3;
+        }
+        // 最后n的值只有可能是：2、3、4。而2、3、4能得到的最大乘积恰恰就是自身值
+        // 因为2、3不需要再剪了（剪了反而变小）；4剪成2x2是最大的，2x2恰巧等于4
+        return res * n %  1000000007;
+    }
+};
+```
+
+### 剑指 Offer 15. 二进制中1的个数
+
+[题目来源](https://leetcode-cn.com/problems/er-jin-zhi-zhong-1de-ge-shu-lcof/)
+
+- `bitset`的运用
+
+主要是将 `n` 转化为 `32` 位表示，`int` 最大也就是 `2^32`次方，然后利用`bitset`。`count()`函数，返回 其中 `1` 的数量。
+
+
+```cpp
+class Solution {
+public:
+    int hammingWeight(uint32_t n) {
+        return bitset<32>(n).count();
+    }
+}
+```
+
+
+- 解法二
+
+如果一个整数不为`0`，那么这个整数至少有一位是`1`。如果我们把这个整数减1，那么原来处在整数 最右边的`1`就会变为`0`，原来在`1`后面的所有的`0`都会变成`1`(如果最右边的`1`后面还有`0`的话)。其余所有位 将不会受到影响。
+
+举个例子:一个二进制数`1100`，从右边数起第三位是处于最右边的一个`1`。减去`1`后，第三位变成 `0`，它后面的两位`0`变成了`1`，而前面的`1`保持不变，因此得到的结果是`1011`.我们发现减`1`的结果是把最 右边的第一个`1`开始的所有位都取反了。
+
+这个时候如果我们再把原来的整数和减去`1`之后的结果做 **与** 运算， 从原来整数最右边一个`1`那一位开始所有位都会变成`0`。如`1100&1011=1000`.也就是说，把一个整数减 去`1`，**再和原整数做 与 运算**，会把该整数最右边一个`1`变成`0`.那么一个整数的二进制有多少个`1`，就可以 进行多少次这样的操作
+
+```cpp
+class Solution {
+public:
+    int hammingWeight(uint32_t n) {
+        int res = 0;
+        while( n != 0) {
+            n = n & (n -1);  //一直到 n==0
+            ++res;
+        }
+        return res;
+    }
+};
+```
+
+### 剑指 Offer 16. 数值的整数次方
+
+[题目来源](https://leetcode-cn.com/problems/shu-zhi-de-zheng-shu-ci-fang-lcof/)
+
+实现 `pow(x, n)` ，即计算 x 的 n 次幂函数（即，$x^n$）。不得使用库函数，同时不需要考虑大数问题。
+
+
+
+### 剑指 Offer 58 - I. 翻转单词顺序
+
+[题目来源](https://leetcode-cn.com/problems/fan-zhuan-dan-ci-shun-xu-lcof/)
+
+输入一个英文句子，翻转句子中单词的顺序，但单词内字符的顺序不变。为简单起见，标点符号和普通字母一样处理。例如输入字符串"I am a student. "，则输出"student. a am I"。
+
+示例 ：
+```
+输入: "the sky is blue"
+输出: "blue is sky the"
+
+
+输入: "  hello world!  "
+输出: "world! hello"
+解释: 输入字符串可以在前面或者后面包含多余的空格，但是反转后的字符不能包括。
+```
+
+- 我们使用两个指针`l`、`r`来帮助选择每一个单词
+- 在每次循环时，先去除所有单词右侧空格，获取某个单词的最右下标`r`，再获取单词的最左下标`l`
+- 然后把单词`s.substr(l + 1, r - l)`加入`ret`，别忘了加空格哦
+- 最后要把多余的空格去除`ret.pop_back()`
+
+```cpp
+class Solution {
+public:
+    string reverseWords(string s) {
+        if(s.size() == 0) return s;
+        string res = "";
+
+        int len = s.size() - 1;
+        int r = len,l;
+        while(r >= 0) {
+            //去掉多余的空格
+            while(r >= 0 && s[r] == ' ') --r;
+            //这时候如果r已经小于0了。就直接结束循环
+            if(r < 0) break;
+
+            // 将l移动到一个单词的开始
+            for(l = r, l >= 0; l >= 0 && s[l] != ' ' ;--l);
+            //这时候 s[l] == ' '
+            res += (s.substr(l+1,r-l) + " ");  // substr(index,num)
+            r = l;  
+        }
+        //去掉res最后的空格
+        if(res.size()) res.pop_back();
+        return res;
+    }
+};
+```
+
+时间复杂度： `O(n)`
+
+空间复杂度： `O(n)`
+
+
