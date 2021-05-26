@@ -26,8 +26,7 @@
 - [k个数翻转](#k个数翻转)
 - [构建子集](#构建子集)
   - [写一个环形缓冲区](#写一个环形缓冲区)
-  - [二叉搜索树](#二叉搜索树)
-  - [未排序正数数组中累加和为给定值得最长子数组长度](#未排序正数数组中累加和为给定值得最长子数组长度)
+  - [剑指 Offer 49. 丑数](#剑指-offer-49-丑数)
 
 -----
 
@@ -174,15 +173,17 @@ void merge(vector<int>& nums,vector<int>& temp,int first,int mid,int last)
     int index=first;
     while(low1<=mid && low2<=last)
     {
-        if(nums[low1]<=nums[low2])temp[index++]=nums[low1++];
-        else temp[index++]=nums[low2++];
+        if(nums[low1]<=nums[low2])
+            temp[index++]=nums[low1++];
+        else 
+            temp[index++]=nums[low2++];
     }
     // 如果剩下左边的
     while(low1<=mid) temp[index++]=nums[low1++];
     //如果剩下右边的
     while(low2<=last) temp[index++]=nums[low2++];
 
-    //拷贝回 nums
+    //拷贝回 nums 
     for(index=first;index<=last;++index)
     {
         nums[index]=temp[index];
@@ -193,7 +194,7 @@ void mergeSort(vector<int>& nums,int first,int last,vector<int>& temp)
 {
     if(first<last)
     {
-        int mid=(first+last)/2;
+        int mid=first + (last - first) / 2;
         //分治左边
         mergeSort(nums,first,mid,temp);
         //分治右边
@@ -1246,9 +1247,20 @@ int NametoInt(string s);
 
 ```
 
-### 二叉搜索树
+### 剑指 Offer 49. 丑数
 
-### 未排序正数数组中累加和为给定值得最长子数组长度
+[题目来源](https://leetcode-cn.com/problems/chou-shu-lcof/)
+
+我们把只包含质因子 2、3 和 5 的数称作丑数（Ugly Number）。求按从小到大的顺序的第 n 个丑数。
+
+示例:
+```
+输入: n = 10
+输出: 12
+解释: 1, 2, 3, 4, 5, 6, 8, 9, 10, 12 是前 10 个丑数。
+```
+
+
 
 > 这里全部算法题
 

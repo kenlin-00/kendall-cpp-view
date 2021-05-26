@@ -17,6 +17,13 @@
   - [剑指 Offer 14- II. 剪绳子 II](#剑指-offer-14--ii-剪绳子-ii)
 - [剑指 Offer 15. 二进制中1的个数](#剑指-offer-15-二进制中1的个数)
 - [剑指 Offer 16. 数值的整数次方](#剑指-offer-16-数值的整数次方)
+  - [剑指offer-数值的整数次方](#剑指offer-数值的整数次方)
+- [剑指 Offer 17. 打印从1到最大的n位数](#剑指-offer-17-打印从1到最大的n位数)
+- [剑指 Offer 18. 删除链表的节点](#剑指-offer-18-删除链表的节点)
+- [剑指 Offer 19. 正则表达式匹配](#剑指-offer-19-正则表达式匹配)
+- [剑指 Offer 54. 二叉搜索树的第k大节点](#剑指-offer-54-二叉搜索树的第k大节点)
+- [剑指 Offer 49. 丑数](#剑指-offer-49-丑数)
+  - [263. 丑数](#263-丑数)
 - [剑指 Offer 58 - I. 翻转单词顺序](#剑指-offer-58---i-翻转单词顺序)
 
 ### 剑指 Offer 03.数组中重复的数字
@@ -817,6 +824,352 @@ public:
 
 实现 `pow(x, n)` ，即计算 x 的 n 次幂函数（即，$x^n$）。不得使用库函数，同时不需要考虑大数问题。
 
+需要考虑溢出情况
+
+```cpp
+class Solution {
+public:
+    double myPow(double x, int n) {
+        //考虑边界情况
+        if(x == 1.0 || x == 0.0) {
+            return x;
+        }
+        double res = 1.0;
+        //将指数转成 long型
+        long exp = (long)n;
+        //如果指数是 负数
+        if(exp < 0) {
+            exp = -exp;  //转成正数
+            x= 1.0/x;  // 取成分数
+        }
+        while(exp > 0) {
+            if((exp & 1) == 1) {
+                res *= x;
+            }
+            x *= x;
+            exp >>= 1;
+        }
+        return res;
+    }
+};
+```
+
+#### 剑指offer-数值的整数次方
+
+[题目来源](https://www.nowcoder.com/practice/1a834e5e3e1a4b7ba251417554e07c00?tpId=13&&tqId=11165&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
+
+主要要注意正负数的情况，要注意分开
+
+```cpp
+class Solution {
+public:
+    double Power(double base, int exponent) {
+        if(exponent == 0) return 1.0;
+        if(base == 0.0) return 0.0;
+        //判断指数是否是负数
+        bool flag = false;
+        if(exponent < 0) {
+            flag = true;
+            exponent *= -1;
+        }
+        //连续乘
+        double res = base;
+        for(int i=2;i<=exponent;++i) {
+            res *= base;
+        }
+        if(flag) {
+            return 1.0 / res;
+        }
+        return res;
+    }
+};
+```
+
+### 剑指 Offer 17. 打印从1到最大的n位数
+
+[题目来源](https://leetcode-cn.com/problems/da-yin-cong-1dao-zui-da-de-nwei-shu-lcof/)
+
+输入数字 n，按顺序打印出从 1 到最大的 n 位十进制数。比如输入 3，则打印出 1、2、3 一直到最大的 3 位数 999。
+
+示例 1:
+```
+输入: n = 1
+输出: [1,2,3,4,5,6,7,8,9]
+```
+
+
+```cpp
+class Solution {
+public:
+    vector<int> printNumbers(int n) {
+        vector<int> res;
+        int num = 0;
+        for(int i=1;i<=n;++i) {
+            num = 10 * num + 9;
+        }
+        for(int i=1;i<=num;++i) {
+            res.push_back(i);
+        }
+        return res;
+    }
+};
+```
+
+### 剑指 Offer 18. 删除链表的节点
+
+[题目来源](https://leetcode-cn.com/problems/shan-chu-lian-biao-de-jie-dian-lcof/)
+
+给定单向链表的头指针和一个要删除的节点的值，定义一个函数删除该节点。
+
+返回删除后的链表的头节点。
+
+注意：此题对比原题有改动
+
+示例 1:
+```
+输入: head = [4,5,1,9], val = 5
+输出: [4,1,9]
+解释: 给定你链表中值为 5 的第二个节点，那么在调用了你的函数之后，该链表应变为 4 -> 1 -> 9.
+```
+
+双指针：
+
+
+先处理头结点，注意只删除一个相同的。
+
+接下来如果遇到相同的，`pre=p->next`,否则，就`pre`和`p`都往后移
+
+```cpp
+class Solution {
+public:
+    ListNode* deleteNode(ListNode* head, int val) {
+        if(head == NULL) return head;
+        //如果第一个节点相同,只删除一个
+        if( head->val == val) {
+            return head->next;
+        }
+
+        ListNode* p = head->next;
+        ListNode* pre = head;
+        while(p) {
+            if(p->val == val) {
+                pre->next = p->next;
+                p = pre->next;
+            }
+            else {
+                pre = p;
+                p = p->next;
+            }
+        }
+        return head;
+    }
+};
+```
+
+### 剑指 Offer 19. 正则表达式匹配
+
+[题目来源](https://leetcode-cn.com/problems/zheng-ze-biao-da-shi-pi-pei-lcof/)
+
+请实现一个函数用来匹配包含'`.` '和'`*`'的正则表达式。模式中的字符'`.`'表示任意一个字符，而'`*`'表示它前面的字符可以出现任意次（含0次）。在本题中，匹配是指字符串的所有字符匹配整个模式。例如，字符串"aaa"与模式"`a.a`"和"`ab*ac*a`"匹配，但与"`aa.a`"和"`ab*a"`均不匹配。
+
+示例 1:
+```
+输入:
+s = "aa"
+p = "a"
+输出: false
+解释: "a" 无法匹配 "aa" 整个字符串。
+```
+
+> 参考：https://www.bilibili.com/video/BV1tx411E722?from=search&seid=14482816384252718823
+
+```cpp
+class Solution {
+public:
+    bool isMatch(string s, string p) {
+        int sLen = s.size(),pLen = p.size();
+        vector<vector<bool>> dp(sLen+1,vector<bool>(pLen+1,false));
+        dp[0][0] = true;
+
+        // s = ”“
+        // p = "a*"
+        for(int i=1;i<=pLen;++i) {
+            if(i >= 2 && p[i - 1] == '*' && dp[0][i-2] == true) { //// 记得加 i >= 2的判断 
+                dp[0][i] = true;
+            }
+        }
+        //遍历两个字符串
+        for(int i=1; i<=sLen; ++i)
+        {
+            for(int j=1; j<=pLen; ++j)
+            {
+                // 如果s当前字符 = p 当前字符，或者p当前字符='.' 可以表示任何字符
+                if(s[i - 1] == p[j - 1] || p[j - 1] == '.')
+                    dp[i][j] = dp[i - 1][j - 1];
+                //如果p当前字符=*并且j >= 2，说明*前面有字符，
+                else if(p[j - 1] == '*' && j >= 2) // 记得加 j >= 2的判断，否则 s = aa, p = *a 过不去测试
+                {
+                    if(p[j - 2] != s[i - 1] && p[j - 2] != '.')
+                        dp[i][j] = dp[i][j - 2];
+                    else 
+                        dp[i][j] = dp[i][j - 2] || dp[i][j - 1] || dp[i - 1][j];
+                }
+                else dp[i][j] = false;
+            }
+        }
+        return dp[sLen][pLen];
+    
+    }
+};
+```
+
+### 剑指 Offer 54. 二叉搜索树的第k大节点
+
+[题目来源](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-di-kda-jie-dian-lcof/)
+
+给定一棵二叉搜索树，请找出其中第k大的节点。
+
+示例 1:
+```
+输入: root = [3,1,4,null,2], k = 1
+   3
+  / \
+ 1   4
+  \
+   2
+输出: 4
+```
+
+- 使用中序遍历保存到一个数组中，然后再找第 k 大的。(递归解法)
+
+```cpp
+class Solution {
+public:
+    int kthLargest(TreeNode* root, int k) {
+
+        vector<int> ret;
+        traversal(root,ret);
+        return ret[ret.size() - k];
+    }
+    void traversal(TreeNode* root,vector<int> &ret) {
+        if(root == nullptr) {
+            return ;
+        }
+        if(root->left) traversal(root->left,ret);
+        ret.push_back(root->val);
+        if(root->right) traversal(root->right,ret);
+    }
+};
+```
+
+- 使用中序遍历保存到一个数组中，然后再找第 k 大的。(迭代法)
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int kthLargest(TreeNode* root, int k) {
+        vector<int> ret;
+        TreeNode* cur = root;
+        stack<TreeNode* > st;
+        while(cur != nullptr ||  !st.empty()) {
+            //走到最左边
+            if(cur) {
+                st.push(cur);
+                cur = cur->left;
+            }
+            else {
+                cur = st.top();
+                ret.push_back(cur->val);
+                st.pop();
+                cur = cur->right;
+            }
+        }
+        return ret[ret.size() - k];
+    }
+};
+```
+
+时间复杂度 $O(N)$ ： 当树退化为链表时（全部为右子节点），无论 $k$ 的值大小，递归深度都为 $N$ ，占用 $O(N)$ 时间。
+
+空间复杂度 $O(N)$ ： 当树退化为链表时（全部为右子节点），系统使用 $O(N)$ 大小的栈空间。
+
+### 剑指 Offer 49. 丑数
+
+[题目来源](https://leetcode-cn.com/problems/chou-shu-lcof/)
+
+> 先看下面丑数 1 这道题
+
+
+我们把只包含质因子 2、3 和 5 的数称作丑数（Ugly Number）。求按从小到大的顺序的第 n 个丑数。
+
+示例:
+```
+输入: n = 10
+输出: 12
+解释: 1, 2, 3, 4, 5, 6, 8, 9, 10, 12 是前 10 个丑数。
+```
+
+```cpp
+class Solution {
+public:
+    int nthUglyNumber(int n) {
+        vector<int> nums;
+        nums.push_back(1);
+        int i2 = 0, i3 = 0, i5 = 0;
+        for (int i = 1; i < n; i++) { // 算出所有丑数，直到所需的第n个为止
+            int ugly = min(nums[i2] * 2, min(nums[i3] * 3,nums[i5] * 5)); // 从小到大，按照丑数定义收集丑数
+            nums.push_back(ugly); // 将丑数放进结果数组中
+            if(nums[i] == nums[i2] * 2) i2++; // 指针移动，从小到大地寻找丑数
+            if(nums[i] == nums[i3] * 3) i3++;
+            if(nums[i] == nums[i5] * 5) i5++;
+        }
+        return nums[n-1];  // 返回第n个丑数
+    }
+};
+
+```
+
+#### 263. 丑数
+
+[题目来源](https://leetcode-cn.com/problems/ugly-number/)
+
+给你一个整数 n ，请你判断 n 是否为 丑数 。如果是，返回 true ；否则，返回 false 。
+
+丑数 就是只包含质因数 2、3 和/或 5 的正整数。
+
+ 
+
+示例 1：
+```
+输入：n = 6
+输出：true
+解释：6 = 2 × 3
+```
+
+```cpp
+class Solution {
+public:
+    bool isUgly(int n) {
+        if(n == 0) return false;
+        while(n != 1){
+            if(n % 5 == 0) n /= 5;
+            else if(n % 3 == 0) n /= 3;
+            else if(n % 2 == 0) n /= 2;
+            else return false;
+        }
+        return true;
+    }
+};
+```
 
 
 ### 剑指 Offer 58 - I. 翻转单词顺序
@@ -840,6 +1193,11 @@ public:
 - 在每次循环时，先去除所有单词右侧空格，获取某个单词的最右下标`r`，再获取单词的最左下标`l`
 - 然后把单词`s.substr(l + 1, r - l)`加入`ret`，别忘了加空格哦
 - 最后要把多余的空格去除`ret.pop_back()`
+
+> [参考](https://leetcode-cn.com/problems/ugly-number/solution/ti-yi-lei-jie-yi-wen-dai-ni-shua-san-dao-p0pm/)
+
+我们可以设置三个指针：`i2`，`i3`和`i5`。三个指针的作用是对应着2,3,5的倍数。因为丑数就是质因数只包含 2，3，5的正整数，所以我们从小开始，一个一个丑数地放进结果数组中，直到要找的个数为止。
+
 
 ```cpp
 class Solution {
