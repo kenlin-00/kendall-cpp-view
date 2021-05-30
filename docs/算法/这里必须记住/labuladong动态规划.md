@@ -51,14 +51,21 @@
 也就是用一个动态数组来保存每一次的状态。也即是 `DP table`。
 
 ```cpp
-int fib(int N) {
-    vector<int> dp(N + 1, 0);
-    // base case
-    dp[1] = dp[2] = 1;
-    for (int i = 3; i <= N; i++)
-        dp[i] = dp[i - 1] + dp[i - 2];
-    return dp[N];
-}
+class Solution {
+public:
+    int fib(int n) {
+        //需要考虑n==0的时候，初始化dp[1]越界
+        if(n == 0 || n== 1) return n;
+        
+        vector<int> dp(n + 1);
+        dp[0] = 0;
+        dp[1] = 1;
+        for(int i=2;i<=n;++i) {
+            dp[i] = (dp[i-1] + dp[i-2]) % 1000000007;
+        }
+        return dp[n];
+    }
+};
 ```
 
 优化只维护两个数
@@ -204,7 +211,7 @@ public:
         vector<int> dp(amount + 1,amount + 1);
 
         dp[0] = 0;
-        for(int i=0;i<dp.size();++i) {
+        for(int i=0;i<amount;++i) {
             // 内层 for 在求所有子问题 + 1 的最小值
             for(auto coin : coins) {
                 // 子问题无解，跳过  总面值比每个值还小，肯定不要这个值了
@@ -218,231 +225,6 @@ public:
 ```
 
 > PS：为啥dp数组初始化为amount + 1呢，因为凑成amount金额的硬币数最多只可能等于amount（全用 1 元面值的硬币），所以初始化为amount + 1就相当于初始化为正无穷，便于后续取最小值。
-
-## 494.目标和
-
-[题目来源](https://leetcode-cn.com/problems/target-sum/)
-
-给定一个非负整数数组，a1, a2, ..., an, 和一个目标数，S。现在你有两个符号 + 和 -。对于数组中的任意一个整数，你都可以从 + 或 -中选择一个符号添加在前面。
-
-返回可以使最终数组和为目标数 S 的所有添加符号的方法数。
-
-示例：
-
-```
-输入：nums: [1, 1, 1, 1, 1], S: 3
-输出：5
-解释：
-
--1+1+1+1+1 = 3
-+1-1+1+1+1 = 3
-+1+1-1+1+1 = 3
-+1+1+1-1+1 = 3
-+1+1+1+1-1 = 3
-
-一共有5种方法让最终目标和为3。
-```
-
-[参考](https://mp.weixin.qq.com/s?__biz=MzAxODQxMDM0Mw==&mid=2247485700&idx=1&sn=433fc5ec5e03a86064d458320332a688&chksm=9bd7f70caca07e1aad658333ac05df501796862a418d8f856b12bb6ca73a924552901ec86d9b&scene=21#wechat_redirect)
-
-### 回溯思路
-
-回溯算法框架：
-
-```
-def backtrack(路径, 选择列表):
-    if 满足结束条件:
-        result.add(路径)
-        return
-
-    for 选择 in 选择列表:
-        做选择
-        backtrack(路径, 选择列表)
-        撤销选择
-```
-
-关键就是搞清楚什么是「选择」，而对于这道题，**对于每个数字 `nums[i]`，我们可以选择给一个正号 `+` 或者一个负号 `-`**，然后利用回溯模板穷举出来所有可能的结果，数一数到底有几种组合能够凑出 `target` 不就行了嘛？
-
-```cpp
-class Solution {
-public:
-    int result = 0;  //记录了几种方法
-    int findTargetSumWays(vector<int>& nums, int target) {
-        if(nums.size() == 0) return 0;
-        backtrack(nums,0,target);
-        return result;
-    }
-    void backtrack(vector<int> &nums,int index,int target) {
-        //如果满足条件就退出
-        if(index == nums.size()) {
-            if(target == 0) {  //将target减到0了，说明就是组成target了
-                ++result;
-            }
-            return;
-        }
-        // for 选择 in 选择列表
-        // 选择
-        // 回溯
-        // 撤销选择
-        // 选择 - 号
-        target += nums[index];
-        //回溯
-        backtrack(nums,index + 1,target);
-        //选择撤销
-        target -= nums[index];
-
-        //选择 + 号
-        target -= nums[index];
-        backtrack(nums,index + 1,target);
-        target += nums[index];
-    }
-};
-```
-
-超出时间限制
-
-选择 - 的时候，为什么是 `rest += nums[i]`，选择 + 的时候，为什么是 `rest -= nums[i]` 呢，是不是写反了？
-
-不是的，「如何凑出 `target`」和「如何把 `target` 减到 0」其实是一样的。我们这里选择后者，因为前者必须给 `backtrack` 函数多加一个参数，我觉得不美观：
-
-### 消除重叠子问题
-
-如何发现重叠子问题？看否可能出现重复的「状态」。对于递归函数来说，函数参数中会变的参数就是「状态」，对于 backtrack 函数来说，会变的参数为 i 和 rest。
-
-**有一种一眼看出重叠子问题的方法**，先抽象出递归框架：
-
-```cpp
-void backtrack(int i, int rest) {
-    backtrack(i + 1, rest - nums[i]);
-    backtrack(i + 1, rest + nums[i]);
-}
-```
-
-举个简单的例子，如果 `nums[i] = 0`，会发生什么？
-
-```cpp
-void backtrack(int i, int rest) {
-    backtrack(i + 1, rest);
-    backtrack(i + 1, rest);
-}
-```
-
-你看，这样就出现了两个「状态」完全相同的递归函数，无疑这样的递归计算就是重复的。**这就是重叠子问题，而且只要我们能够找到一个重叠子问题，那一定还存在很多的重叠子问题**。
-
-因此，状态 `(i, rest) `是可以用备忘录技巧进行优化的：
-
-```cpp
-class Solution {
-public:
-    // int result = 0;  //记录了几种方法
-    //备忘录
-    unordered_map<string,int> memo;
-    int findTargetSumWays(vector<int>& nums, int target) {
-        if(nums.size() == 0) return 0;
-        return dp(nums,0,target);
-    }
-
-    int dp(vector<int> &nums,int index,int target) {
-        //如果满足条件就退出
-        if(index == nums.size()) {
-            if(target == 0) {  //将target减到0了，说明就是组成target了
-                return 1;
-            }
-            return 0;
-        }
-        ostringstream s;
-        s << index << "," << target;
-        string key = s.str();
-        // string key = index + "," + target;
-        auto it = memo.find(key);
-        if(it != memo.end()) {  //如果存在，就直接返回这里的值
-            return memo[key];
-        }
-
-        //穷举 正号 + 负号
-        int result = dp(nums,index+1,target - nums[index]) + dp(nums,index+1,target+nums[index]);
-
-        //装入备忘录
-        memo.emplace(key,result);
-        return result;
-    }
-};
-```
-
-时间复杂度依然是：$O(2^n)$
-
-### 动态规划
-
-其实，这个问题可以转化为一个子集划分问题，而子集划分问题又是一个典型的背包问题。动态规划总是这么玄学，让人摸不着头脑……
-
-首先，如果我们把 nums 划分成两个子集 A 和 B，分别代表分配 + 的数和分配 - 的数，那么他们和 target 存在如下关系：
-
-```
-sum(A) - sum(B) = target
-sum(A) = target + sum(B)
-sum(A) + sum(A) = target + sum(B) + sum(A)
-2 * sum(A) = target + sum(nums)
-```
-
-综上，可以推出 `sum(A) = (target + sum(nums)) / 2`，也就是把原问题转化成：**nums 中存在几个子集 A，使得 A 中元素的和为 `(target + sum(nums)) / 2` ？**
-
-现在实现这么一个函数：
-
-```cpp
-/* 计算 nums 中有几个子集的和为 sum */
-int subsets(int[] nums, int sum) {}
-```
-
-然后，可以这样调用这个函数：
-
-```cpp
-int findTargetSumWays(int[] nums, int target) {
-    int sum = 0;
-    for (int n : nums) sum += n;
-    // 这两种情况，不可能存在合法的子集划分
-    //sum < target 就算全部是加号也不能组成target，
-    if (sum < target || (sum + target) % 2 == 1) {
-        return 0;
-    }
-    return subsets(nums, (sum + target) / 2);
-}
-```
-
-好的，变成背包问题的标准形式：
-
-有一个背包，容量为 sum，现在给你 `N` 个物品，第 i 个物品的重量为 `nums[i - 1]`（注意 `1 <= i <= N`），每个物品只有一个，请问你有几种不同的方法能够恰好装满这个背包？
-
-**第一步要明确两点，「状态」和「选择」。**
-
-对于背包问题，这个都是一样的，状态就是「背包的容量」和「可选择的物品」，选择就是「装进背包」或者「不装进背包」。
-
-**第二步要明确 dp 数组的定义。**
-
-按照背包问题的套路，可以给出如下定义：
-
-`dp[i][j] = x` 表示，若只在前 `i` 个物品中选择，若当前背包的容量为 `j`，则最多有 `x` 种方法可以恰好装满背包。
-
-翻译成我们探讨的子集问题就是，若只在 `nums` 的前 `i` 个元素中选择，若目标和为 `j`，则最多有 `x` 种方法划分子集。
-
-根据这个定义，显然 `dp[0][..] = 0`，因为没有物品的话，根本没办法装背包；`dp[..][0] = 1`，因为如果背包的最大载重为 0，「什么都不装」就是唯一的一种装法。
-
-我们所求的答案就是 `dp[N][sum]`，即使用所有 `N`个物品，有几种方法可以装满容量为 `sum` 的背包。
-
-**第三步，根据「选择」，思考状态转移的逻辑。**
-
-回想刚才的 `dp` 数组含义，可以根据「选择」对 `dp[i][j]` 得到以下状态转移：
-
-如果不把 `nums[i]` 算入子集，**或者说你不把这第 i 个物品装入背包**，那么恰好装满背包的方法数就取决于上一个状态 `dp[i-1][j]`，继承之前的结果。
-
-如果把 `nums[i]` 算入子集，**或者说你把这第 `i` 个物品装入了背包**，那么只要看前 `i - 1` 个物品有几种方法可以装满 `j - nums[i-1]` 的重量就行了，所以取决于状态 `dp[i-1][j-nums[i-1]]`。
-
-PS：注意我们说的 `i` 是从 `1` 开始算的，而数组 `nums` 的索引时从 `0` 开始算的，所以 `nums[i-1]` 代表的是第 i 个物品的重量，`j - nums[i-1]` 就是背包装入物品 i 之后还剩下的容量。
-
-**由于 `dp[i][j]` 为装满背包的总方法数，所以应该以上两种选择的结果求和，得到状态转移方程**：
-
-```cpp
-dp[i][j] = dp[i-1][j] + dp[i-1][j-nums[i-1]];
-```
 
 ## 股票问题
 

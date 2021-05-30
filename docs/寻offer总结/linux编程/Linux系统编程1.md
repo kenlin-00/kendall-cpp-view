@@ -9,7 +9,7 @@
 find ./ -name "*.cpp" | grep "mian"
 
 # xargs 查看文件里面的内容
-find ./ -name "*llo" | xargs  grep -n -i "World"    # 加 -n 是显示行 加-i是不区分大小写
+find ./ -name "*llo" |  grep -n -i "World"    # 加 -n 是显示行 加-i是不区分大小写
 ```
 - `top`命令用于实时显示 进程或者系统 的动态。
 
