@@ -26,6 +26,10 @@
   - [263. 丑数](#263-丑数)
 - [剑指 Offer 58 - I. 翻转单词顺序](#剑指-offer-58---i-翻转单词顺序)
 
+---
+
+
+
 ### 剑指 Offer 03.数组中重复的数字
 
 [题目来源](https://leetcode-cn.com/problems/shu-zu-zhong-zhong-fu-de-shu-zi-lcof/)
@@ -268,15 +272,6 @@ public:
 > [参考](https://mp.weixin.qq.com/s?__biz=MzUxNjY5NTYxNA==&mid=2247484950&idx=1&sn=3900f9433d36dd5406fc1ccb1df07703&scene=21#wechat_redirect)
 
 ```cpp
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
- * };
- */
 class Solution {
 public:
     TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
@@ -311,6 +306,7 @@ public:
     }
 };
 ```
+
 
 #### 106.从中序与后序遍历序列构造二叉树
 

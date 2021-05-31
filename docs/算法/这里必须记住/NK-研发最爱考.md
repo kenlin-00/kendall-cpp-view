@@ -549,11 +549,13 @@ private:
 {1,2}
 ```
 
+需要设置一个虚拟头结点
+
 ```cpp
  ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
         if(l1 == nullptr) return l2;
         if(l2 == nullptr) return l1;
-        ///////
+        
         ListNode* head = new ListNode(-1);
         ListNode* pre = head;
         while(l1 && l2) {
@@ -567,6 +569,7 @@ private:
             }
              pre = pre->next;
         }
+        // 接上没有连接完的部分
         pre->next = l1 ? l1 : l2;
         return head->next;
     }
@@ -677,14 +680,8 @@ public:
 使用队列是实现，`while`循环里面先去当前队列的长度，也就是每一层的节点数，再进入`for`循环。
 
 ```cpp
-
 class Solution {
 public:
-    /**
-     * 
-     * @param root TreeNode类 
-     * @return int整型vector<vector<>>
-     */
     vector<vector<int> > levelOrder(TreeNode* root) {
         vector<vector<int> > result;
         if(root == nullptr) return result;
@@ -747,7 +744,7 @@ public:
             while (i < j && arr[i] >= pivot) i++;
             arr[j] = arr[i];
         }
-        //不需要保存基站数据了，也用不上
+        //不需要保存基准数据了，也用不上
         arr[i] = pivot;
         return i;
     }
@@ -871,21 +868,8 @@ public:
 先找到需要翻转的结尾节点，再进行翻转，之后递归后面的
 
 ```cpp
-/**
- * struct ListNode {
- *	int val;
- *	struct ListNode *next;
- * };
- */
-
 class Solution {
 public:
-    /**
-     * 
-     * @param head ListNode类 
-     * @param k int整型 
-     * @return ListNode类
-     */
     ListNode* reverseKGroup(ListNode* head, int k) {
          if(head == nullptr || head->next == nullptr || k == 0) {
              return head;
@@ -970,9 +954,7 @@ public:
      }
 };
 ```
-当然这种方法，对于大部分数据是对的，但是对于`-2147483648`,二进制为`1000...000`，一共有`31`个`0`.因为计算机使用补码存储二进制数据的。对于这个数据，我们的方***输出0，实际上为1.所以这种方法不对。
 
-未通过
 
 
 ## 1472. 设计浏览器历史记录
@@ -1017,6 +999,7 @@ private:
     deque<string> d;
     int index;  //当前页面索引
 public:
+    //构造函数初始化
     BrowserHistory(string homepage) {
         d.push_back(homepage);
         index = 0;
@@ -1031,21 +1014,23 @@ public:
     }
     
     string back(int steps) {
+        //回退几步，index 减多少
         while(steps > 0 && index > 0)  //只有一个页面的时候就不能回退了
         {
             --steps;
             --index;
         }
         //返回当前页
-        return d.at(index);  //返回对双端队列容器对象中位置n处元素的引用
+        return d.at(index);  //返回对双端队列容器对象中位置 idnex 处元素的引用
      }
-    
+    // 前进几步，index 加多少
     string forward(int steps) {
         while(steps > 0 && index < d.size() - 1) //最后一页就不能前进了 
         {
             --steps;
             ++index;
         }
+        //但会当前页
         return d.at(index);
     }
 };
