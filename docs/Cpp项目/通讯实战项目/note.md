@@ -1,5 +1,13 @@
 
-- [服务器框架](#服务器框架)
+- [配置文件处理](#配置文件处理)
+  - [代码中一些要点笔记](#代码中一些要点笔记)
+    - [单例模式自动释放，使用嵌套内部类来实现](#单例模式自动释放使用嵌套内部类来实现)
+    - [关于 fgets 函数](#关于-fgets-函数)
+    - [strlen 与 sizeof 的区别](#strlen-与-sizeof-的区别)
+    - [关于 strchr](#关于-strchr)
+    - [关于memset](#关于memset)
+    - [strcpy 函数和 strncpy 函数的区别](#strcpy-函数和-strncpy-函数的区别)
+    - [strcasecmp 函数](#strcasecmp-函数)
   - [内存泄漏检测工具](#内存泄漏检测工具)
   - [设置进程名称](#设置进程名称)
     - [环境变量信息搬家](#环境变量信息搬家)
@@ -50,9 +58,118 @@
 
 -------
 
-## 服务器框架
+## 配置文件处理
+
+读取配置文件各个函数之间的关系图
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/通信框架-加载配置文件01.1p4vsvly55gg.png)
+
+### 代码中一些要点笔记
+
+####  单例模式自动释放，使用嵌套内部类来实现
+
+```cpp
+class CConfig
+{
+private:
+	CConfig();
+	static CConfig *m_instance;
+
+public:
+	~CConfig();
+	static CConfig* GetInstance() {
+		if(m_instance == NULL) {
+			m_instance = new CConfig();
+			//定义一个内部类用于自动释放对象
+			static CGarhuishou cl; 
+		}
+		return m_instance;
+	}
+	//定义一个嵌套列，专门为CConfig服务，还用于释放 m_instance
+	class CGarhuishou {
+	public:
+		~CGarhuishou() {
+			if( CConfig::m_instance ) {
+				delete m_instance;
+				CConfig:m_instance = NULL;
+			}
+		}
+	};
+
+};
+```
+
+可以通过打印地址发现两个对象答应的地址是一样的
+
+```cpp
+nt main(int argc,char *const *argv) {
+
+    //创建一个读取配置文件的类
+    CConfig *p_config = CConfig::GetInstance();
+    //  CConfig *p_config1 = CConfig::GetInstance();
+
+    //使用C++的方式打印对象的地址
+    cout << "p_config的地址是："  << static_cast<void *>(p_config) << endl;
+    cout << "p_config1的地址是："  << static_cast<void *>(p_config1) << endl;
+    //使用C语言的方式打印对象的地址
+    printf("p_config的地址是：%p\n",p_config);
+    printf("p_config1的地址是：%p\n",p_config1);
+    //上面输出的地址都是一样的，说明单例模式没问题
+
+    return 0;
+}
+```
+
+#### 关于 fgets 函数
+
+C 库函数 `char *fgets(char *str, int n, FILE *stream)` 从指定的流 `stream `读取一行，并把它存储在 `str` 所指向的字符串内。当读取` (n-1)` 个字符时，或者读取到换行符时，或者到达文件末尾时，它会停止，具体视情况而定。
+
+> - 虽然用 `gets()` 时有空格也可以直接输入，但是 `gets()` 有一个非常大的缺陷，即它不检查预留存储区是否能够容纳实际输入的数据，换句话说，如果输入的字符数目大于数组的长度，`gets` 无法检测到这个问题，就**会发生内存越界**，所以编程时建议使用 `fgets()`。   
+> - `fgets()` 虽然比 `gets()` 安全，但安全是要付出代价的，代价就是它的使用比 `gets()` 要麻烦一点，有三个参数。它的功能是从 `stream` 流中读取 `size` 个字符存储到字符指针变量 `s` 所指向的内存空间。它的返回值是一个指针，指向字符串中**第一个字符的地址**。
+
+#### strlen 与 sizeof 的区别
+
+-  sizeof 是一个单目运算符，strlen是 函数。用 sizeof 时，会在测量的长度后加 `\0` ,而且分别在 int 和 char 的两种情况下得到的结果不同；用 strlen 则是精确算出其长度（不会加`\0`），但是 strlen 读到 `\0` 就会停止。
+
+- 对 sizeof 而言，因为缓冲区已经用已知字符串进行了初始化，其长度是固定的，所以 sizeof 在**编译时**计算缓冲区的长度。也正是由于在编译时计算，因此 sizeof 不能用来返回动态分配的内存空间的大小。
+
+#### 关于 strchr
+
+```c
+char * strchr(char * str, char/int c);
+```
+在字符串 str 中寻找字符`C`第一次出现的位置，并返回其位置（地址指针），若失败则返回NULL；
+
+#### 关于memset
+
+```c
+void *memset(void *str, int c, size_t n) 
+```
+复制字符 c（一个无符号字符）到参数 str 所指向的字符串的前 n 个字符。n 一般都是 c 的长度
+
+#### strcpy 函数和 strncpy 函数的区别
+
+```cpp
+char* strcpy(char* strDest, const char* strSrc)
+char* strncpy(char* strDest, const char* strSrc, int pos)
+```
+
+ `strcpy`函数: 如果参数 `dest` 所指的内存空间不够大，可能会造成缓冲溢出(`buffer Overflow`)的错误情况，在编写程序时请特别留意，或者用`strncpy()`来取代。    
+ `strncpy`函数：用来复制源字符串的前`n`个字符，`src` 和 `dest` 所指的内存区域不能重叠，且 `dest` 必须有足够的空间放置`n`个字符。 
+
+
+#### strcasecmp 函数
+
+```c
+int strcasecmp (const char *s1, const char *s2);
+```
+
+判断字符串是否相等(忽略大小写),若参数s1 和s2 字符串相同则返回 0。s1 长度大于s2 长度则返回大于 0 的值，s1 长度若小于s2 长度则返回小于 0 的值。
+
+---------
+
+> 以上代码见 tongxin-nginx-01.tar.gz
+
 
 ### 内存泄漏检测工具
 
