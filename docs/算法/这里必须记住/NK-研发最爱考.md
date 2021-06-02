@@ -478,7 +478,7 @@ public:
         
         //如果存在
         
-         //value的值
+         //value的值 cache的一个节点
         auto target_it = it->second;
         //定义一个pari对
         pair<int,int> n{target_it->first,target_it->second};
@@ -493,8 +493,7 @@ public:
         
         return n.second;
     }
-    //插入
-    //首先查找，如果有就删除，然后不管有没有都在队头插入
+    r
     void set(int key,int value) {
         auto it = mp.find(key);
         
@@ -1807,6 +1806,7 @@ void test2() {
 我们用`printf`以`16`进制的格式输出`s.c`，这个时候就是s的起始地址的第一个字节的内容，在我的平台上输出结果是2，表示低地址存的是整数值的低位，那么我的平台字节序是小端表示的。
 
 
+实现重载两个字符串相加
 
 > 这里全部算法题
 
