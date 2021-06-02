@@ -237,6 +237,8 @@ http://c.biancheng.net/view/7636.html
 
 - **reinterpret_cast**
 
+>  [ˌriːɪnˈtɜːrprət]
+
 ```cpp
 reinterpret_cast<type-id> (expression)
 ```
@@ -269,7 +271,7 @@ static_cast < type_id > (expression)
 
     - 进行下行转换（把基类指针或引用转换成派生类表示）时，由于没有动态类型检查，所以是不安全的
 
-  - 用于基本数据类型之间的转换，如把`int`转换成`char`，把`int`转换成`enum`。这种转换的安全性也要开发人员来保证。
+  - 用于**基本数据类型之间的转换**，如把`int`转换成`char`，把`int`转换成`enum`。这种转换的安全性也要开发人员来保证。
 
   - 把空指针转换成目标类型的空指针
 
@@ -278,6 +280,8 @@ static_cast < type_id > (expression)
 > 注意：`static_cast`不能转换掉`expression`的`const`、`volatile`、或者`__unaligned`属性。
 
 - **dynamic_cast**
+
+> `daɪˈnæmɪk`
 
 有类型检查，基类向派生类转换比较安全，但是派生类向基类转换则不太安全
 
