@@ -8,13 +8,16 @@
     - [关于memset](#关于memset)
     - [strcpy 函数和 strncpy 函数的区别](#strcpy-函数和-strncpy-函数的区别)
     - [strcasecmp 函数](#strcasecmp-函数)
-  - [内存泄漏检测工具](#内存泄漏检测工具)
-  - [设置进程名称](#设置进程名称)
+- [内存泄漏检测工具](#内存泄漏检测工具)
+- [设置进程名称](#设置进程名称)
     - [环境变量信息搬家](#环境变量信息搬家)
     - [怎么修改进程名称](#怎么修改进程名称)
   - [代码中一些要点笔记](#代码中一些要点笔记-1)
     - [extern 关键字](#extern-关键字)
-  - [日志打印实现](#日志打印实现)
+    - [`delete`和`delete[]`的区别](#delete和delete的区别)
+- [日志打印实现](#日志打印实现)
+  - [代码中一些要点笔记](#代码中一些要点笔记-2)
+    - [va_start 和 va_end 使用](#va_start-和-va_end-使用)
     - [日志等级划分](#日志等级划分)
     - [日志初始化](#日志初始化)
     - [日志输出时遇到了问题](#日志输出时遇到了问题)
@@ -174,7 +177,7 @@ int strcasecmp (const char *s1, const char *s2);
 
 ---------------------
 
-### 内存泄漏检测工具
+## 内存泄漏检测工具
 
 - Valgrind --> 检查内存管理问题
   - memchaeck --> 用于检查程序运行的时候的内存泄漏
@@ -189,10 +192,21 @@ int strcasecmp (const char *s1, const char *s2);
 
 `valgrind --tool=memcheck --leak-check=full ./nginx`
 
+详细显示，可以看到那些发生内存泄漏
 
-### 设置进程名称
+`valgrind --tool=memcheck --leak-check=full --show-reachable=yes --trace-children=yes ./nginx`
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/内存检测工具.42jf6tm2fto0.png)
+
+## 设置进程名称
 
 更改在使用 ps 命令查看进程的时候 CMD 显示的名称，
+
+**最后结果**
+
+` ps -eo pid,ppid,sid,tty,pgrp,comm,stat,cmd | grep -E 'bash|PID|nginx' `
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/更改进程名称01.2kx4t4wec5m0.png)
 
 **进程名称实际上是保存在 argc[0] 所指向的内存中**。CMD 会把 argv 所指向的命令参数全部显示出来，因为 `./nginx`是保存在 `argv[0]`中，所以 `argv[0]`改变，进程名也就改变了。
 
@@ -211,6 +225,7 @@ int strcasecmp (const char *s1, const char *s2);
 > 在参考 nginx 中的一些代码的时候，发现一个问题，有点困惑，就是在 `ngx_init_setproctitle` 函数中有一段` ngx_alloc` 的代码来分配内存，但是没有对应的释放代码
 
 自己写了一个 `ngx_init_setproctitle` 函数，实现了重新分配一块内存，保存 environ 所指向的内存中的内容。大致逻辑如下：
+
 - 统计环境变量的长度（也就是所需要的内存的大小）
   
 - 使用 new 来分配所需要大小的内存
@@ -241,10 +256,24 @@ int strcasecmp (const char *s1, const char *s2);
 
 如果全局变量不在忘了件的开头定义，作用范围就只是从定义的地方到文件结束，如果在定义这个位置之前的函数引用这个全局变量，那么就应该在引用之前用关键字 extren 对这个变量作“外部变量声明”，表示这个变量是一个已经定义的外部变量。有了这个声明，变量的作用于就可以扩展到 从声明开始到本文件结束。
 
+#### `delete`和`delete[]`的区别
+
+* `delete`只会调用一次析构函数，而`delete[]`会调用每个成员的析构函数
+
+* 用`new`分配的内存用`delete`释放，用`new[]`分配的内存用`delete[]`释放
+
+假如说使用`new int[10]`来开辟一个内存空间，针对这种简单类型，使用`new`分配后不管是数组还是非数组形式释放都是可以的。他们的效果是一样的，**因为分配简单类型内存的时候，内存大小已经确定，系统可以记忆并且进行管理，在析构时，系统不会调用析构函数**。它直接通过指针可以获取实际分配的内存空间，哪怕是一个数组内存空间。
+
+
+> 以上代码见 tongxin-nginx-02.tar.gz
 
 -------
 
-### 日志打印实现
+## 日志打印实现
+
+- 打印输出相关函数借鉴了 nginx 的实现，并做一些改动，见`ngx_printf.cxx`,学习 printf,vprintf 这类函数的内部实现
+
+
 
 `void   ngx_log_stderr(int err, const char *fmt, ...);`
 
@@ -255,6 +284,22 @@ int strcasecmp (const char *s1, const char *s2);
 - `ngx_vslprintf`: 功能相当于系统的 `printf` 函数
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/通信框架-日志打印01.69qcjx2373c0.png)
+
+### 代码中一些要点笔记
+
+#### va_start 和 va_end 使用
+
+
+
+```c
+void va_start(va_list ap, last_arg);
+```
+
+对ap进行初始化，让ap指向可变参数表里面的**第一个参数**。第一个参数是 ap 本身，第二个参数是在变参表前面紧挨着的一个变量，即“...”之前的那个参数；
+
+
+
+
 
 #### 日志等级划分
 
