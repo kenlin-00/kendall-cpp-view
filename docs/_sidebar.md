@@ -47,7 +47,7 @@
 
 * 项目
   * [服务器通信框架项目](/Cpp项目/通讯实战项目/note.md)
-  * [Nginx总结]](/Cpp项目/通讯实战项目/nginx总结.md)
+  * [Nginx总结](/Cpp项目/通讯实战项目/nginx总结.md)
   * [铺点点爬虫子项目](/Cpp项目/铺点点爬虫子项目/projectdoc.md)
   * [基于流媒体的农业环境监控系统](/Cpp项目/基于流媒体的农业环境监控系统/ProjectNote.md)
 

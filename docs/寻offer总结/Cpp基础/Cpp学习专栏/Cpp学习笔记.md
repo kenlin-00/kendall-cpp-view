@@ -5,6 +5,9 @@
   - [RAII](#raii)
 - [实现C++智能指针](#实现c智能指针)
   - [模板化变成一个类模板](#模板化变成一个类模板)
+  - [“移动”指针](#移动指针)
+  - [引用计数](#引用计数)
+  - [完整的 smart_ptr 代码](#完整的-smart_ptr-代码)
 
 
 -----
@@ -18,7 +21,7 @@ C++的内存管理需要涉及三个重要的概念：堆，栈，RAII。
 
 在内存管理的语境下，指的是动态分配内存的区域。这个堆跟数据结构里的堆不是一回事。这里的内存，被分配之后需要手工释放，否则，就会造成内存泄漏。          
     
-C++ 标准里一个相关概念是自由存储区，就是 free shop ,指使用 new 和 delete 来分配和释放内存区域，一般而言，这是堆的一个子集。
+C++ 标准里一个相关概念是自由存储区，就是 free shore ,指使用 new 和 delete 来分配和释放内存区域，一般而言，这是堆的一个子集。
 
 - new 和 delete 操作的区域是 free 
 - storemalloc 和 free 操作的区域是 heap
@@ -88,7 +91,7 @@ int main()
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/内存管理栈变化01.5br4oybod6w0.png)
 
-栈是向上增长的，栈的生长方向是地地址，因而上方意味着低地址。当一个函数调用另一个函数的时候，会把参数也压入栈里（我们此处忽略使用寄存器传递参数的情况），然后把下一行汇编指令的地址压入栈，并跳转到新的函数。新的函数进入后，首先做一些必须的保存工作，然后会调整栈指针，分配出本地变量所需的空间，随后执行函数中的代码，并在执行完毕之后，根据调用者压入栈的地址，返回到调用者未执行的代码中继续执行。
+栈是向上增长的，**栈的生长方向是地地址**，因而上方意味着低地址。当一个函数调用另一个函数的时候，会把参数也压入栈里（我们此处忽略使用寄存器传递参数的情况），然后把下一行汇编指令的地址压入栈，并跳转到新的函数。新的函数进入后，首先做一些必须的保存工作，然后会调整栈指针，分配出本地变量所需的空间，随后执行函数中的代码，并在执行完毕之后，根据调用者压入栈的地址，返回到调用者未执行的代码中继续执行。
 
 本地变量所需的内存就在栈上，跟函数执行所需的其他数据在一起。当函数执行完成之后，这些内存也就自然而然释放掉了。
 
@@ -183,7 +186,7 @@ private:
 
 我们就是在开头增加模板声明 template ，然后把代码中的 shape 替换成模板参数 T 而已。
 
-这个模板使用也很简单，把原来的 `shape_wrapper` 改成 `smart_ptr` 就行。
+这个模板使用也很简单，把原来的 `shape_wrapper` 改成 `smart_ptr<shape>` 就行。
 
 目前这个 smart_ptr 的行为还是和指针有点差异的：
 
@@ -209,18 +212,20 @@ public:
   
   T* get() const { return ptr_; }
 
+  //添加的几个成员函数
+
   T& operator*() const 
   { 
       return *ptr_; 
-    } 
-    T* operator->() const 
-    { 
-        return ptr_; 
-    }
-    operator bool() const 
-    { 
-        return ptr_; 
-    }
+  } 
+  T* operator->() const 
+  { 
+      return ptr_; 
+  }
+  operator bool() const 
+  { 
+      return ptr_; 
+  }
 
 private:
   T* ptr_;
@@ -231,10 +236,10 @@ private:
 
 ```cpp
 smart_ptr<shape> ptr1{create_shape(shape_type::circle)};
-smart_ptr<shape> ptr2{ptr1};
+smart_ptr<shape> ptr2{ptr1}; //应该让它在编译的时候报错
 ```
 
-编译的时候不报错，但是执行的时候就报错。
+`smart_ptr ptr2{ptr1};` 在编译时不会出错，但在运行时却会有未定义行为——由于会对同一内存释放两次，通常情况下会导致程序崩溃。
 
 ```
 a.out(88274,0x10c1d55c0) malloc: *** error for object 0x7f8628402b60: pointer being freed was not allocated
@@ -242,7 +247,482 @@ a.out(88274,0x10c1d55c0) malloc: *** set a breakpoint in malloc_error_break to d
 Abort trap: 6
 ```
 
+第二行应该让它在编译的时候报错    
+最简单的情况显然是禁止拷贝。我们可以使用下面的代码：
+
+```cpp
+
+template <typename T>
+class smart_ptr {
+public:
+    // explicit 的作用是表明该构造函数是显示的, 而非隐式的, 跟它相对应的另一个关键字是implicit, 意思是隐藏的,
+  explicit smart_ptr(T* ptr = nullptr)
+    : ptr_(ptr) 
+    {}
+
+  ~smart_ptr()
+  {
+    delete ptr_;
+  }
+  
+  T* get() const { return ptr_; }
+
+  //添加的几个成员函数
+
+  T& operator*() const 
+  { 
+      return *ptr_; 
+  } 
+  T* operator->() const 
+  { 
+      return ptr_; 
+  }
+  operator bool() const 
+  { 
+      return ptr_; 
+  }
+
+  //禁止拷贝和赋值
+  smart_ptr(const smart_ptr&) = delete; smart_ptr& operator=(const smart_ptr&) = delete;
+
+private:
+  T* ptr_;
+
+};
+```
+
+我们可以尝试在拷贝时转移指针的所有权
+
+```cpp
+
+template <typename T>
+class smart_ptr {
+  …
+  smart_ptr(smart_ptr& other)
+  {
+    ptr_ = other.release();
+  }
+  smart_ptr& operator=(smart_ptr& rhs)
+  {
+    smart_ptr(rhs).swap(*this);
+    return *this;
+  }
+  …
+
+  //释放所有权
+  T* release()
+  {
+    T* ptr = ptr_;
+    ptr_ = nullptr;
+    return ptr;
+  }
+  void swap(smart_ptr& rhs)
+  {
+    using std::swap;
+    swap(ptr_, rhs.ptr_);
+  }
+  …
+};
+```
+
+在拷贝构造函数中，通过调用 other 的 release 方法来释放它对指针的所有权。
+
+在赋值函数中，则通过拷贝构造产生一个临时对象并调用 swap 来交换对指针的所有权
+
+> 上面实现的只能指针就是 auto_ptr
+
+上面实现的最大问题是，它的行为会让程序员非常容易犯错。**一不小心把它传递给另外一个 smart_ptr，你就不再拥有这个对象了……**
+
+### “移动”指针
+
+smart_ptr 可以如何使用“移动”来改善其行为。
+
+我们需要对代码做两处小修改
+
+```cpp
+
+template <typename T>
+class smart_ptr {
+  …
+
+  //把拷贝构造函数中的参数类型 smart_ptr& 改成了 smart_ptr&&；现在它成了移动构造函数。
+  smart_ptr(smart_ptr&& other)
+  {
+    ptr_ = other.release();
+  }
+  //赋值函数中的参数类型 smart_ptr& 改成了 smart_ptr
+  smart_ptr& operator=(smart_ptr rhs)
+  {
+    rhs.swap(*this);
+    return *this;
+  }
+  …
+};
+```
+
+- 把拷贝构造函数中的参数类型 `smart_ptr&` 改成了 `smart_ptr&&`；现在它成了移动构造函数。
+
+- 把赋值函数中的参数类型 `smart_ptr&` 改成了 `smart_ptr`，在构造参数时直接生成新的智能指针，从而不再需要在函数体中构造临时对象。现在赋值函数的行为是移动还是拷贝，完全依赖于构造参数时走的是移动构造还是拷贝构造。
 
 
+> `operator=()`的参数在接收参数的时候，会调用构造函数，如果调用的是拷贝构造，那赋值操作就是拷贝，如果调用的是移动构造，那么赋值操作就是移动。
 
+如果我提供了移动构造函数而没有手动提供拷贝构造函数，那后者自动被禁用
 
+```cpp
+smart_ptr<shape> ptr1{create_shape(shape_type::circle)};
+smart_ptr<shape> ptr2{ptr1};             // 编译出错
+smart_ptr<shape> ptr3;
+ptr3 = ptr1;                             // 编译出错
+ptr3 = std::move(ptr1);                  // OK，可以
+smart_ptr<shape> ptr4{std::move(ptr3)};  // OK，可以
+```
+
+> 这也是 C++11 的 unique_ptr 的基本行为。
+
+不知道你注意到没有，一个 `circle*` 是可以隐式转换成 `shape*` 的，但上面的 smart_ptr 却无法自动转换成 `smart_ptr`。
+
+不过，只需要额外加一点模板代码，就能实现这一行为。在我们目前给出的实现里，只需要增加一个构造函数即可——这也算是我们让赋值函数利用构造函数的好处了。
+
+```cpp
+  template <typename U>
+  smart_ptr(smart_ptr<U>&& other)
+  {
+    ptr_ = other.release();
+  }
+```
+
+这样，我们自然而然利用了指针的转换特性：现在 `smart_ptr` 可以移动给 `smart_ptr`，但不能移动给 `smart_ptr`。不正确的转换会在代码编译时直接报错。
+
+理论上，这里的模板参数`smart_ptr(smart_ptr<U>&& other)`是万能引用，既可以引用左值，又可以引用右值，万能引用在【完美转发】中大有用武之地。 因此上面这段代码所表达的是一个构造函数模板，实例化后可能是拷贝构造函数，也可能是移动构造函数。 
+
+> 补充：在函数模板中，如果参数列表是带“&&”的模板参数，那么这个参数的类型不是右值引用，而是万能引用。
+
+### 引用计数
+
+`unique_ptr` 算是一种较为安全的智能指针了。但是，一个对象只能被单个 `unique_ptr` 所拥有，这显然不能满足所有使用场合的需求。一种常见的情况是，多个智能指针同时拥有一个对象；当它们全部都失效时，这个对象也同时会被删除。这也就是 `shared_ptr` 了。
+
+![](https://static001.geekbang.org/resource/image/07/c8/072fc41e503d22c3ab2bf6a3801903c8.png)
+
+多个不同的 shared_ptr 不仅可以共享一个对象，在共享同一对象时也需要同时共享同一个计数。当最后一个指向对象（和共享计数）的 shared_ptr 析构时，它需要删除**对象**和**共享计数**
+
+我们先来写出共享计数的接口
+
+```cpp
+class shared_count {
+public:
+  shared_count();
+  void add_count();   //增加计数
+  long reduce_count();  //减少计数
+  long get_count() const;  //获取计数
+};
+```
+
+注意上面的接口增加计数不需要返回计数值；但减少计数时需要返回计数值，以供调用者判断是否它已经是最后一个指向共享计数的 shared_ptr 了。
+
+```cpp
+
+class shared_count {
+public:
+  shared_count() : count_(1) {}
+  void add_count()
+  {
+    ++count_;
+  }
+  long reduce_count()
+  {
+    return --count_;
+  }
+  long get_count() const
+  {
+    return count_;
+  }
+
+private:
+  long count_;
+};
+```
+
+现在我们可以实现我们的引用计数智能指针了。首先是构造函数、析构函数和私有成员变量：
+
+```cpp
+
+template <typename T>
+class smart_ptr {
+public:
+  explicit smart_ptr(T* ptr = nullptr)
+    : ptr_(ptr)
+  {
+    if (ptr) {
+      shared_count_ =
+        new shared_count();
+    }
+  }
+  ~smart_ptr()
+  {
+    if (ptr_ &&
+      !shared_count_
+         ->reduce_count()) {
+      delete ptr_;
+      delete shared_count_;
+    }
+  }
+
+private:
+  T* ptr_;
+  shared_count* shared_count_;
+};
+```
+
+构造函数跟之前的主要不同点是会构造一个 `shared_count` 出来。析构函数在看到 `ptr_` 非空时（此时根据代码逻辑，`shared_count` 也必然非空），需要对引用数减一，并在引用数降到零时彻底删除对象和共享计数。原理就是这样，不复杂。
+
+当然，我们还有些细节要处理。为了方便实现赋值（及其他一些惯用法），我们需要一个新的 swap 成员函数：
+
+```cpp
+  void swap(smart_ptr& rhs)
+  {
+    using std::swap;
+    swap(ptr_, rhs.ptr_);
+    swap(shared_count_,
+         rhs.shared_count_);
+  }
+```
+
+赋值函数可以跟前面一样，保持不变，但拷贝构造和移动构造函数是需要更新一下的：
+
+```cpp
+  smart_ptr(const smart_ptr& other)
+  {
+    ptr_ = other.ptr_;
+    if (ptr_) {
+      other.shared_count_
+        ->add_count();
+      shared_count_ =
+        other.shared_count_;
+    }
+  }
+  template <typename U>
+  smart_ptr(const smart_ptr<U>& other)
+  {
+    ptr_ = other.ptr_;
+    if (ptr_) {
+      other.shared_count_
+        ->add_count();
+      shared_count_ =
+        other.shared_count_;
+    }
+  }
+  template <typename U>
+  smart_ptr(smart_ptr<U>&& other)
+  {
+    ptr_ = other.ptr_;
+    if (ptr_) {
+      shared_count_ =
+        other.shared_count_;
+      other.ptr_ = nullptr;
+    }
+  }
+```
+
+除复制指针之外，对于拷贝构造的情况，我们需要在指针非空时把引用数加一，并复制共享计数的指针。对于移动构造的情况，我们不需要调整引用数，直接把 other.ptr_ 置为空，认为 other 不再指向该共享对象即可。
+
+上面实现的代码会报错
+
+错误原因是模板的各个实例间并不天然就有 friend 关系，因而不能互访私有成员 ptr_ 和 shared_count_。我们需要在 smart_ptr 的定义中显式声明：
+
+```cpp
+  template <typename U>
+  friend class smart_ptr;
+```
+
+此外，我们之前的实现（类似于单一所有权的 unique_ptr ）中用 release 来手工释放所有权。在目前的引用计数实现中，它就不太合适了，应当删除。但我们要加一个对调试非常有用的函数，返回引用计数值。定义如下：
+
+```cpp
+  long use_count() const
+  {
+    if (ptr_) {
+      return shared_count_
+        ->get_count();
+    } else {
+      return 0;
+    }
+  }
+```
+
+### 完整的 smart_ptr 代码
+
+```cpp
+
+#include <utility>  // std::swap
+
+class shared_count {
+public:
+  shared_count() noexcept
+    : count_(1) {}
+  void add_count() noexcept
+  {
+    ++count_;
+  }
+  long reduce_count() noexcept
+  {
+    return --count_;
+  }
+  long get_count() const noexcept
+  {
+    return count_;
+  }
+
+private:
+  long count_;
+};
+
+template <typename T>
+class smart_ptr {
+public:
+  template <typename U>
+  friend class smart_ptr;
+
+  explicit smart_ptr(T* ptr = nullptr)
+    : ptr_(ptr)
+  {
+    if (ptr) {
+      shared_count_ =
+        new shared_count();
+    }
+  }
+  ~smart_ptr()
+  {
+    if (ptr_ &&
+      !shared_count_
+         ->reduce_count()) {
+      delete ptr_;
+      delete shared_count_;
+    }
+  }
+
+  smart_ptr(const smart_ptr& other)
+  {
+    ptr_ = other.ptr_;
+    if (ptr_) {
+      other.shared_count_
+        ->add_count();
+      shared_count_ =
+        other.shared_count_;
+    }
+  }
+  template <typename U>
+  smart_ptr(const smart_ptr<U>& other) noexcept
+  {
+    ptr_ = other.ptr_;
+    if (ptr_) {
+      other.shared_count_->add_count();
+      shared_count_ = other.shared_count_;
+    }
+  }
+  template <typename U>
+  smart_ptr(smart_ptr<U>&& other) noexcept
+  {
+    ptr_ = other.ptr_;
+    if (ptr_) {
+      shared_count_ =
+        other.shared_count_;
+      other.ptr_ = nullptr;
+    }
+  }
+  template <typename U>
+  smart_ptr(const smart_ptr<U>& other,
+            T* ptr) noexcept
+  {
+    ptr_ = ptr;
+    if (ptr_) {
+      other.shared_count_
+        ->add_count();
+      shared_count_ =
+        other.shared_count_;
+    }
+  }
+  smart_ptr&
+  operator=(smart_ptr rhs) noexcept
+  {
+    rhs.swap(*this);
+    return *this;
+  }
+
+  T* get() const noexcept
+  {
+    return ptr_;
+  }
+  long use_count() const noexcept
+  {
+    if (ptr_) {
+      return shared_count_
+        ->get_count();
+    } else {
+      return 0;
+    }
+  }
+  void swap(smart_ptr& rhs) noexcept
+  {
+    using std::swap;
+    swap(ptr_, rhs.ptr_);
+    swap(shared_count_,
+         rhs.shared_count_);
+  }
+
+  T& operator*() const noexcept
+  {
+    return *ptr_;
+  }
+  T* operator->() const noexcept
+  {
+    return ptr_;
+  }
+  operator bool() const noexcept
+  {
+    return ptr_;
+  }
+
+private:
+  T* ptr_;
+  shared_count* shared_count_;
+};
+
+template <typename T>
+void swap(smart_ptr<T>& lhs,
+          smart_ptr<T>& rhs) noexcept
+{
+  lhs.swap(rhs);
+}
+
+template <typename T, typename U>
+smart_ptr<T> static_pointer_cast(
+  const smart_ptr<U>& other) noexcept
+{
+  T* ptr = static_cast<T*>(other.get());
+  return smart_ptr<T>(other, ptr);
+}
+
+template <typename T, typename U>
+smart_ptr<T> reinterpret_pointer_cast(
+  const smart_ptr<U>& other) noexcept
+{
+  T* ptr = reinterpret_cast<T*>(other.get());
+  return smart_ptr<T>(other, ptr);
+}
+
+template <typename T, typename U>
+smart_ptr<T> const_pointer_cast(
+  const smart_ptr<U>& other) noexcept
+{
+  T* ptr = const_cast<T*>(other.get());
+  return smart_ptr<T>(other, ptr);
+}
+
+template <typename T, typename U>
+smart_ptr<T> dynamic_pointer_cast(
+  const smart_ptr<U>& other) noexcept
+{
+  T* ptr = dynamic_cast<T*>(other.get());
+  return smart_ptr<T>(other, ptr);
+}
+```
