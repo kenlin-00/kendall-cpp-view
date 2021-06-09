@@ -33,8 +33,7 @@
     - [守护进程的实现](#守护进程的实现)
   - [避免子进程变成僵尸进程](#避免子进程变成僵尸进程)
 - [网络通信](#网络通信)
-  - [一个浏览器访问网页的过程](#一个浏览器访问网页的过程)
-  - [客户端和服务端通信demo](#客户端和服务端通信demo)
+  - [客户端和服务端通信 demo](#客户端和服务端通信-demo)
   - [TCP 三次握手](#tcp-三次握手)
     - [最大传输单元 MTU](#最大传输单元-mtu)
     - [Telnet 工具](#telnet-工具)
@@ -591,123 +590,164 @@ void ngx_master_process_cycle()
 
 ## 网络通信
 
-### 一个浏览器访问网页的过程
 
-比如说在客户端浏览器中输入`www.taobao.com`并按回车，浏览器向淘宝网服务器发送了一个数据包，大概意思就是告诉淘宝网：“我需要访问你，清把你的网页内容传递给我”，淘宝网服务器收到这个请求之后，就把某个约定好的网页传递到浏览器中上。
+### 客户端和服务端通信 demo
 
-因为互联网的数据包大小最大为 1.5KB 左右，而淘宝网页面上内容很多，可能有成百上千个 1.5KB ，所以淘宝网就像客户端的类论文发送成百上千个数据包。
-
-在收取数据包的过程中，浏览器也要不断地发送一回应包告诉淘宝服务器：“我收到了一些数据包，请继续发送给我下面的数据包。” 
-
-因为淘宝网也不能一股脑地把数据包塞给服务器，以免浏览器处理不过来。
-
-简单的说就是：淘宝网服务器给浏览器返回一个数据包，浏览器收到后会给淘宝服务器返回应一个数据包，然后淘宝网才会继续给浏览器返回剩余的数据包。
-
-最终，数据传递完毕之后，双方发送一些特殊标志的数据包，来标识所有数据全部传送完毕了。就这样本次浏览器和服务器的通信就结束了。
-
-### 客户端和服务端通信demo
+> 一个服务端对应一个客户端
 
 - server.c
 
 ```c
-
 #include <stdio.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <arpa/inet.h>
+#include <arpa/inet.h>  //serv_addr htonl
 #include <sys/socket.h>
-#include <stdlib.h>
+#include <sys/types.h>  
 #include <string.h>
+#include <stdlib.h>
 
-#define SERV_PORT 9000  //本服务器要监听的端口号，一般1024以下的端口很多都是属于周知端口，所以我们一般采用1024之后的数字做端口号
+#define SERV_PORT 9000
 
-int main(int argc, char *const *argv)
-{    
-    //这些演示代码的写法都是固定套路，一般都这么写
+int main(int argc,char* const* argv) {
 
-    //服务器的socket套接字【文件描述符】
-    int listenfd = socket(AF_INET, SOCK_STREAM, 0);    //创建服务器的socket，大家可以暂时不用管这里的参数是什么，知道这个函数大概做什么就行
+	int bindId;
+	int listenId;
+	int connfd;
 
-    struct sockaddr_in serv_addr;                  //服务器的地址结构体
-    memset(&serv_addr,0,sizeof(serv_addr));
-    
-    //设置本服务器要监听的地址和端口，这样客户端才能连接到该地址和端口并发送数据
-    serv_addr.sin_family = AF_INET;                //选择协议族为IPV4
-    serv_addr.sin_port = htons(SERV_PORT);         //绑定我们自定义的端口号，客户端程序和我们服务器程序通讯时，就要往这个端口连接和传送数据
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); //监听本地所有的IP地址；INADDR_ANY表示的是一个服务器上所有的网卡（服务器可能不止一个网卡）多个本地ip地址都进行绑定端口号，进行侦听。
+	//1.创建socket
+//int socket(int domain, int type, int protocol);
+//AF_INET：IPV4 ， AF_INET6：IPv6 ， SOCK_STREAM：TCP ，SOCK_DGRAM: UDP
+	int listenfd = socket(AF_INET,SOCK_STREAM,0);
+	if(listenfd < 0) {
+		perror("socket");
+		exit(1);
+	}
 
-    bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));//绑定服务器地址结构体
-    listen(listenfd, 32);     //参数2表示服务器可以积压的未处理完的连入请求总个数，客户端来一个未连入的请求，请求数+1，连入请求完成，c/s之间进入正常通讯后，请求数-1
+	//定义服务器的地址结构 IPv4
+	struct sockaddr_in serv_addr;
+	//初始化
+// void *memset(void *str, int c, size_t n)  复制 c --> str
+	memset(&serv_addr,0,sizeof(serv_addr));
 
-    int connfd;
-    const char *pcontent = "I sent sth to client!"; //指向常量字符串区的指针
-    for(;;)
-    {
-        //卡在这里，等客户单连接，客户端连入后，该函数走下去【注意这里返回的是一个新的socket——connfd，后续本服务器就用connfd和客户端之间收发数据，而原有的lisenfd依旧用于继续监听其他连接】        
-        connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
+	//2.设置通配地址「bind前的处理」
+/*描述IPV4的套接字地址格式
+struct sockaddr_in
+{
+	sa_family_t sin_family;   协议族
+	in_port_t sin_port;       端口号 
+	struct in_addr sin_addr;   Internet address. 32-bit
 
-        //发送数据包给客户端
-        write(connfd,pcontent,strlen(pcontent)); //注意第一个参数是accept返回的connfd套接字
-        
-        //只给客户端发送一个信息，然后直接关闭套接字连接；
-        close(connfd); 
-    } //end for
-    close(listenfd);     //实际本简单范例走不到这里，这句暂时看起来没啥用
-    return 0;
-}
+	//这里仅仅用作占位符，不做实际用处  
+	unsigned char sin_zero[8];
+};
+*/
+	serv_addr.sin_family = AF_INET;  //地址族，IPv4 或者 IPv6
+	serv_addr.sin_port = SERV_PORT;  // 端口号
+	// 监听本地所有的IP地址；INADDR_ANY表示的是一个服务器上所有的网卡
+/*
+对于 IPv4 的地址来说，使用 INADDR_ANY 来完成通配地址的设置
+对于 IPv6 的地址来说，使用 IN6ADDR_ANY 来完成通配地址的设置
+*/
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);  //IPV4通配地址
+/*
+uint32_t htonl(uint32_t hostlong);
+uint16_t htons(uint16_t hostshort);
+uint32_t ntohl(uint32_t netlong);
+uint16_t ntohs(uint16_t netshort);
+h表示host，n表示network，l表示32位长整数，s表示16位短整数。
+*/
+	//3.bind IP地址和端口号
+//bind(int fd, sockaddr * addr, socklen_t len)
+	bindId = bind(listenfd,(struct sockaddr*)&serv_addr, sizeof(serv_addr));//绑定服务器地址结构
+	if(bindId < 0) {
+		perror("bind");
+		exit(1);
+	}
+
+	//4.listen监听
+// /int listen (int socketfd, int backlog)
+	listenId = listen(listenfd,32);  // backlog ,这个参数的大小决定了可以接收的并发数
+
+	//5.循环处理用户请求 accept()
+	const char *pcontent = "I sent sth to client!"; //指向常量字符串区的指针
+	for(;;) {
+// int accept(int listensockfd, struct sockaddr *cliaddr, socklen_t *addrlen) //cliaddr 相当于输出参数
+		connfd = accept(listenfd,(struct sockaddr*)NULL,NULL);
+
+		//发送数据包给客户端
+		write(connfd,pcontent,strlen(pcontent));
+
+		//只给一个客户端发送信息，然后直接关闭套接字连接
+		close(connfd);
+	}
+	close(listenfd); //实际上这个用例不会走到这里
+	
+
+	return 0;
+};
 ```
 
 - client.c
 
 ```c
+#include <stdlib.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <stdlib.h>
 #include <string.h>
-
 
 #define SERV_PORT 9000    //要连接到的服务器端口，服务器必须在这个端口上listen着
 
-int main(int argc, char *const *argv)
-{    
-    //这些演示代码的写法都是固定套路，一般都这么写
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0); //创建客户端的socket，大家可以暂时不用管这里的参数是什么，知道这个函数大概做什么就行
+int main(int argc,char *const* argv)
+{
+	char * serverIp = "192.168.136.100";
+	int inetId;
+	int connectId;
 
-    struct sockaddr_in serv_addr; 
-    memset(&serv_addr,0,sizeof(serv_addr));
+	// 1.创建套接字
+	int sockfd = socket(AF_INET,SOCK_STREAM,0);
 
-    //设置要连接到的服务器的信息
-    serv_addr.sin_family = AF_INET;                //选择协议族为IPV4
-    serv_addr.sin_port = htons(SERV_PORT);         //连接到的服务器端口，服务器监听这个地址
-    //这里为了方便演示，要连接的服务器地址固定写
-    if(inet_pton(AF_INET,"192.168.1.126",&serv_addr.sin_addr) <= 0)  //IP地址转换函数,把第二个参数对应的ip地址转换第三个参数里边去，固定写法
-    {
-        printf("调用inet_pton()失败，退出！\n");
-        exit(1);
-    }
+	//2.设置通配地址
+	struct sockaddr_in serv_addr;
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(SERV_PORT);
 
-    //连接到服务器
-    if(connect(sockfd,(struct sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
-    {
-        printf("调用connect()失败，退出！\n");
-        exit(1);
-    }
+	//设定要连接的服务器 IP 地址和端口号
 
-    int n;
-    char recvline[1000 + 1]; 
-    while(( n = read(sockfd,recvline,1000)) > 0) //仅供演示，非商用，所以不检查收到的宽度，实际商业代码，不可以这么写
-    {
-        recvline[n] = 0; //实际商业代码要判断是否收取完毕等等，所以这个代码只有学习价值，并无商业价值
-        printf("收到的内容为：%s\n",recvline);
-    }
-    close(sockfd); //关闭套接字
-    printf("程序执行完毕，退出!\n");
-    return 0;
+//inet_pton: 把ip地址转化为用于网络传输的二进制数值
+// int inet_pton(int family, const char *strptr, void *addrptr); 
+
+//inet_ntop: 将数值格式转化为点分十进制的ip地址格式
+// const char * inet_ntop(int family, const void *addrptr, char *strptr, size_t len); 
+	inetId = inet_pton(AF_INET,serverIp,&serv_addr.sin_addr);
+	if(inetId < 0) {
+		perror("inet_pton");
+		exit(1);
+	}
+
+	//3.连接服务器
+// int connect(int sockfd, const struct sockaddr *servaddr, socklen_t addrlen)
+	connectId = connect(sockfd,(struct sockaddr*)&serv_addr,sizeof(serv_addr));
+	if(connectId < 0) {
+		printf("调用connect()失败，退出！\n");
+		perror("connect");
+		exit(1);
+	}
+
+	//4.开始读来自服务端的数据
+	int n;
+	char recvLine[10000 +1];
+	while( (n = read(sockfd,recvLine,1000)) > 0 ) {
+		recvLine[n]  = 0;
+		printf("收到来自服务端的数据：%s\n",recvLine);
+	}
+	//5.关闭套接字
+	close(sockfd);
+	printf("接受完毕，客户端退出\n");
+	return 0;
 }
 ```
 
@@ -723,9 +763,13 @@ MTU 就是每个数据包所能包含的最大字节数，大小约为 1.5KB，�
 
 Telnet 工具能够方便地测试服务器的某个 TCP 端口是否通畅、数据能否正常收发等。
 
+`telnet 192.168.136.100 9000`
+
 #### Wireshark监视数据包软件
 
 用来抓包分析网络问题
+
+`host 192.168.136.100 and port 9000`
 
 ### TCP状态转换
 
