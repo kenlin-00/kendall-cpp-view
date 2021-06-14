@@ -1,10 +1,10 @@
-# C++男孩那点记忆
+# 零K那点记忆
 
 > **暂时还未完善，也不公开，不要 fork ，不要 fork ，谢谢 ！！**
 
 [项目GitHub：https://github.com/linKge-web/kendall-cpp](https://github.com/linKge-web/kendall-cpp)
 
-  > **机遇和努力都很重要，但是只有努力是我们唯一能把控在自己手里的事。我是 Kendall，大家都叫我 K哥，让我们一起遨游`C++`的海洋吧！**
+  > **机遇和努力都很重要，但是只有努力是我们唯一能把控在自己手里的事。我是 零K，大家都叫我 K哥，让我们一起遨游`C++`的海洋吧！**
 
 如果觉得文章对你有帮助，麻烦 [赏个star](https://github.com/linKge-web/kendall-cpp)，你们的支持是我们最大的动力。感谢有你！！！
   
@@ -13,7 +13,7 @@
 
 ### 关于我
 
-#### C++男孩 Kendall 介绍
+#### 零 K 介绍
 `Kendall`是一名在校生，目前在国内某高校读研，本项目仅仅是自己个人学习笔记和总结，
 
 Markdown 格式参考：[Github Markdown格式](https://guides.github.com/features/mastering-markdown/)
