@@ -2,7 +2,7 @@
 
 > **暂时还未完善，也不公开，不要 fork ，不要 fork ，谢谢 ！！**
 
-[项目GitHub：https://github.com/linKge-web/kendall-cpp](https://github.com/linKge-web/kendall-cpp)
+项目 `GitHub`：[https://github.com/linKge-web/kendall-cpp](https://github.com/linKge-web/kendall-cpp)
 
   > **机遇和努力都很重要，但是只有努力是我们唯一能把控在自己手里的事。我是 零K，大家都叫我 K哥，让我们一起遨游`C++`的海洋吧！**
 
