@@ -12,8 +12,8 @@
 		- [strcasecmp 函数](#strcasecmp-函数)
 - [内存泄漏检测工具](#内存泄漏检测工具)
 - [设置进程名称](#设置进程名称)
-		- [环境变量信息搬家](#环境变量信息搬家)
-		- [怎么修改进程名称](#怎么修改进程名称)
+	- [环境变量信息搬家](#环境变量信息搬家)
+	- [怎么修改进程名称](#怎么修改进程名称)
 	- [代码中一些要点笔记](#代码中一些要点笔记-1)
 		- [extern 关键字](#extern-关键字)
 		- [`delete`和`delete[]`的区别](#delete和delete的区别)
@@ -46,6 +46,9 @@
 		- [`accept()`函数](#accept函数)
 		- [几个思考题](#几个思考题)
 	- [SYN 攻击](#syn-攻击)
+		- [模拟TCP 半连接溢出，制造 SYN 攻击](#模拟tcp-半连接溢出制造-syn-攻击)
+		- [TCP 半连接队列的最大值是如何决定的](#tcp-半连接队列的最大值是如何决定的)
+		- [如何防御 SYN 攻击](#如何防御-syn-攻击)
 	- [阻塞与非阻塞](#阻塞与非阻塞)
 	- [异步和同步](#异步和同步)
 	- [监听端口](#监听端口)
@@ -256,7 +259,9 @@ int strcasecmp (const char *s1, const char *s2);
 
 > 在这里遇到了个问题，一旦设置的进程名称的长度大雨字符串 `./nginx`的长度，就可能导致设置的进程名称覆盖其他参数。
 
-#### 环境变量信息搬家
+
+### 环境变量信息搬家
+
 
 由于环境变量信息也是保存在内存中的，并且**保存的位置紧紧邻 argv 所指向的内存**。所以若果设置的进程名称太长，不但会覆盖掉命令行参数，而且很可能覆盖掉环境变量所指向的内容。
 
@@ -276,7 +281,7 @@ int strcasecmp (const char *s1, const char *s2);
   
 - 逐个把环境变量的内容复制到这块内存，并让 `environ[i]` （环境变量指针）指向新的内存位置
 
-#### 怎么修改进程名称
+### 怎么修改进程名称
 
 编写一个 `ngx_setproctitle()` 函数，但是要注意：
 
@@ -858,6 +863,89 @@ accept 函数返回的是一个套接字（socket），这个套接字代表已�
 如果一个黑客通过一些特殊的手段，伪造自己的 IP 地址和端口号，不停地给服务器发送 SYN 包（也就是三次握手的第 1 次握手包），就会导致服务器未完成连接队列的条目越来越多，当 未完成连接队列 和 已完成连接队列 已满了，服务器就会忽略掉后续再来的 SYN 包，无法建立正常的 TCP 连接了。因为正常 TCP 连接的三次握手的第 1 次握手包（ SYN 包）被忽略了。
 
 > blocklog 指定内核套接字（服务器监听套接字）上内核为其排队的最大已完成连接数（也就是已完成连接队列中允许存放的最大条数）
+
+
+####  模拟TCP 半连接溢出，制造 SYN 攻击
+
+实际上就是对服务端一直发送 TCP SYN 包，但是不回第三次握手 ACK，这样就会使得服务端有大量的处于 SYN_RECV 状态的 TCP 连接。
+
+这其实也就是  SYN 攻击
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/syn攻击.1fapi2iway5c.png)
+
+实验环境：
+
+- 客户端和服务端都是 CentOs 6.5 ，Linux 内核版本 2.6.32
+- 服务端 IP 192.168.3.200，客户端 IP 192.168.3.100
+- 服务端是 Nginx 服务，端口为 8088
+
+注意：本次模拟实验是**没有开启** tcp_syncookies，关于 tcp_syncookies 的作用
+
+> 开启 tcp_syncookies 是缓解 SYN 攻击其中一个手段。
+
+本次实验使用 hping3 工具模拟 SYN 攻击：
+
+当服务端受到 SYN 攻击后，连接服务端 ssh 就会断开了，无法再连上。只能在服务端主机上执行查看当前 TCP 半连接队列大小：
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/syn攻击02.d58f965ft40.png)
+
+同时，还可以通过 `netstat -s` 观察半连接队列溢出的情况：
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/syn攻击03.43qxy62xfq20.png)
+
+上面输出的数值是累计值，表示共有多少个 TCP 连接因为半连接队列溢出而被丢弃。隔几秒执行几次，如果有上升的趋势，说明当前存在半连接队列溢出的现象。
+
+上面模拟 SYN 攻击场景时，服务端的 tcp_max_syn_backlog 的默认值如下
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/syn攻击04.2dgfb8h08g5c.png)
+
+但是在测试的时候发现，服务端最多只有 256 个半连接队列，而不是 512，所以半连接队列的最大长度不一定由 tcp_max_syn_backlog 值决定的。
+
+#### TCP 半连接队列的最大值是如何决定的
+
+> 但是还透过 Linux 内核的源码，来分析 TCP 半连接队列的最大值是如何决定的
+
+- 如果半连接队列满了，并且没有开启 tcp_syncookies,则忽丢弃
+- 如果全连接队列满了，并且没有重传 SYN+ACK 包的连接请求多于 1 个，则会丢弃
+- 如果没有开启 tcp_syncookies，并且 max_syn_backlog 减去 当前半连接队列长度小于 `max_syn_backlog >> 2`，则会丢弃；
+
+半连接队列最大值不是单单由 max_syn_backlog 决定，还跟 somaxconn 和 backlog 有关系。
+
+全连接队列的最大值是` sk_max_ack_backlog` 变量，`sk_max_ack_backlog` 实际上是在 `listen() `源码里指定的，也就是 `min(somaxconn, backlog)`；
+
+#### 如何防御 SYN 攻击
+
+- 增大半连接队列；
+- 开启 tcp_syncookies 功能
+- 减少 SYN+ACK 重传次数
+
+**方式一：增大半连接队列**
+
+要想增大半连接队列，我们得知不能只单纯增大 tcp_max_syn_backlog 的值，还需一同增大 somaxconn 和 backlog，也就是增大全连接队列。否则，只单纯增大 tcp_max_syn_backlog 是无效的。
+
+增大 tcp_max_syn_backlog 和 somaxconn 的方法是修改 Linux 内核参数：
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/syn攻击05.hoz9lpbx9f4.png)
+
+增大 backlog 的方式，每个 Web 服务都不同，比如 Nginx 增大 backlog 的方法如下：
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/syn攻击06.29esp09qzpq8.png)
+
+最后，改变了如上这些参数后，要重启 Nginx 服务，因为半连接队列和全连接队列都是在 `listen()` 初始化的。
+
+**方式二：开启 tcp_syncookies 功能**
+
+开启 tcp_syncookies 功能的方式也很简单，修改 Linux 内核参数：
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/syn攻击07.5whon2v6pok0.png)
+
+**方式三：减少 SYN+ACK 重传次数**
+
+当服务端受到 SYN 攻击时，就会有大量处于 SYN_REVC 状态的 TCP 连接，处于这个状态的 TCP 会重传 SYN+ACK ，当重传超过次数达到上限后，就会断开连接。
+
+那么针对 SYN 攻击的场景，我们可以减少 SYN+ACK 的重传次数，以加快处于 SYN_REVC 状态的 TCP 连接断开。
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/syn攻击08.1hvr8wld1r8g.png)
 
 
 ### 阻塞与非阻塞

@@ -30,6 +30,7 @@
 - [字符串相减](#字符串相减)
 - [写一个单例模式](#写一个单例模式)
   - [写一个线程安全版的单例模式](#写一个线程安全版的单例模式)
+  - [自动释放对象的单例](#自动释放对象的单例)
 - [不使用临时变量实现`swap`函数](#不使用临时变量实现swap函数)
 - [实现一个`strcpy`函数](#实现一个strcpy函数)
   - [为什么要返回`char*`类型](#为什么要返回char类型)
@@ -298,7 +299,7 @@ public:
 
         // 获取value的值
         auto target_it = it->second;  
-        // 定义一个pair对保存key,value
+        // 定义一个pair对保存key,value,注意这里赋值用{}
         pair<int, int> n {target_it->first, target_it->second};
         cache.push_front(n);
         cache.erase(target_it);  //删除
@@ -315,6 +316,7 @@ public:
         // unordered_map<int, list<pair<int, int>>::iterator>::iterator it= mp.find(key);
         auto it = mp.find(key);
         //如果找到了
+        //这里必须先删除列表再删除哈希表，因为链表是存在map的value中的。
         if (it != mp.end()) {
             //缓冲中先删除这个节点
             cache.erase(it->second);
@@ -743,7 +745,7 @@ public:
             while (i < j && arr[i] >= pivot) i++;
             arr[j] = arr[i];
         }
-        //不需要保存基准数据了，也用不上
+        
         arr[i] = pivot;
         return i;
     }
@@ -1536,6 +1538,38 @@ class Singleton{
     }
 };
 ```
+
+### 自动释放对象的单例
+
+```cpp
+class Singleton
+{
+public:
+    ~Singleton(){};
+    static Singleton *getInstance() {
+        if(m_instance == nullptr) {
+            m_instance = new Singleton();
+            static SInline si;
+        }
+        return m_instance;
+    }
+    class SInline {
+    public:
+        SInline(){}
+        ~SInline(){
+            if(Singleton::m_instance) {
+                delete m_instance;
+                Singleton::m_instance = nullptr;
+            }
+        }
+    };
+
+private:
+    Singleton(){};
+    static Singleton *m_instance;
+};
+```
+
 [点击查看详细：理解单例模式](/C++随记/06C++单例模式.md)
 
 ## 不使用临时变量实现`swap`函数
