@@ -1,97 +1,58 @@
 
 
-- [类对象所占用的内存](#类对象所占用的内存)
+- [C++11多线程](#c11多线程)
+  - [detach 函数](#detach-函数)
+  - [用一个类来创建线程](#用一个类来创建线程)
 
 --------
 
-## 类对象所占用的内存
+## C++11多线程
+
+C++ 11 新标准引入了对多线程的支持，解决了跨平台问题。
+
+使用 C++11 编写多线程
 
 ```cpp
-class A {
-public:
-};
+#include <iostream>
+#include <thread>
+using namespace std;
 
-int main() {
-    A a;
-    cout << sizeof(a) << endl; // 1
-    return 0;
+void myprint() {
+    cout << "我的线程开始执行"<< endl;
+
+    cout << "我的线程执行完毕了" << endl;
 }
-```
-一个空类 `sizeof(a)` 的结果是 1。因为对象是有地址的。内存中的一个地址单元**里面存的是 1 个字节的内容**
-
-```cpp
-class A {
-public:
-    void func1();
-    void func2();
-    
-};
 
 int main() {
-    A a;
-    cout << sizeof(a) << endl; // 1
-    return 0;
-}
-```
+    cout << "main主线程开始" << endl;
 
-类中的成员函数是不占用类对象内存空间的。
+    std::thread mytoobj(myprint);
+    mytoobj.join();  //阻塞，等待子线程执行完毕
 
-```cpp
-class A {
-public:
-    int a = 1;
-    void func1();
-    void func2();
-    
-};
+    cout << "main 主线程结束" << endl;
 
-int main() {
-    A a;
-    cout << sizeof(a) << endl; // 4
-    return 0;
-}
-````
-
-成员变量是包含在每个对象中，占字节的
-
-```cpp
-class A {
-public:
-    int a = 1;
-    void func1() {
-        int a = 2;
-    }
-    void func2();
-    
-};
-
-int main() {
-    A a;
-    cout << sizeof(a) << endl; // 4
     return 0;
 }
 ```
 
-成员函数不占类对象的字节空间
+结果
 
-```cpp
-class A {
-public:
-    virtual void fun3();
-    
-};
-
-int main() {
-    cout << sizeof(A) << endl; // 8
-    return 0;
-}
+```
+main主线程开始
+我的线程开始执行
+我的线程执行完毕了
+main 主线程结束
 ```
 
-类中如果有一个虚函数，对象的 sizeof 会增加 4 个字节，因为这个类会有一个指向虚函数的指针。（但是我在 Linux 和 MacBook 测试是 8）
+### detach 函数
 
-> 注意： sizeof(a)的返回值是一个无符号整数十进制的值，即 unsigned_int, 并不是 int 类型
+如果创建了很多子线程，让主线程逐个等待线程结束，这种方法就显得不是很好，所以需要引入 detach 这种写法，让主线程和子线程分离，主线程不必等待子进程运行结束。
 
-静态成员变量不计算在对象的 sizeof 内
+```cpp
+mytoobj.detach();
+```
 
+一旦调用了 detach，就不可在调用 join 了。
 
+### 用一个类来创建线程
 

@@ -303,7 +303,7 @@ int strcasecmp (const char *s1, const char *s2);
 
 #### extern 关键字
 
-如果全局变量不在忘了件的开头定义，作用范围就只是从定义的地方到文件结束，如果在定义这个位置之前的函数引用这个全局变量，那么就应该在引用之前用关键字 extren 对这个变量作“外部变量声明”，表示这个变量是一个已经定义的外部变量。有了这个声明，变量的作用于就可以扩展到 从声明开始到本文件结束。
+如果全局变量不在开头定义，作用范围就只是从定义的地方到文件结束，如果在定义这个位置之前的函数引用这个全局变量，那么就应该在引用之前用关键字 extren 对这个变量作“外部变量声明”，表示这个变量是一个已经定义的外部变量。有了这个声明，变量的作用于就可以扩展到 从声明开始到本文件结束。
 
 #### `delete`和`delete[]`的区别
 
@@ -322,15 +322,16 @@ int strcasecmp (const char *s1, const char *s2);
 
 - 打印输出相关函数借鉴了 nginx 的实现，并做一些改动，见`ngx_printf.cxx`,学习 printf,vprintf 这类函数的内部实现
 
-
+自己写了一个 `ngx_log_stderr` 函数实现，可以实现自定义的格式字符，比如，使用 printf 函数中，%d 表示显示一个十进制，%s 表示显示一个字符串，自己可以任意定制这些内容，或者增加更多的格式定制字符进去。
 
 `void   ngx_log_stderr(int err, const char *fmt, ...);`
 
-- 该函数支持把错误码转换成对应的错误字符串，追加到要显示的字符串末尾
 
 - `ngx_cpymem`: 该函数的功能类似于 `memcpy`,但是 `memcpy` 返回的是指向目标 dst 的指针，而`ngx_cpymem`返回的是目标（复制后的数据）的终点位置，因为有了这个位置后，后续继续复制数据时就很方便了。
 
-- `ngx_vslprintf`: 功能相当于系统的 `printf` 函数
+- `ngx_vslprintf`: （核心函数）功能相当于系统的 `printf` 函数，用一个 while 循环一次一个字符地处理所有输出的字符串，ngx_vslprintf 中调用了 ngx_sprintf_num 函数（用于以指定宽度把一个数字显示在 buf 对应的 vslprintf 中调用了 ngx_sprintf_num 函数
+
+- `ngx_sprintf_stderr` 支持把错误码转成对应的错误字符串，追加到要显示的字符串末尾。错误码通过第一个参数参进来。
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/通信框架-日志打印01.69qcjx2373c0.png)
 
