@@ -417,7 +417,7 @@ void ngx_log_error_core(int level,  int err, const char *fmt, ...)
 
 **解决方案**
 
-通过修改 master 进程 ngx_master_process_cycle)( master 子进程的功能函数) 函数中的 for 无限循环代码，增加一条日志输出。
+通过修改 master 进程 `ngx_master_process_cycle)`( master 子进程的功能函数) 函数中的 for 无限循环代码，增加一条日志输出。
 
 ```cpp
 for ( ;; ) 
@@ -516,9 +516,9 @@ ngx_log.fd = open((const char *)plogname,O_WRONLY|O_APPEND|O_SYNC,0644);
 
 如果文件很大，就都写完，然后调用 1 次 fsync 函数
 
-还有如果整个文件需要调用 write 函数 10 次才能写完，那么没写 1 次，就调用 fsync 函数 1 次意义就不大， 所以应该写 10 次后，再调用 fsync 函数 1 次。
+还有如果整个文件需要调用 write 函数 10 次才能写完，那么每写 1 次，就调用 fsync 函数 1 次意义就不大， 所以应该写 10 次后，再调用 fsync 函数 1 次。
 
-> 本项目中写日志使用 write 系统调用，工作没有问题，但是使用 fwrite 来写日志，就会出现日志混乱问题。
+> 本项目中写日志使用 write 系统调用，工作没有问题，当时还尝试了使用 fwrite 来写日志，就会出现日志混乱问题。
 
 #### fwrite 和 write 有什么区别
 
