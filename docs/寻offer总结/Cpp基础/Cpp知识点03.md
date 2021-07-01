@@ -7,6 +7,7 @@
     - [join](#join)
     - [detach 函数](#detach-函数)
     - [joinable](#joinable)
+  - [使用 detach 时候需要注意什么问题](#使用-detach-时候需要注意什么问题)
 
 --------
 
@@ -131,6 +132,31 @@ joinable is false
 main主线程结束
 ```
 
+### 使用 detach 时候需要注意什么问题
+
+- 不要往线程中传递引用，指针之类的参数
+- 建议使用值传递，建议在创建线程这一行就构造出临时对象，然后线程入口函数的形参**使用引用**来作为形参。
+
+
+```cpp
+//不能这样使用
+void myprint(const int& i,const string& pmybuf) {...}
+
+//main()中
+std::thread mytojob(myprint,mvar,mybuf);
+mytojob.join();
+```
+
+C++ 语言只会为 const 引用临时对象，第一个参数不建议使用引用，因为 主线程可能先执行结束被回收了，导致 mvar 变量被回收。
+
+第二个参数系统内部隐式将 char 数组转成 string 对象，但是这个转换时机可能发生在 主线程 执行结束后，这时候 mybuf 被系统回收了。
+
+更改：
+```
+std::thread mytojob(myprint,mvar,string(mybuf));
+```
+
+直接将 mybuf 转换成 string 对象，`string(mybuf))`会生成一个临时对象，并将这个临时对象绑定到  pmybuf ，因此可以保证 pmybuf 肯定是有效的。
 
 
 
