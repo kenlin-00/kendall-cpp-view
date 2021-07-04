@@ -46,6 +46,8 @@
   * [铺点点爬虫子项目](/Cpp项目/铺点点爬虫子项目/projectdoc.md)
   * [基于流媒体的农业环境监控系统](/Cpp项目/基于流媒体的农业环境监控系统/ProjectNote.md)
 
+* Nginx源码学习
+  * [nginx源码分析](/Cpp项目/nginx源码分析学习/nginx源码分析.md)
 
 
 * 好文总结

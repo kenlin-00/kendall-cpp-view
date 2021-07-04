@@ -8,7 +8,7 @@
     - [模板会写吗？写一个比较大小的模板函数](#模板会写吗写一个比较大小的模板函数)
   - [定义和声明的区别](#定义和声明的区别)
 - [说一说strcpy、sprintf与memcpy这三个函数的不同之处](#说一说strcpysprintf与memcpy这三个函数的不同之处)
-  - [strcpy函数和strncpy函数的区别？哪个函数更安全？](#strcpy函数和strncpy函数的区别哪个函数更安全)
+  - [strcpy函数和strncpy函数的区别,哪个函数更安全？](#strcpy函数和strncpy函数的区别哪个函数更安全)
 - [C++ 11有哪些新特性](#c-11有哪些新特性)
   - [nullptr 和 NULL 的区别](#nullptr-和-null-的区别)
   - [说一下C++左值引用和右值引用](#说一下c左值引用和右值引用)
@@ -111,7 +111,7 @@ void main()
 > `sprintf`主要实现其他类型转成字符串     
 > `memcpy`主要是内存块间的拷贝。
 
-### strcpy函数和strncpy函数的区别？哪个函数更安全？
+### strcpy函数和strncpy函数的区别,哪个函数更安全？
 
  函数原型
 
