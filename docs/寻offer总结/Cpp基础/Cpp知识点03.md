@@ -1,97 +1,175 @@
 
 
-- [类对象所占用的内存](#类对象所占用的内存)
+- [C++11多线程](#c11多线程)
+  - [怎么样实现并发](#怎么样实现并发)
+  - [C++11新标准线程库](#c11新标准线程库)
+    - [thread](#thread)
+    - [join](#join)
+    - [detach 函数](#detach-函数)
+    - [joinable](#joinable)
+  - [使用 detach 时候需要注意什么问题(线程安全问题)](#使用-detach-时候需要注意什么问题线程安全问题)
+    - [C++中的 mutable 关键字](#c中的-mutable-关键字)
 
 --------
 
-## 类对象所占用的内存
+## C++11多线程
+
+线程不能越多越好，每个线程都需要一个独立的堆栈空间爱你，消耗内存，一个线程占用 1MB 堆栈空间，而且线程之间的切换也要保存很多中间状态等，也就是设计到上下文切换。 
+
+### 怎么样实现并发
+
+- 通过多个进程实现并发
+- 通过单独一个进程创建多个线程实现并发
+
+### C++11新标准线程库
+
+C++ 11 新标准引入了对多线程的支持，解决了跨平台问题。
+
+POSIX thread(pthread) 是可以跨平台的，但仍需要进行一些配置。
+
+使用 C++11 编写多线程
+
+#### thread
+
+thread 是 C++ 新标准库中的类，这个类就是用来创建线程的。这个类生成一个对象，里面是一个可调用对象（函数）
+
+#### join
+
+阻塞，主线程等待子线程执行完毕，执行流程最终汇合在一起。
 
 ```cpp
-class A {
-public:
-};
+vo
+
+void myprint() {
+    cout << "我的线程开始执行"<< endl;
+
+    cout << "我的线程执行完毕了" << endl;
+}
 
 int main() {
-    A a;
-    cout << sizeof(a) << endl; // 1
+    cout << "main主线程开始" << endl;
+
+    std::thread mytoobj(myprint);
+    mytoobj.join();  //阻塞，等待子线程执行完毕
+
+    cout << "main 主线程结束" << endl;
+
     return 0;
 }
 ```
-一个空类 `sizeof(a)` 的结果是 1。因为对象是有地址的。内存中的一个地址单元**里面存的是 1 个字节的内容**
 
-```cpp
-class A {
-public:
-    void func1();
-    void func2();
-    
-};
+结果
 
-int main() {
-    A a;
-    cout << sizeof(a) << endl; // 1
-    return 0;
-}
+```
+main主线程开始
+我的线程开始执行
+我的线程执行完毕了
+main 主线程结束
 ```
 
-类中的成员函数是不占用类对象内存空间的。
+#### detach 函数
+
+如果创建了很多子线程，让主线程逐个等待子线程结束，这种方法就显得不是很好，所以需要引入 detach 这种写法，**让主线程和子线程分离**，主线程不必等待子进程运行结束。
 
 ```cpp
-class A {
-public:
-    int a = 1;
-    void func1();
-    void func2();
-    
-};
+mytoobj.detach();
+```
 
-int main() {
-    A a;
-    cout << sizeof(a) << endl; // 4
-    return 0;
+一旦调用了 detach，就不可在调用 join 了。
+
+#### joinable
+
+判断是否成功使用 join 或者 detach
+
+```cpp
+#include <iostream>
+#include <thread>
+using namespace std;
+
+void myprint()
+{
+    cout << "我的线程开始执行了"<<endl;
+
+
+    cout << "我的线程执行完毕了"<<endl;
 }
-````
 
-成员变量是包含在每个对象中，占字节的
+int main(){
+    cout << "main主线程开始" << endl;
 
-```cpp
-class A {
-public:
-    int a = 1;
-    void func1() {
-        int a = 2;
+    std::thread mytojob(myprint);
+
+    if(mytojob.joinable()) {
+        cout << "joinable is true" << endl;
     }
-    void func2();
-    
-};
+    else {
+        cout << "joinable is false" << endl;
+    }
 
-int main() {
-    A a;
-    cout << sizeof(a) << endl; // 4
+    mytojob.detach();
+
+    if(mytojob.joinable()) {
+        cout << "joinable is true" << endl;
+    }
+    else {
+        cout << "joinable is false" << endl;
+    }
+
+    cout << "main主线程结束" << endl;
+
+
     return 0;
 }
 ```
 
-成员函数不占类对象的字节空间
+结果：
+
+```
+main主线程开始
+joinable is true
+我的线程开始执行了
+我的线程执行完毕了
+joinable is false
+main主线程结束
+```
+
+### 使用 detach 时候需要注意什么问题(线程安全问题)
+
+- 不要往线程中传递引用，指针之类的参数
+- 建议使用值传递，建议在创建线程这一行就构造出临时对象，然后线程入口函数的形参**使用引用**来作为形参。
+
 
 ```cpp
-class A {
-public:
-    virtual void fun3();
-    
-};
+//不能这样使用
+void myprint(const int& i,const string& pmybuf) {...}
 
-int main() {
-    cout << sizeof(A) << endl; // 8
-    return 0;
-}
+//main()中
+std::thread mytojob(myprint,mvar,mybuf);
+mytojob.join();
 ```
 
-类中如果有一个虚函数，对象的 sizeof 会增加 4 个字节，因为这个类会有一个指向虚函数的指针。（但是我在 Linux 和 MacBook 测试是 8）
+C++ 语言只会为 const 引用临时对象，第一个参数不建议使用引用，因为 主线程可能先执行结束被回收了，导致 mvar 变量被回收。
 
-> 注意： sizeof(a)的返回值是一个无符号整数十进制的值，即 unsigned_int, 并不是 int 类型
+第二个参数系统内部隐式将 char 数组转成 string 对象，但是这个转换时机可能发生在 主线程 执行结束后，这时候 mybuf 被系统回收了。
 
-静态成员变量不计算在对象的 sizeof 内
+更改：
+```
+std::thread mytojob(myprint,mvar,string(mybuf));
+```
+
+直接将 mybuf 转换成 string 对象，`string(mybuf))`会生成一个临时对象，并将这个临时对象绑定到  pmybuf ，因此可以保证 pmybuf 肯定是有效的。
+
+> 给线程入口函数传递类型对象时，只要使用临时对象作为实参，就可以确保线程入口函数的形参在 main 主函数退出前就已经创建完毕，可以保证线程安全。
+
+> 参考：C++ 新经典 P480-486
+
+#### C++中的 mutable 关键字
+
+在C++中，mutable 是为了突破 const 的限制而设置的。被 mutable 修饰的变量，将永远处于可变的状态，即使在一个 const 函数中。
+
+
+
+
 
 
 

@@ -303,7 +303,11 @@ int strcasecmp (const char *s1, const char *s2);
 
 #### extern 关键字
 
+<<<<<<< HEAD
 如果全局变量不在文件的开头定义，作用范围就只是从定义的地方到文件结束，如果在定义这个位置之前的函数引用这个全局变量，那么就应该在引用之前用关键字 extren 对这个变量作“外部变量声明”，表示这个变量是一个已经定义的外部变量。有了这个声明，变量的作用于就可以扩展到 从声明开始到本文件结束。
+=======
+如果全局变量不在开头定义，作用范围就只是从定义的地方到文件结束，如果在定义这个位置之前的函数引用这个全局变量，那么就应该在引用之前用关键字 extren 对这个变量作“外部变量声明”，表示这个变量是一个已经定义的外部变量。有了这个声明，变量的作用于就可以扩展到 从声明开始到本文件结束。
+>>>>>>> f4f4a42d02d4f9f89ea5064877c6721e2001c954
 
 #### `delete`和`delete[]`的区别
 
@@ -322,15 +326,16 @@ int strcasecmp (const char *s1, const char *s2);
 
 - 打印输出相关函数借鉴了 nginx 的实现，并做一些改动，见`ngx_printf.cxx`,学习 printf,vprintf 这类函数的内部实现
 
-
+自己写了一个 `ngx_log_stderr` 函数实现，可以实现自定义的格式字符，比如，使用 `printf` 函数中，%d 表示显示一个十进制，`%s` 表示显示一个字符串，自己可以任意定制这些内容，或者增加更多的格式定制字符进去。
 
 `void   ngx_log_stderr(int err, const char *fmt, ...);`
 
-- 该函数支持把错误码转换成对应的错误字符串，追加到要显示的字符串末尾
 
 - `ngx_cpymem`: 该函数的功能类似于 `memcpy`,但是 `memcpy` 返回的是指向目标 dst 的指针，而`ngx_cpymem`返回的是目标（复制后的数据）的终点位置，因为有了这个位置后，后续继续复制数据时就很方便了。
 
-- `ngx_vslprintf`: 功能相当于系统的 `printf` 函数
+- `ngx_vslprintf`: （核心函数）功能相当于系统的 `printf` 函数，用一个 while 循环一次一个字符地处理所有输出的字符串，ngx_vslprintf 中调用了 ngx_sprintf_num 函数（用于以指定宽度把一个数字显示在 buf 对应的 vslprintf 中调用了 ngx_sprintf_num 函数
+
+- `ngx_sprintf_stderr` 支持把错误码转成对应的错误字符串，追加到要显示的字符串末尾。错误码通过第一个参数参进来。
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/通信框架-日志打印01.69qcjx2373c0.png)
 
@@ -407,8 +412,12 @@ VA_LIST 的用法：
 > `ngx_log_error_core`往日志文件中写日志，代码中有自动加换行符，所以调用时字符串不用刻意加 `\n`；
 
 ```cpp
-// 日过定向为标准错误，则直接往屏幕上写日志【比如日志文件打不开，则会直接定位到标准错误，此时日志就打印到屏幕上，参考 ngx_log_init() 】
-//level:一个等级数字，我们把日志分成一些等级，以方便管理、显示、过滤等等，如果这个等级数字比配置文件中的等级数字"LogLevel"大，那么该条信息不被写到日志文件中
+// 日过定向为标准错误，则直接往屏幕上写日志【比如日志文件打不开，则会直接定位到标准错误，
+
+// 此时日志就打印到屏幕上，参考 ngx_log_init() 】
+//level:一个等级数字，我们把日志分成一些等级，以方便管理、显示、过滤等等，如果这个等级数字比配置文件中的等级数字"LogLevel"大，
+// 那么该条信息不被写到日志文件中
+
 //err：是个错误代码，如果不是0，就应该转换成显示对应的错误信息,一起写到日志文件中，
 //ngx_log_error_core(5,8,"这个XXX工作的有问题,显示的结果是=%s","YYYY");
 void ngx_log_error_core(int level,  int err, const char *fmt, ...)
@@ -416,7 +425,7 @@ void ngx_log_error_core(int level,  int err, const char *fmt, ...)
 
 **解决方案**
 
-通过修改 master 进程 ngx_master_process_cycle)( master 子进程的功能函数) 函数中的 for 无限循环代码，增加一条日志输出。
+通过修改 master 进程 `ngx_master_process_cycle)`( master 子进程的功能函数) 函数中的 for 无限循环代码，增加一条日志输出。
 
 ```cpp
 for ( ;; ) 
@@ -515,9 +524,9 @@ ngx_log.fd = open((const char *)plogname,O_WRONLY|O_APPEND|O_SYNC,0644);
 
 如果文件很大，就都写完，然后调用 1 次 fsync 函数
 
-还有如果整个文件需要调用 write 函数 10 次才能写完，那么没写 1 次，就调用 fsync 函数 1 次意义就不大， 所以应该写 10 次后，再调用 fsync 函数 1 次。
+还有如果整个文件需要调用 write 函数 10 次才能写完，那么每写 1 次，就调用 fsync 函数 1 次意义就不大， 所以应该写 10 次后，再调用 fsync 函数 1 次。
 
-> 本项目中写日志使用 write 系统调用，工作没有问题，但是使用 fwrite 来写日志，就会出现日志混乱问题。
+> 本项目中写日志使用 write 系统调用，工作没有问题，当时还尝试了使用 fwrite 来写日志，就会出现日志混乱问题。
 
 #### fwrite 和 write 有什么区别
 
