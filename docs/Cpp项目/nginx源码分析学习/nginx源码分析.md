@@ -12,8 +12,7 @@
   - [nginx 是如何处理一个连接](#nginx-是如何处理一个连接)
     - [nginx中的request](#nginx中的request)
     - [nginx 是如何处理一个完整的请求的](#nginx-是如何处理一个完整的请求的)
-  - [Nginx 基本数据结构](#nginx-基本数据结构)
-    - [ngx_str_t](#ngx_str_t)
+  - [Nginx 的配置系统](#nginx-的配置系统)
 
 ----------------------
 
@@ -212,18 +211,11 @@ nginx 为提高效率，采用**状态机**来解析请求行，而且在进行 
 以上这些，就是 nginx 中一个 http 请求的生命周期了
 
 
-## Nginx 基本数据结构
+## Nginx 的配置系统
 
-### ngx_str_t
+ Nginx 的配置系统由一个主配置文件和其他一些辅助的配置文件构成。这些配置文件均是 **纯文本文件**，全部位于 nginx 安装目录下的 conf 目录下。
 
-在 nginx 源码目录的 `src/core` 下面的 `ngx_string.h|c` 里面，包含了字符串的封装以及字符串相关操作的 api 。nginx 提供了一个带长度的字符串结构 `ngx_str_t`，它的原型如下:
-
-```c
-typedef struct {
-    size_t      len;
-    u_char     *data;
-} ngx_str_t;
-```
+ 
 
 
 
