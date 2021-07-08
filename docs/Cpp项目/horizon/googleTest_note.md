@@ -1,5 +1,13 @@
 
-
+- [如何使用 gtest 进行测试](#如何使用-gtest-进行测试)
+- [gtest 的事件机制](#gtest-的事件机制)
+  - [3 种事件机制怎么使用](#3-种事件机制怎么使用)
+    - [全局事件](#全局事件)
+    - [TestSuite事件](#testsuite事件)
+    - [TestCase事件](#testcase事件)
+- [死亡测试](#死亡测试)
+  - [死亡测试运行方式](#死亡测试运行方式)
+- [实现自动调度机制](#实现自动调度机制)
 
 ---------
 
@@ -92,7 +100,7 @@ gtest提供了多种事件机制，非常方便我们在案例之前或之后做
 
 #### 全局事件
 
-要实现全局事件，必须写一个类，继承testing::Environment类，实现里面的SetUp和TearDown方法。
+要实现全局事件，必须写一个类，继承t`esting::Environment`类，实现里面的`SetUp`和`TearDown`方法。
 
 1. `SetUp()`方法在所有案例执行前执行
 
@@ -165,7 +173,7 @@ TestCase 事件是挂在每个案例执行前后的，实现方式和上面的�
 
 1. `SetUp()`方法在每个 TestCase 之前执行
 
-2. `TearDown()` 方法在每个TestCase 之后执行
+2. `TearDown()` 方法在每个 TestCase 之后执行
 
 ```cpp
 class FooCalcTest:public testing::Test
@@ -194,74 +202,119 @@ TEST_F(FooCalcTest, HandleNoneZeroInput_Error)
 }
 ```
 
-## 测试用例
+## 死亡测试
 
-有很多测试用例的时候
+通常在测试过程中，我们需要考虑各种各样的输入，有的输入可能直接导致程序崩溃，这时我们就需要检查程序是否按照预期的方式挂掉，这也就是所谓的“**死亡测试**”。`gtest`的死亡测试能做到在一个安全的环境下执行崩溃的测试案例，同时又对崩溃结果进行验证。
 
-如果很多函数的话就得写很多这样的测试，gtest 怎么解决的？
+源码中死亡测试 在 linux 上实现的过程
 
+- 测试实体中准备启动新的进程，进程路径就是本进程可执行文件路径
+- 通过 fork 创建子进程，fork 是标准的子进程和父进程分离执行，所以 threadsafe 对应的  ExecDeathTest 死亡测试类在底层调用的是 fork，从而可以保证是安全的。
 
+> 使用 detach 分离父进程和子进程，会导致线程安全问题，当时使用的是 临时对象的方式解决的。
 
-通过获取参数化的方式解决，也就是声明一个类，这个类继承 `public::testing::TestWithParam<int>`，通过获取参数来进行测试，
+- 接着子进程传入了标准输入输出句柄
+- 启动子进程时传入类型筛选，即指定执行该测试用例
+- 监听子进程的输出
+- 判断子进程退出模式
+
+子进程的执行过程是：
+
+- 执行父进程指定的测试特例
+- 运行死亡测试宏中的表达式
+- 如果没有 crash「崩溃」 ，则根据情况选择退出模式
+
+### 死亡测试运行方式
+
+- fast方式（默认的方式）
+
 ```cpp
-class IsPrimeParamTest : public::testing::TestWithParam<int>
-{};
+testing::FLAGS_gtest_death_test_style = "fast";
 ```
 
-
-
-
-
-
-
-
-
-
-只能测试函数，或者只是少量函数测试是没有问题的，多个函数的时候是不方便的
-
-如果函数之间变量需要重用，比如辅助函数需要对 string 操作（大小写转换）那么使用上面的方式就不明显，
-
-
-gtest提供了**事件机制**。
-
-- testcast事件
-
-每个案例执行前后，多次对类初始使用测试，也就是会调用 SetUp 和 TearDown
+- threadsafe方式
 
 ```cpp
-class CaseTestSmpl : public testing::Test
-{
-protected:
-    virtual void SetUp() {
-        temp_.Init();
-    }
-    virtual void TearDown() {
-        temp_.Finalize();
-    }
-    T temp_;
-};
+testing::FLAGS_gtest_death_test_style = "threadsafe";
+```
 
-TEST_F(CaseTestSmpl,test_1th)
-{
-    temp_.Init();
-    // 在这里可以执行使用，T 以及它的内部方法
-    this->temp.calc();  //这个this指针就是类的实例
-    temp_.Finalize();
+我们可以在 `main()` 里为所有的死亡测试设置测试形式，也可以为某次测试单独设置。Google Test 会在每次测试之前保存这个标记并在测试完成后恢复，所以你不需要去管这部分工作 。如：
+
+```cpp
+TEST(MyDeathTest, TestOne) {
+  testing::FLAGS_gtest_death_test_style = "threadsafe";
+  // This test is run in the "threadsafe" style:
+  ASSERT_DEATH(ThisShouldDie(), "");
+}
+
+TEST(MyDeathTest, TestTwo) {
+  // This test is run in the "fast" style:
+  ASSERT_DEATH(ThisShouldDie(), "");
+}
+
+int main(int argc, char** argv) {
+  testing::InitGoogleTest(&argc, argv);
+  testing::FLAGS_gtest_death_test_style = "fast";
+  return RUN_ALL_TESTS();
 }
 ```
 
-比如说我们要测试一个类，我们需要将类的值保存起来，每一次测试一个用例都会调用一个隐含的Init，销毁的时候调用 Finalize 
+参考 Google Test(GTest) 
 
-- testsuit 事件
+```cpp
+// include/gtest/gtest.h:
 
-同样继承 TEST
+2324 #define GTEST_TEST(test_case_name, test_name)\
+2325   GTEST_TEST_(test_case_name, test_name, \
+2326               ::testing::Test, ::testing::internal::GetTestTypeId())
+2327 
+2328 // Define this macro to 1 to omit the definition of TEST(), which
+2329 // is a generic name and clashes with some other libraries.
+2330 #if !GTEST_DONT_DEFINE_TEST
+2331 # define TEST(test_case_name, test_name) GTEST_TEST(test_case_name, test_name)
+2332 #endif
+。。。
+2359 
+2360 #define TEST_F(test_fixture, test_name)\
+2361   GTEST_TEST_(test_fixture, test_name, test_fixture, \
+2362               ::testing::internal::GetTypeId<test_fixture>())
+```
 
-在某一批案例中，第一个执行前到最后一个执行后只会调用一次，
+可见它只是对 `GTEST_TEST_ `宏的再次封装。`GTEST_TEST_` 宏不仅要求传入测试用例和测试实例名，还要传入 Test 类名和其 ID。
 
-一般用用于类的行为测试，或者有联系的多个方法进行测试。
+```cpp
+// Helper macro for defining tests.
+#define GTEST_TEST_(test_case_name, test_name, parent_class, parent_id)\
+class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) : public parent_class {\
+ public:\
+  GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {}\
+ private:\
+  virtual void TestBody();\
+  static ::testing::TestInfo* const test_info_ GTEST_ATTRIBUTE_UNUSED_;\
+  GTEST_DISALLOW_COPY_AND_ASSIGN_(\
+      GTEST_TEST_CLASS_NAME_(test_case_name, test_name));\
+};\
+\
+```
 
-- 全局Global事件
+首先使用宏 `GTEST_TEST_CLASS_NAME_` 生成类名。该类暴露了一个空的默认构造函数、一个私有的虚函数 TestBody、一个静态变量test_info_ 和一个私有的赋值运算符(将运算符=私有化，限制类对象的赋值和拷贝行为)。
 
-所有案例执行前后，经常用于组合类行为测试
+利用”静态变量在程序运行前被初始化“的特性，抢在main函数执行之前，执行一段代码，从而有机会将测试用例放置于一个固定的位置。这个是”自动“保存测试用例的本质所在。
 
-继承    Environment 
+```cpp
+::testing::TestInfo* const GTEST_TEST_CLASS_NAME_(test_case_name, test_name)\
+  ::test_info_ =\
+    ::testing::internal::MakeAndRegisterTestInfo(\
+        #test_case_name, #test_name, NULL, NULL, \
+        ::testing::internal::CodeLocation(__FILE__, __LINE__), \
+        (parent_id), \
+        parent_class::SetUpTestCase, \
+        parent_class::TearDownTestCase, \
+        new ::testing::internal::TestFactoryImpl<\
+            GTEST_TEST_CLASS_NAME_(test_case_name, test_name)>);\
+```
+
+
+## 实现自动调度机制
+
+
