@@ -19,7 +19,22 @@
 
 在实现测试用例的自动保存的时候，使用了一个宏函数[`GTEST_TEST_CLASS_NAME_`]生成类名，这个类暴露了一个空的默认构造函数，一个私有的虚函数 TestBody、一个静态变量 `test_info_` 和一个私有的赋值运算符(将运算符=私有化，限制类对象的赋值和拷贝行为)。
 
-这里静态变量 test_info ，它利用”静态变量在程序运行前被初始化“的特性，抢在 main 函数执行之前，执行一段代码，从而有机会将测试用例放置于一个固定的位置。这个是”自动“保存测试用例的本质所在。
+```cpp
+// Helper macro for defining tests.
+#define GTEST_TEST_(test_case_name, test_name, parent_class, parent_id)\
+class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) : public parent_class {\
+ public:\
+  GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {}\
+ private:\
+  virtual void TestBody();\
+  static ::testing::TestInfo* const test_info_ GTEST_ATTRIBUTE_UNUSED_;\
+  GTEST_DISALLOW_COPY_AND_ASSIGN_(\
+      GTEST_TEST_CLASS_NAME_(test_case_name, test_name));\
+};\
+\
+```
+
+这里静态变量 test_info_ ，它利用”静态变量在程序运行前被初始化“的特性，抢在 main 函数执行之前，执行一段代码，从而有机会将测试用例放置于一个固定的位置。这个是”自动“保存测试用例的本质所在。
 
 ```cpp
 ::testing::TestInfo* const GTEST_TEST_CLASS_NAME_(test_case_name, test_name)\
@@ -47,6 +62,15 @@ Test* const test = internal::HandleExceptionsInMethodIfSupported(
 ```
 
 它通过构造函数传入的**工厂模式的类**对象指针调用它重载的 CreateTest 方法，new 出 TEST 宏中定义的使用 GTEST_TEST_CLASS_NAME_ 命名（用例名_实例名_TEST）的类（之后称**测试用例特例类**）的对象指针，然后调用测试用例特例类的父类中的 Run 方法。
+
+> 在实现测试用例在自动保存的时候，我们使用一个宏函数，这个宏函数内部有一个静态变量 test_info_, 这里静态变量 test_info_ ，它利用”静态变量在程序运行前被初始化“的特性，这样的话可以在 main 函数执行之前，执行一段代码，就有机会将测试用例放放在一个固定的位置。这个也就是”自动“保存测试用例的本质所在。
+
+> 然后就是 test_info_ 的初始化的时候会插入一个模板类，这个模板类是一个 工厂类 ，类继承于 TestFactoryBase，并重载了 CreateTest 方法，主要的作用是 new 出一个 TestInfo 类对象，并调用 UnitTestImpl 单例的 AddTestInfo 方法，将其测试用例保存起来。
+   
+> 在 AddTestInfo 中是通过 测试用例名 等信息获取测试用例，然后调用测试用例对象去新增一个测试特例—— test_info 。     
+
+> 测试用例的保存使用一个 vetor 容器来保存
+
 
 ### 介绍一下工厂模式
 
