@@ -9,6 +9,10 @@
     - [joinable](#joinable)
   - [使用 detach 时候需要注意什么问题(线程安全问题)](#使用-detach-时候需要注意什么问题线程安全问题)
     - [C++中的 mutable 关键字](#c中的-mutable-关键字)
+- [C++11 中互斥量](#c11-中互斥量)
+  - [C++11 中解决死锁](#c11-中解决死锁)
+    - [关于 std::adopt_lock 参数](#关于-stdadopt_lock-参数)
+  - [lock_guard 与 unique_lock](#lock_guard-与-unique_lock)
 
 --------
 
@@ -167,6 +171,85 @@ std::thread mytojob(myprint,mvar,string(mybuf));
 
 在C++中，mutable 是为了突破 const 的限制而设置的。被 mutable 修饰的变量，将永远处于可变的状态，即使在一个 const 函数中。
 
+## C++11 中互斥量
+
+```cpp
+#incclude <mutex>
+std::mutex mu_mutex;
+......
+bool outMsgLULProc(int &command) {
+    my_mutex.lock();
+    if(!msgRecvQueue.empty())
+    {
+        comman = msgRecvQueue.front();
+        msgRecvQueue.pop_front();
+        my_mutex.unlock();
+        return true;
+    }
+    my_mutex.unlock();
+    return false;
+}
+```
+
+上面程序，同一时刻只有一个线程能拿到锁，这就意味着同一时刻只有一个线程能操作这个共享数据，但是写程序的时候会在 return 前忘记 unlock。
+
+C++11 引入了 std::lock_guard `[ɡɑːrd]`的**类模板**，会自动 unlock，这点和智能指针释放内存类似。
+
+### C++11 中解决死锁
+
+- **lock_guard**
+
+lock_guard 可以同时取代 lock 和 unlock 两个函数，上面代码改造
+
+```cpp
+bool outMsgLULProc(int &command) {
+    std::lock_guard<std::mutex> myguard(my_mutex);
+    // my_mutex.lock();
+    if(!msgRecvQueue.empty())
+    {
+        comman = msgRecvQueue.front();
+        msgRecvQueue.pop_front();
+        // my_mutex.unlock();
+        return true;
+    }
+    // my_mutex.unlock();
+    return false;
+}
+```
+
+**lock_guard 工作原理**：
+
+在 lock_guard 类模板的构造函数里，调用了 mutex 的 lock 成员函数，而在 析构函数 中，调用了 mutex 的 unlock 函数。
+
+> std::lock 函数模板能一次锁住两个或者两个以上的互斥量，它不存在多个线程中因为锁的顺序问题导致死锁的风险。        
+> 如果这些 互斥量 中有一个没有锁住，就要卡在 std::lock 那里等着，等所有互斥量都锁住，std::lock 才会返回，程序才会继续往下走。
+
+- **unique_lock**
+
+> 一般开发中使用 lock_guard 就够用了
+
+unique_lock 是一个类模板，和 lock_guard 一样，都是用来取代 mutx 的 lock 和 unlock 函数，原理和 lock_guard 一样
+
+#### 关于 std::adopt_lock 参数
+
+std::adopt_lock 标记表示这个互斥量已经被 lock 过了，不希望再再构造函数中 lock  这个互斥量了。
+
+```cpp
+std::lock_guard<std::mutex> myguard(my_mutex,std::adopt_lock);
+std::unique_lock<std::mutex> myguard(my_mutex,std::adopt_lock);
+```
+
+unique_lock 相对于 lock_guard 更占用内存，运行效率差一点，但是使用比较灵活。unique_lock 有三个参数，第三个参数 std::try_to_lock 会尝试用 mutex 的 lock 去锁定这个 mutex，但是如果没锁住就会立即返回，不会阻塞在那里。
+
+> 使用 std::try_to_lock 的前提是开发者不可以自己吧互斥量 lock 上，因为 std::try_to_lock 已经尝试 unlock 了，如果开发者 再次 lock ，程序会卡死
+
+### lock_guard 与 unique_lock
+
+两个都是在离开作用域时，检查关联的 mutex 是否 lock ，如果没有，就帮助开发者 unlock，
+
+工作原理都是：在 `lock_guard/unique_lock` 类模板的构造函数里，调用了 mutex 的 lock 成员函数，而在 析构函数 中，调用了 mutex 的 unlock 函数。
+
+unique_lock 相对于 lock_guard 更占用内存，运行效率差一点，但是使用比较灵活。unique_lock 有三个参数，第三个参数 std::try_to_lock 会尝试用 mutex 的 lock 去锁定这个 mutex，但是如果没锁住就会立即返回，不会阻塞在那里。
 
 
 
