@@ -9,6 +9,7 @@
   - [定义和声明的区别](#定义和声明的区别)
 - [说一说strcpy、sprintf与memcpy这三个函数的不同之处](#说一说strcpysprintf与memcpy这三个函数的不同之处)
   - [strcpy函数和strncpy函数的区别,哪个函数更安全？](#strcpy函数和strncpy函数的区别哪个函数更安全)
+  - [memmove 与 memcpy 的区别及实现](#memmove-与-memcpy-的区别及实现)
 - [C++ 11有哪些新特性](#c-11有哪些新特性)
   - [nullptr 和 NULL 的区别](#nullptr-和-null-的区别)
   - [说一下C++左值引用和右值引用](#说一下c左值引用和右值引用)
@@ -19,7 +20,6 @@
   - [局部变量的存储方式](#局部变量的存储方式)
   - [static 关键字](#static-关键字)
 - [野指针和悬空指针](#野指针和悬空指针)
-- [C++中的多线程](#c中的多线程)
 - [strlen 与 sizeof 的区别](#strlen-与-sizeof-的区别)
 - [迭代器：++it、it++哪个好，为什么](#迭代器itit哪个好为什么)
 - [类对象所占用的内存](#类对象所占用的内存)
@@ -123,7 +123,76 @@ char* strncpy(char* strDest, const char* strSrc, int pos)
  - `strcpy`函数: 如果参数 `dest` 所指的内存空间不够大，可能会造成**缓冲溢出**(`buffer Overflow`)的错误情况，在编写程序时请特别留意，或者用`strncpy()`来取代。  *src ==> dest* 
  - `strncpy`函数：用来复制源字符串的前`n`个字符，`src` 和 `dest` 所指的内存区域**不能重叠**，且 `dest` 必须有足够的空间放置`n`个字符。 *src 前 n 个字符 ==> dest (不能重叠)*
 
+### memmove 与 memcpy 的区别及实现
 
+- 1.与字符串函数strcpy区别：
+
+memcpy 与 memmove 都是对内存进行拷贝可以拷贝任何内容，而strcpy 仅是对字符串进行操作。
+
+memcpy与memmove拷贝多少是通过其第三个参数进行控制而strcpy是当拷贝至`'\0'`停止。
+
+- 2.函数说明：        
+
+memcpy 函数的功能是从源 src 所指的**内存地址**的起始位置开始拷贝 N 个字节到目标 dst 所指的内存地址的起始位置中。
+
+memmove 函数的功能同 memcpy 基本一致，但是当 src 区域和 dst 内存区域重叠时，memcpy 可能会出现错误，而 memmove 能正确进行拷贝。
+
+- 3.拷贝情况：
+
+拷贝的具体过程根据dst内存区域和src内存区域可分为三种情况：
+
+1.当src内存区域和dst内存区域完全不重叠
+
+2.当src内存区域和dest内存区域重叠时且dst所在区域在src所在区域前
+
+3.当 src 内存区域和 dst 内存区域重叠时且 src 所在区域在 dst 所在区域前
+
+上述三种情况，memcpy 可以成功对前两种进行拷贝，对第三种情况进行拷贝时，由于拷贝dst前两个字节时覆盖了 src 原来的内容，所以接下来的拷贝会出现错误。而 memmove 对第三种情况进行拷贝时会从 src 的最后向前拷贝 N 个字节，避免了覆盖原来内容的过程。
+
+
+- 4.代码实现
+
+**memcpy**：
+
+```cpp
+void* _memcpy(void* dest, const void* src, size_t count)
+{
+	assert(src != nullptr&&dest != nullptr);
+	//判断dest指针和src指针是否为空，若为空抛出异常
+	char* tmp_dest = (char*)dest;
+	const char* tmp_src = (const char*)src;
+	//将指针dest和指针src由void强转为char，
+	//使得每次均是对内存中的一个字节进行拷贝
+	while (count--)
+		*tmp_dest++ = *tmp_src++;
+	return dest;
+}
+```
+
+**memmove**:
+
+```cpp
+void* _memmove(void* dest, const void* src, size_t count)
+{
+	assert(src != nullptr&&dest != nullptr);
+	//判断dest指针和src指针是否为空，若为空抛出异常
+	char* tmp_dest = (char*)dest;
+	const char* tmp_src = (const char*)src;
+
+	if (tmp_src < tmp_dest)//当src地址小于dest地址时，从头进行拷贝
+		while (count--)
+			*tmp_dest++ = *tmp_src++;
+	else if (tmp_src > tmp_dest)//当src地址大于dest地址时，从后进行拷贝
+	{
+		tmp_src += count - 1;
+		tmp_dest += count - 1;
+		while (count--)
+			*tmp_dest-- = *tmp_src;
+	}
+	//else(tmp_src==tmp_dest) 此时不进行任何操作
+	return dest;
+}
+```
 
 ## C++ 11有哪些新特性
 
