@@ -1,5 +1,6 @@
 
 
+- [new 和 delete 深入](#new-和-delete-深入)
 - [C++11多线程](#c11多线程)
   - [怎么样实现并发](#怎么样实现并发)
   - [C++11新标准线程库](#c11新标准线程库)
@@ -15,6 +16,10 @@
   - [lock_guard 与 unique_lock](#lock_guard-与-unique_lock)
 
 --------
+
+## new 和 delete 深入
+
+
 
 ## C++11多线程
 
