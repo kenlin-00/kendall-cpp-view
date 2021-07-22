@@ -23,6 +23,7 @@ navigator.mediaDevices.getUserMedia(mediaStreamContrains).then(
 );
 
 
+...
 
 //判断浏览器是否支持这些 API
 if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
