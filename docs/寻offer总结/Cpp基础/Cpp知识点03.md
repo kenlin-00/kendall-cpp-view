@@ -9,10 +9,13 @@
     - [joinable](#joinable)
   - [使用 detach 时候需要注意什么问题(线程安全问题)](#使用-detach-时候需要注意什么问题线程安全问题)
     - [C++中的 mutable 关键字](#c中的-mutable-关键字)
+  - [使用智能指针作为线程参数](#使用智能指针作为线程参数)
+  - [用成员函数作为线程入口函数](#用成员函数作为线程入口函数)
 - [C++11 中互斥量](#c11-中互斥量)
   - [C++11 中解决死锁](#c11-中解决死锁)
     - [关于 std::adopt_lock 参数](#关于-stdadopt_lock-参数)
   - [lock_guard 与 unique_lock](#lock_guard-与-unique_lock)
+  - [条件变量](#条件变量)
 
 --------
 
@@ -171,11 +174,62 @@ std::thread mytojob(myprint,mvar,string(mybuf));
 
 在C++中，mutable 是为了突破 const 的限制而设置的。被 mutable 修饰的变量，将永远处于可变的状态，即使在一个 const 函数中。
 
+### 使用智能指针作为线程参数
+
+```cpp
+#include <iostream>
+#include <thread>
+#include <memory>
+using namespace std;
+
+class A {
+public:
+    A(int a):m_i(a) {
+        cout << "A::A(int a) 构造函数执行，this = " << this << ",threadid = " << std::this_thread::get_id() << endl;
+    }
+    //拷贝构造函数
+    A(const A& a) {
+        cout << "A::A(const & a) 拷贝构造函数执行，this = "<< this << ", threadid = " << std::this_thread::get_id() << endl;
+    }
+    ~A () {
+        cout << "A::~A() 析构函数执行，this = " << this << ",threadid = " << std::this_thread::get_id() << endl;
+    }
+
+    mutable int m_i;  //可以随意修改，不受 const 限制
+};
+//传一个智能指针进来
+void myprintf(const A& pmybuf) {
+    pmybuf.m_i = 99;  //不会影响main函数
+    cout << "子线程 myprint2 的参数 pmybuf 的地址是："<< &pmybuf << ", threadid = " << std::this_thread::get_id() << endl;
+} 
+
+
+void myprintf2(unique_ptr<int> pzn) {
+    return;
+}
+
+int main()
+{
+
+    cout << "main 主线程id = " << std::this_thread::get_id() <<endl;
+    unique_ptr<int> myp(new int(100));
+    std::thread mytobj(myprintf2,std::move(myp)); //move将一个 unique_ptr 转移到其他的 unique_ptr
+    mytobj.join();
+
+    cout << "main 主线程执行结束" << endl;
+    return 0;
+}
+```
+
+### 用成员函数作为线程入口函数
+
+
+
 ## C++11 中互斥量
 
 ```cpp
 #incclude <mutex>
-std::mutex mu_mutex;
+std::mutex my_mutex;
 ......
 bool outMsgLULProc(int &command) {
     my_mutex.lock();
@@ -250,6 +304,8 @@ unique_lock 相对于 lock_guard 更占用内存，运行效率差一点，但�
 工作原理都是：在 `lock_guard/unique_lock` 类模板的构造函数里，调用了 mutex 的 lock 成员函数，而在 析构函数 中，调用了 mutex 的 unlock 函数。
 
 unique_lock 相对于 lock_guard 更占用内存，运行效率差一点，但是使用比较灵活。unique_lock 有三个参数，第三个参数 std::try_to_lock 会尝试用 mutex 的 lock 去锁定这个 mutex，但是如果没锁住就会立即返回，不会阻塞在那里。
+
+### 条件变量
 
 
 
