@@ -127,9 +127,9 @@ memcpy与memmove拷贝多少是通过其第三个参数进行控制而strcpy是�
 
 - 2.函数说明：        
 
-memcpy 函数的功能是从源 src 所指的**内存地址**的起始位置开始拷贝 N 个字节到目标 dst 所指的内存地址的起始位置中。
+memcpy 函数的功能是从源 src 所指的**内存地址**的起始位置开始拷贝 N 个字节到目标 dest 所指的内存地址的起始位置中。
 
-memmove 函数的功能同 memcpy 基本一致，但是当 src 区域和 dst 内存区域重叠时，memcpy 可能会出现错误，而 memmove 能正确进行拷贝。
+memmove 函数的功能同 memcpy 基本一致，但是当 src 区域和 dest 内存区域重叠时，memcpy 可能会出现错误，而 memmove 能正确进行拷贝。
 
 - 3.拷贝情况：
 
@@ -151,8 +151,9 @@ memmove 函数的功能同 memcpy 基本一致，但是当 src 区域和 dst 内
 ```cpp
 void* _memcpy(void* dest, const void* src, size_t count)
 {
-	assert(src != nullptr&&dest != nullptr);
 	//判断dest指针和src指针是否为空，若为空抛出异常
+	assert(src != nullptr && dest != nullptr);
+
 	char* tmp_dest = (char*)dest;
 	const char* tmp_src = (const char*)src;
 	//将指针dest和指针src由void强转为char，
@@ -168,8 +169,9 @@ void* _memcpy(void* dest, const void* src, size_t count)
 ```cpp
 void* _memmove(void* dest, const void* src, size_t count)
 {
-	assert(src != nullptr&&dest != nullptr);
 	//判断dest指针和src指针是否为空，若为空抛出异常
+	assert(src != nullptr && dest != nullptr);
+
 	char* tmp_dest = (char*)dest;
 	const char* tmp_src = (const char*)src;
 
@@ -177,11 +179,12 @@ void* _memmove(void* dest, const void* src, size_t count)
 		while (count--)
 			*tmp_dest++ = *tmp_src++;
 	else if (tmp_src > tmp_dest)//当src地址大于dest地址时，从后进行拷贝
-	{
+	
+    // 将指针移动至末尾
 		tmp_src += count - 1;
 		tmp_dest += count - 1;
 		while (count--)
-			*tmp_dest-- = *tmp_src;
+			*tmp_dest-- = *tmp_src--;
 	}
 	//else(tmp_src==tmp_dest) 此时不进行任何操作
 	return dest;
