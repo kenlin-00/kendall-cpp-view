@@ -31,7 +31,7 @@ value：链表，小内存 io_buf
 
 ### 内存池设计
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/内存池.g7pkzqslgq0.png)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/内存池.4y5ylsipo580.png)
 
 在项目开发过程中，为了避免大量使用 malloc 或者 new 来申请内存，还有为了防止内存泄漏，减少内存碎片的产生，我们设计了一个内存管理机制，也就是内存池。
 
