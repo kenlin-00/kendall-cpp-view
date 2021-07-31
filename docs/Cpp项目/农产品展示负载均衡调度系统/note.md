@@ -54,5 +54,46 @@ value：链表，小内存 io_buf
 
 然后每个内存块都设有两个指针，一个是 data ,指向内存块的首地址，还有一个是 head，指向数据的头部。当开始处理数据时，就移动 head 指针。
 
+### 内存池提供的接口
+
+```cpp
+#pragma once
+
+//定义一个 buffer 一块内存的数据结构体
+
+class io_buf{
+public:
+	//构造函数，创建一个 size 大小的buf
+	io_buf(int size);
+
+	//清空数据
+	void clear();
+
+	//处理长度为 len 的数据，移动head
+	void pop(int len);
+
+	//将已经处理的数据清空(内存抹去), 将未处理的数据 移至 buf的首地址, length会减小
+	void adjust();
+
+	//将其他 io_buf 对象拷贝到自己中
+	void copy(const io_buf *other);
+
+	~io_buf();
+private:
+	int capacity;
+	int head;
+	int length; //当前有效数据长度
+	char *data;  // 当前buf内存的首地址
+	
+	io_buf *next;//存在多个 io_buf 采用链表的形式进行管理
+
+};
+```
+
+- 其中 adjust() 函数的作用是：当内存块中所有的数据都处理完了，就将 io_buf 还原。
+
+- copy() 是将另一个 io_buf 的对象拷贝到当前的 io_buf 中。
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/内存块02.11qfbct3j7bk.png)
 
 
