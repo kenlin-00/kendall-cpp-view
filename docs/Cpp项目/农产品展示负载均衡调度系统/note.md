@@ -97,3 +97,115 @@ private:
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/内存块02.11qfbct3j7bk.png)
 
 
+### 单例模式的连接池
+
+> 使用 pthread_once_t 保证初始化只执行换一次
+
+从内存池中申请一块内存的时候，会根据申请的内存大小去找到大于或者等于所申请的内存刻度，从链表中摘除出来，如果某个刻度的内存块已经用完了，这时候才真正去使用 malloc 开辟新的内存。
+
+这里为了保证在开辟内存的时候使用 锁[互斥量] 来保护 pool map 的增删改
+
+### 从内存池中申请一块内存
+
+```cpp
+io_buf* buf_pool::alloc_buf(int N) {
+	//1.找到 N 最近的刻度链表，返回一个 io_buf
+	int index;
+	if(N <= m4K){
+		index = m4K;
+	}
+	else if(N < m16K) {
+		index = m16K;
+    }
+    else if ( N <= m64K) {
+        index = m64K;
+    }
+    else if ( N <= m256K) {
+        index = m256K;
+    }
+    else if ( N <= m1M) {
+        index = m1M;
+    }
+    else if ( N <= m4M) {
+        index = m4M;
+    }
+    else if ( N <= m8M) {
+        index = m8M;
+    }
+    else {
+        return NULL;
+    }
+	//2.如果该index已经没有内存了，需要额外的申请内存
+	//需要加锁保证 pool map 的增删改
+	pthread_mutex_lock(&_mutex);
+	if(_pool[index] == NULL) {
+		if(_total_num + index / 1024 >= MEM_LIMIT ) {
+			fprintf(stderr,"already use too many memory\n");
+			exit(1);
+		}
+		//没有了就要重新申请内存
+		io_buf *new_buf = new io_buf(index);
+		if(new_buf == NULL) {
+			fprintf(stderr,"new io_buf error\n");
+			exit(1);
+		}
+		_total_num += index / 1024;
+		pthread_mutex_unlock(&_mutex);
+		return new_buf;  //返回性开辟的内存块
+	}
+	//如果有内存块，就从内存池的链表中取出内存块
+	io_buf *target = _pool[index];
+	//移动内存链表的头地址
+	_pool[index] = target->next;
+
+	pthread_mutex_unlock(&_mutex);
+
+	target->next = NULL;
+	return target;
+	
+}
+io_buf* buf_pool::alloc_buf() {
+	// 不传递就默认 m4K
+	return alloc_buf(m4K);
+}
+```
+
+- 先找到最接近要取出内存大小的内存刻度链表
+- 如果内存池中这个内存刻度的内存块已经用完了，就重新开辟新的内存块并返回
+- 如果这个刻度的内存块还有，就将第一个内存块取出来并返回
+
+> 注意需要加锁保证内存池的增删改
+
+### 将一个 io_buf 放回到内存池中
+
+```cpp
+void buf_pool::revert(io_buf* buffer) {
+	//将buffer放回到 pool 中
+	//index 属于 pool 中的哪个刻度链表
+	int index = buffer->capacity;
+	//1.内存块恢复默认值,没有有效数据，即 length  = 0
+	buffer->head = 0;
+	buffer->length = 0;
+
+	//断言，一定要找到 index，也就是 map 的 key
+	assert(_pool.find(index) != _pool.end() );
+
+	pthread_mutex_lock(&_mutex);
+	//2.将 buffer 放到对应刻度链表的头部
+	buffer->next = _pool[index];
+	_pool[index] = buffer;
+
+	pthread_mutex_unlock(&_mutex);
+}
+```
+
+- 首先找到对应的刻度链表
+- 然后这这个内存块恢复默认值（`head = 0,lenght = 0`)
+- 将这个内存块使用头插法插入到对应的刻度链表中
+
+> 注意这里也要加锁保证内存池的增删改
+
+
+
+
+
