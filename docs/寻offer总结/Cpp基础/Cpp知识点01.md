@@ -71,11 +71,11 @@ type1 Max(type1 a,type2 b)
 
 } 
 
-void main() 
-
- { 
+int main() 
+{ 
 
   cout<<"Max = "<<Max(5.5,'a')<<endl; 
+  return 0;
 
 } 
 ```
