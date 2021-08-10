@@ -38,6 +38,11 @@ find ./ -name "*llo" |  grep -n -i "World"    # 加 -n 是显示行 加-i是不�
 ```
 - `top`命令用于实时显示 进程或者系统 的动态。
 
+- grep 命令
+
+`-v` 或`--revert-match` 反转查找。		
+
+
 - 使用管道			
 
 比如`ps -ef | grep bash`这里的`|`就是匿名管道，可以使用`mkfifo myPipe`创建有名管道
