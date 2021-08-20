@@ -13,7 +13,7 @@
   - [C++11 中解决死锁](#c11-中解决死锁)
     - [关于 std::adopt_lock 参数](#关于-stdadopt_lock-参数)
   - [lock_guard 与 unique_lock](#lock_guard-与-unique_lock)
-  - [条件变量](#条件变量)
+  - [c++ overwrite(重写)](#c-overwrite重写)
 
 --------
 
@@ -252,6 +252,12 @@ unique_lock 相对于 lock_guard 更占用内存，运行效率差一点，但�
 工作原理都是：在 `lock_guard/unique_lock` 类模板的构造函数里，调用了 mutex 的 lock 成员函数，而在 析构函数 中，调用了 mutex 的 unlock 函数。
 
 unique_lock 相对于 lock_guard 更占用内存，运行效率差一点，但是使用比较灵活。unique_lock 有三个参数，第三个参数 std::try_to_lock 会尝试用 mutex 的 lock 去锁定这个 mutex，但是如果没锁住就会立即返回，不会阻塞在那里。
+
+### c++ overwrite(重写)
+
+- 如果派生类的函数与基类的函数同名，但是参数不同。此时，不论有无 virtual 关键字，基类的函数将被隐藏
+
+- 如果派生类的函数与基类的函数同名，并且参数也相同，但是基类函数没有 virtual 关键字。此时，基类的函数被隐藏。
 
 
 

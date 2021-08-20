@@ -4,6 +4,8 @@
 
 ## IOS 多线程
 
+> https://www.jianshu.com/p/2d57c72016c6
+
 IOS 是使用 GCD 实现多线程的，GCD 类似一个线程池，在这个线程池的基础上执行并发任务。
 
 ### 使用 GCD 的好处
@@ -86,5 +88,87 @@ dispatch_async(queue, ^{
 
 ![](https://upload-images.jianshu.io/upload_images/1877784-4d6d77fafd3ad007.png?imageMogr2/auto-orient/strip|imageView2/2/w/1200/format/webp)
 
+#### GCD 信号量：dispatch_semaphore
 
+GCD 中的信号量是指 Dispatch Semaphore，是持有计数的信号。类似于过高速路收费站的栏杆。可以通过时，打开栏杆，不可以通过时，关闭栏杆。在 Dispatch Semaphore 中，使用计数来完成这个功能，计数小于 0 时等待，不可通过。计数为 0 或大于 0 时，计数减 1 且不等待，可通过。
 
+Dispatch Semaphore 提供了三个方法：
+
+- `dispatch_semaphore_create：创建一个` Semaphore 并初始化信号的总量
+- `dispatch_semaphore_signal`：发送一个信号，让信号总量加 1
+- `dispatch_semaphore_wait`：可以使总信号量减 1，信号总量小于 0 时就会一直等待（阻塞所在线程），否则就可以正常执行。
+
+> 注意：信号量的使用前提是：想清楚你需要处理哪个线程等待（阻塞），又要哪个线程继续执行，然后使用信号量。
+
+Dispatch Semaphore 在实际开发中主要用于：
+
+保持线程同步，将异步执行任务转换为同步执行任务
+保证线程安全，为线程加锁
+
+####  Dispatch Semaphore 线程同步
+
+我们在开发中，会遇到这样的需求：异步执行耗时任务，并使用异步执行的结果进行一些额外的操作。换句话说，相当于，将将异步执行任务转换为同步执行任务。比如说：AFNetworking 中 AFURLSessionManager.m 里面的 tasksForKeyPath: 方法。通过引入信号量的方式，等待异步执行任务结果，获取到 tasks，然后再返回该 tasks。
+
+我们来利用 Dispatch Semaphore 实现线程同步，将异步执行任务转换为同步执行任务。
+
+```cpp
+/**
+ * semaphore 线程同步
+ */
+- (void)semaphoreSync {
+    
+    NSLog(@"currentThread---%@",[NSThread currentThread]);  // 打印当前线程
+    NSLog(@"semaphore---begin");
+    
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    
+    __block int number = 0;
+    dispatch_async(queue, ^{
+        // 追加任务 1
+        [NSThread sleepForTimeInterval:2];              // 模拟耗时操作
+        NSLog(@"1---%@",[NSThread currentThread]);      // 打印当前线程
+        
+        number = 100;
+        
+        dispatch_semaphore_signal(semaphore);
+    });
+    
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    NSLog(@"semaphore---end,number = %zd",number);
+}
+```
+
+- semaphore---end 是在执行完 number = 100; 之后才打印的。而且输出结果 number 为 100。这是因为 异步执行 不会做任何等待，可以继续执行任务。
+
+执行顺如下：
+
+- semaphore 初始创建时计数为 0。
+
+- 异步执行 将 任务 1 追加到队列之后，不做等待，接着执行 dispatch_semaphore_wait 方法，semaphore 减 1，此时 semaphore == -1，当前线程进入等待状态。
+- 然后，异步任务 1 开始执行。任务 1 执行到 dispatch_semaphore_signal 之后，总信号量加 1，此时 semaphore == 0，正在被阻塞的线程（主线程）恢复继续执行。
+- 最后打印 semaphore---end,number = 100。
+
+这样就实现了线程同步，将异步执行任务转换为同步执行任务。
+
+#### Dispatch Semaphore 线程安全和线程同步（为线程加锁）
+
+**线程安全**：如果你的代码所在的进程中有多个线程在同时运行，而这些线程可能会同时运行这段代码。如果每次运行结果和单线程运行的结果是一样的，而且其他的变量的值也和预期的是一样的，就是线程安全的。
+
+若每个线程中对全局变量、静态变量只有读操作，而无写操作，一般来说，这个全局变量是线程安全的；若有多个线程同时执行写操作（更改变量），一般都需要考虑线程同步，否则的话就可能影响线程安全。
+
+**线程同步**：可理解为线程 A 和 线程 B 一块配合，A 执行到一定程度时要依靠线程 B 的某个结果，于是停下来，示意 B 运行；B 依言执行，再将结果给 A；A 再继续操作。
+
+## 内存管理
+
+### weak的实现原理,SideTable 的结构是什么样的
+
+`weak`：其实是一个hash表结构，其中的key是所指对象的地址，value是weak的指针数组，weak 表示的是弱引用，不会对对象引用计数 +1，当引用的对象被释放的时候，其值被自动设置为nil，一般用于解决循环引用的。
+
+**weak 的实现原理**
+
+1、初始化时：runtime 会调用 objc_initWeak 函数，初始化一个新的weak指针指向对象的地址。
+
+2、添加引用时：`objc_initWeak` 函数会调用 `objc_storeWeak()` 函数， `objc_storeWeak()` 的作用是更新指针指向，创建对应的弱引用表。
+
+3、释放时，调用 clearDeallocating 函数。clearDeallocating 函数首先根据对象地址获取所有 weak 指针地址的数组，然后遍历这个数组把其中的数据设为nil，最后把这个 entry 从 weak 表中删除，最后清理对象的记录。
