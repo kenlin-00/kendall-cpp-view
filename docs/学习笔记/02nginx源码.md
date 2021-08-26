@@ -24,4 +24,21 @@ worker_processes  1;
 
  ## 内存池 `ngx_palloc.c`
  
- 
+内存的管理变得更加简单。内存的分配都会在一块大的内存上，回收的时候只需要回收大块内存就能将所有的内存回收，防止了内存管理混乱和内存泄露问题。
+
+ngx_pool_t 内存池主结构
+
+```cpp
+/**
+ * Nginx 内存池数据结构
+ */
+struct ngx_pool_s {
+    ngx_pool_data_t       d; 		/* 内存池的数据区域*/
+    size_t                max; 		/* 最大每次可分配内存 */
+    ngx_pool_t           *current;  /* 指向当前的内存池指针地址。ngx_pool_t链表上最后一个缓存池结构*/
+    ngx_chain_t          *chain;	/* 缓冲区链表 */
+    ngx_pool_large_t     *large;    /* 存储大数据的链表 */
+    ngx_pool_cleanup_t   *cleanup;  /* 可自定义回调函数，清除内存块分配的内存 */
+    ngx_log_t            *log;      /* 日志 */
+};
+```
