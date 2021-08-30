@@ -309,7 +309,9 @@ http://c.biancheng.net/view/7636.html
 ```cpp
 reinterpret_cast<type-id> (expression)
 ```
-type-id 必须是一个指针、引用、算术类型、函数指针或者成员指针。它可以用于类型之间进行强制转换。
+它可以把一个指针转换成一个整数，也可以把一个整数转换成一个指针（先把一个指针转换成一个整数，再把该整数转换成原类型的指针，还可以得到原先的指针值）
+
+但是不进行安全检查，一般不用
 
 - **const_cast**
 
@@ -336,7 +338,7 @@ static_cast < type_id > (expression)
 
   - 用于类层次结构中基类（父类）和派生类（子类）之间指针或引用引用的转换
 
-    - 进行上行转换（把派生类的指针或引用转换成基类表示）是安全的
+    - 进行上行转换，可以将子类转换成父类，是安全的
 
     - 进行下行转换（把基类指针或引用转换成派生类表示）时，由于没有动态类型检查，所以是不安全的
 
@@ -360,13 +362,9 @@ static_cast < type_id > (expression)
 dynamic_cast <type-id> (expression)
 ```
 
-该运算符把`expression`转换成`type-id`类型的对象。`type-id `必须是类的指针、类的引用或者`void*`
+对于从子类到基类的指针转换 ,dynamic_cast 成功转换,没有什么运行异常,且达到预期结果，
 
-如果 `type-id `是类指针类型，那么`expression`也必须是一个指针，如果 type-id 是一个引用，那么 expression 也必须是一个引用
-
-`dynamic_cast`运算符可以在执行期间决定真正的类型，也就是说`expression`必须是多态类型。如果下行转换是安全的（也就说，如果基类指针或者引用确实指向一个派生类对象）这个运算符会传回适当转型过的指针。如果 如果下行转换不安全，这个运算符会传回空指针（也就是说，基类指针或者引用没有指向一个派生类对象）
-
-`dynamic_cast`主要用于类层次间的上行转换和下行转换，还可以用于类之间的交叉转换
+而从基类到子类的转换 , dynamic_cast 在转换时也没有报错,但是输出给 base2sub 是一个 nullptr ,说明 dynami_cast 在程序运行时对类型转换对“运行期类型信息”（Runtime type information，RTTI）进行了检查. 
 
 在类层次间进行上行转换时，`dynamic_cast`和`static_cast`的效果是一样的
 
