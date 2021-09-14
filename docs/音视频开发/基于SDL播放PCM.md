@@ -208,6 +208,12 @@ void PlayThread::run() {
 
          //读取到了文件数据
          bufferData = data;
+         
+         //等待音频数据填充完毕
+         //只需要音频数据还没有填充完毕，Delay(sleep)
+         while(bufferLen > 0) {
+             SDL_Delay(1);
+         }
      }
 
      //关闭文件
