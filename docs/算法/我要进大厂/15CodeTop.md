@@ -5,12 +5,14 @@
 - [215. 数组中的第K个最大元素](#215-数组中的第k个最大元素)
 - [25.K 个一组翻转链表](#25k-个一组翻转链表)
 - [912. 排序数组](#912-排序数组)
+- [1. 两数之和](#1-两数之和)
+- [15. 三数之和](#15-三数之和)
 
 ---- 
 
 ## 206. 反转链表
 
-[题目链接][https://leetcode-cn.com/problems/reverse-linked-list/]
+[题目链接](https://leetcode-cn.com/problems/reverse-linked-list/)
 
 - 头插法
 
@@ -57,7 +59,29 @@ public:
 
 [NC41 最长无重复子数组](https://www.nowcoder.com/practice/b56799ebfd684fb394bd315e89324fb4?tpId=188&&tqId=38553&rp=1&ru=/activity/oj&qru=/ta/job-code-high-week/question-ranking)
 
-[题目来源](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/)
+```cpp
+class Solution {
+public:
+    int maxLength(vector<int>& arr) {
+        if(arr.size() < 2) return arr.size();
+        int left = 0,right = 0;
+        unordered_map<int,int> window;
+        int ans = 0;
+        while(right < arr.size()) {
+            int c = arr[right++];
+       a     window[c]++;
+            while(window[c] > 1) {
+                int d = arr[left++];
+                window[d]--;
+            }
+            ans = max(ans,right - left);
+        }
+        return ans;
+    }
+};
+```
+
+[Leetcode 题目来源](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/)
 
 请从字符串中找出一个最长的不包含重复字符的子字符串，计算该最长子字符串的长度。
 
@@ -359,3 +383,102 @@ public:
     }
 };
 ```
+
+## 1. 两数之和
+
+[leetcode题目](https://leetcode-cn.com/problems/two-sum/)
+
+给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出 和为目标值 target  的那 两个 整数，并返回它们的数组下标。
+
+你可以假设每种输入只会对应一个答案。但是，数组中同一个元素在答案里不能重复出现。
+
+你可以按任意顺序返回答案。
+
+示例 1：
+```
+输入：nums = [2,7,11,15], target = 9
+输出：[0,1]
+解释：因为 nums[0] + nums[1] == 9 ，返回 [0, 1] 。
+```
+
+```cpp
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        vector<int> ans;
+        unordered_map<int,int> mp;
+        for(int i=0;i<nums.size();++i) {
+            unordered_map<int,int>::iterator it = mp.find(target - nums[i]);
+            if(it != mp.end()) {
+                return {it->second,i};
+            }
+            //存的是索引
+            mp[nums[i]] = i;
+        }
+        return {};
+    }
+};
+```
+
+## 15. 三数之和
+
+
+[leetcode题目](https://leetcode-cn.com/problems/3sum/)
+
+给你一个包含 n 个整数的数组 nums，判断 nums 中是否存在三个元素 a，b，c ，使得 `a + b + c = 0` ？请你找出所有和为 0 且不重复的三元组。
+
+注意：答案中不可以包含重复的三元组。
+
+示例 1：
+```
+输入：nums = [-1,0,1,2,-1,-4]
+输出：[[-1,-1,2],[-1,0,1]]
+```
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> threeSum(vector<int>& nums) {
+        vector<vector<int>> ans;
+        //先排序
+        sort(nums.begin(),nums.end());
+        for(int startIndex = 0;startIndex<nums.size();++startIndex) {
+            //求三个数之和=0，如果第一个就大于0就break
+            if(nums[startIndex] > 0) {
+                break;
+            }
+            //去重
+            if(startIndex > 0 && nums[startIndex] == nums[startIndex-1]) {
+                continue;
+            }
+            //开始找
+            int left = startIndex + 1;
+            int right = nums.size() -1;
+            while(left < right) {
+                int sum = nums[startIndex] + nums[left] + nums[right];
+                if(sum < 0) {
+                    ++left;
+                }
+                else if(sum > 0) {
+                    --right;
+                }
+                else {
+                    vector<int> temp;
+                    temp.push_back(nums[startIndex]);
+                    temp.push_back(nums[left]);
+                    temp.push_back(nums[right]);
+                    ans.push_back(temp);
+
+                    //继续匹配下一组，去重
+                    ++left;
+                    --right;
+                    while(left < right && nums[left] == nums[left-1]) ++left;
+                    while(left < right && nums[right] == nums[right+1])  --right;
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
