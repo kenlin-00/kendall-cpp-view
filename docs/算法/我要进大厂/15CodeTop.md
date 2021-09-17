@@ -7,6 +7,7 @@
 - [912. 排序数组](#912-排序数组)
 - [1. 两数之和](#1-两数之和)
 - [15. 三数之和](#15-三数之和)
+- [141. 环形链表](#141-环形链表)
 
 ---- 
 
@@ -482,3 +483,36 @@ public:
 };
 ```
 
+## 141. 环形链表
+
+[leetcode题目](https://leetcode-cn.com/problems/linked-list-cycle/)
+
+判断一个链表是否有环
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    bool hasCycle(ListNode *head) {
+        if(head == nullptr || head->next == nullptr) return false;
+        ListNode *slow = head;
+        ListNode *fast = head;
+        while(fast && fast->next && slow) {
+            //先让快慢指针往下走
+            slow = slow->next;
+            fast = fast->next->next;
+            if(slow == fast) {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+```
