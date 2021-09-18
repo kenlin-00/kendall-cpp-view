@@ -8,6 +8,10 @@
 - [1. 两数之和](#1-两数之和)
 - [15. 三数之和](#15-三数之和)
 - [141. 环形链表](#141-环形链表)
+- [53. 最大子序和](#53-最大子序和)
+- [21. 合并两个有序链表](#21-合并两个有序链表)
+- [160. 相交链表](#160-相交链表)
+- [102. 二叉树的层序遍历](#102-二叉树的层序遍历)
 
 ---- 
 
@@ -513,6 +517,187 @@ public:
             }
         }
         return false;
+    }
+};
+```
+
+## 53. 最大子序和
+
+
+[leetcode](https://leetcode-cn.com/problems/maximum-subarray/)
+
+给定一个整数数组 nums ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+示例 1：
+
+```
+输入：nums = [-2,1,-3,4,-1,2,1,-5,4]
+输出：6
+解释：连续子数组 [4,-1,2,1] 的和最大，为 6 。
+```
+
+题解：
+
+`dp[i]`：表示以 `nums[i]` 结尾 的 连续 子数组的最大和。
+
+```
+-2,1,-3,4,-1,2,1,-5,4
+-2 1 -2 4  3 5 6 -1 4
+```
+
+```cpp
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        if(nums.size() == 1) return nums[0];
+        vector<int> dp(nums.size(),0);
+        int ans = nums[0]; //必须初始化为第一个，【-1，-2】
+        dp[0] = nums[0];
+        for(int i=1;i<nums.size();++i) {
+            dp[i] = max(dp[i-1]+nums[i],nums[i]);
+            ans = max(ans,dp[i]);
+        }
+        return ans;
+    }
+};
+```
+
+## 21. 合并两个有序链表
+
+[题目来源](https://leetcode-cn.com/problems/merge-two-sorted-lists/)
+
+[剑指offer](https://www.nowcoder.com/practice/d8b6b4358f774294a89de2a6ac4d9337?tpId=13&rp=1&ru=%2Fta%2Fcoding-interviews&qru=%2Fta%2Fcoding-interviews%2Fquestion-ranking)
+
+将两个升序链表合并为一个新的 升序 链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。
+
+![](https://assets.leetcode.com/uploads/2020/10/03/merge_ex1.jpg)
+
+```
+输入：l1 = [1,2,4], l2 = [1,3,4]
+输出：[1,1,2,3,4,4]
+```
+
+用一个虚拟节点，接下去
+
+```cpp
+class Solution {
+public:
+    ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
+        if(l1 == nullptr) return l2;
+        if(l2 == nullptr) return l1;
+
+        ListNode *dumpy = new ListNode(-1);
+        ListNode *cur = dumpy;
+        while(l1 && l2) {
+            if(l1->val <= l2->val) {
+                cur->next = l1;
+                cur = l1;
+                l1 = l1->next;
+            }
+            else {
+                cur->next = l2;
+                cur = l2;
+                l2 = l2->next;
+            }
+        }
+        if(l1) cur->next = l1;
+        if(l2) cur->next = l2;
+        return dumpy->next;
+    }
+};
+```
+
+时间复杂度 O(M+N)
+
+空间复杂度 O(1)
+
+
+## 160. 相交链表
+
+
+[剑指offer](https://www.nowcoder.com/practice/6ab1d9a29e88450685099d45c9e31e46?tpId=13&&tqId=11189&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)
+
+[leetcode](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/)
+
+
+输入两个无环的单链表，找出它们的第一个公共结点。（注意因为传入数据是链表，所以错误测试数据的提示是用其他方式显示的，保证传入数据是正确的）
+
+![](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/12/14/160_statement.png)
+
+
+- 双指针
+
+ p1 到 第一个链表结尾的时候指向 pHead2 继续，p2 同样 指向 pHead1 继续。
+
+```cpp
+class Solution {
+public:
+    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+        ListNode *pa = headA;
+        ListNode *pb = headB;
+        while(pa != pb) {
+            pa = pa != nullptr ? pa->next : headB;
+            pb = pb != nullptr ? pb->next : headA;
+        }
+        //如果不存在相交，就会两个都移动到两个链表的尾节点，都为null，所以返回null
+        return pa;
+    }
+};
+```
+
+时间复杂度：$O(m+n)$，其中 m 和 n 是分别是链表 headA 和 headB 的长度。两个指针同时遍历两个链表，每个指针遍历两个链表各一次。
+
+空间复杂度：$O(1)$。
+
+- 哈希表
+
+```cpp
+class Solution {
+public:
+    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+        if(headA == nullptr || headB == nullptr) return nullptr;
+        unordered_map<ListNode*,int> mp;
+        ListNode *pa = headA;
+        while(pa) {
+            mp[pa] = pa->val;
+            pa = pa->next;
+        }
+        ListNode *pb = headB;
+        while(pb) {
+            if(mp.count(pb) != 0) 
+                return pb;
+            pb = pb->next;
+        }
+        return nullptr;
+    }
+};
+```
+
+## 102. 二叉树的层序遍历
+
+[题目来源](https://leetcode-cn.com/problems/binary-tree-level-order-traversal/)
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> ans;
+        if(root == nullptr) return ans;
+        queue<TreeNode*> que;
+        que.push(root);
+        while(!que.empty()) {
+            int size = que.size();
+            vector<int> temp;
+            for(int i=0;i<size;++i) {
+                TreeNode *node = que.front();
+                que.pop();
+                temp.push_back(node->val);
+                if(node->left) que.push(node->left);
+                if(node->right) que.push(node->right);
+            }
+            ans.push_back(temp);
+        }
+        return ans;
     }
 };
 ```
