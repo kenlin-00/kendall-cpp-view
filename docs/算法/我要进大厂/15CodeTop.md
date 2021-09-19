@@ -12,6 +12,8 @@
 - [21. 合并两个有序链表](#21-合并两个有序链表)
 - [160. 相交链表](#160-相交链表)
 - [102. 二叉树的层序遍历](#102-二叉树的层序遍历)
+- [121. 买卖股票的最佳时机](#121-买卖股票的最佳时机)
+- [103. 二叉树的锯齿形层序遍历](#103-二叉树的锯齿形层序遍历)
 
 ---- 
 
@@ -701,3 +703,101 @@ public:
     }
 };
 ```
+
+## 121. 买卖股票的最佳时机
+
+[leetcode](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/)
+
+给定一个数组 prices ，它的第 i 个元素 prices[i] 表示一支给定股票第 i 天的价格。
+
+你只能选择 某一天 买入这只股票，并选择在 未来的某一个不同的日子 卖出该股票。设计一个算法来计算你所能获取的最大利润。
+
+返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 0 。
+
+```
+输入：[7,1,5,3,6,4]
+输出：5
+解释：在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+     注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格；同时，你不能在买入前卖出股票。
+```
+
+思路：
+
+- dp[i][k][0]  第 i 天，最多进行 k 次交易，不持有股票的最大利润
+- dp[i][k][1]  第 i 天，最多进行 k 次交易，持有股票的最大利润
+
+由于已知只能进行 1 次交易，因此 k = 1，所以这里的交易次数可以省略
+
+```cpp
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        //先求出天数
+        int n = prices.size();
+        //定义动态规划数组
+        vector<vector<int>> dp (n,vector<int> (2,0));
+        for(int i=0;i<n;++i) {
+            if(i-1 < 0) {
+                dp[i][0] = 0;
+                dp[i][1] = -prices[i];  //都还没开始，不可能持有股票，所以只能是负无穷
+                continue;
+            }
+            //今天不持有,可能是昨天持有，然后今天卖出，也可能是昨天不持有，今天做reset
+            dp[i][0] = max(dp[i-1][0],dp[i-1][1] + prices[i]);
+            //今天持有，可能是昨天不持有，今天买入，也可能是昨天就持有，今天做reset
+            // dp[i-1][k-1][0] = dp[i-1][0][0] = 0
+            dp[i][1] = max(dp[i-1][1], - prices[i]);
+
+        }
+        return dp[n-1][0];
+    }
+};
+```
+
+## 103. 二叉树的锯齿形层序遍历
+
+[leetcode](https://leetcode-cn.com/problems/binary-tree-zigzag-level-order-traversal/)
+
+> 就是 ”之“ 字形打印二叉树
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    vector<vector<int>> zigzagLevelOrder(TreeNode* root) {
+        vector<vector<int>> ans;
+        if(root == nullptr) return ans;
+        queue<TreeNode*> que;
+        que.push(root);
+        int index = 0;
+        while(!que.empty()) {
+            int size = que.size();
+            vector<int> temp;
+            ++index;
+            for(int i=0;i<size;++i) {
+                TreeNode *node = que.front();
+                que.pop();
+                temp.push_back(node->val);
+                if(node->left) que.push(node->left);
+                if(node->right) que.push(node->right);
+            }
+            if(index % 2 == 0) {
+                reverse(temp.begin(),temp.end());
+            }
+            ans.push_back(temp);
+        }
+        return ans;
+    }
+};
+```
+
