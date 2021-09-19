@@ -14,6 +14,7 @@
 - [102. 二叉树的层序遍历](#102-二叉树的层序遍历)
 - [121. 买卖股票的最佳时机](#121-买卖股票的最佳时机)
 - [103. 二叉树的锯齿形层序遍历](#103-二叉树的锯齿形层序遍历)
+- [88. 合并两个有序数组](#88-合并两个有序数组)
 
 ---- 
 
@@ -797,6 +798,44 @@ public:
             ans.push_back(temp);
         }
         return ans;
+    }
+};
+```
+
+## 88. 合并两个有序数组
+
+[leetcode](https://leetcode-cn.com/problems/merge-sorted-array/)
+
+```
+输入：nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3
+输出：[1,2,2,3,5,6]
+解释：需要合并 [1,2,3] 和 [2,5,6] 。
+合并结果是 [1,2,2,3,5,6] ，其中斜体加粗标注的为 nums1 中的元素
+```
+
+题解：
+
+```cpp
+class Solution {
+public:
+    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+        int index = m+n-1;
+        m--;
+        n--;
+        while(m >=0 && n>=0) {
+            if(nums1[m] > nums2[n]) {
+                nums1[index--] = nums1[m--];
+            }
+            else {
+                nums1[index--] = nums2[n--];
+            }
+        }
+        while(m >= 0) {
+            nums1[index--] = nums1[m--];
+        }
+        while(n >= 0) {
+            nums1[index--] = nums2[n--];
+        }
     }
 };
 ```
