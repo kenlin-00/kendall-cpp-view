@@ -15,6 +15,7 @@
 - [121. 买卖股票的最佳时机](#121-买卖股票的最佳时机)
 - [103. 二叉树的锯齿形层序遍历](#103-二叉树的锯齿形层序遍历)
 - [88. 合并两个有序数组](#88-合并两个有序数组)
+- [236. 二叉树的最近公共祖先](#236-二叉树的最近公共祖先)
 
 ---- 
 
@@ -840,3 +841,42 @@ public:
 };
 ```
 
+## 236. 二叉树的最近公共祖先
+
+[leetcode题目](https://leetcode-cn.com/problems/lowest-common-ancestor-of-a-binary-tree/)
+
+![](https://assets.leetcode.com/uploads/2018/12/14/binarytree.png)
+
+```
+输入：root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1
+输出：3
+解释：节点 5 和节点 1 的最近公共祖先是节点 3 
+```
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if(root == NULL) return nullptr;
+        if(root == p || root == q) {
+            return root;
+        }
+        TreeNode *left = lowestCommonAncestor(root->left,p,q);
+        TreeNode *right = lowestCommonAncestor(root->right,p,q);
+
+        if(left == nullptr) return right;
+        if(right == nullptr) return left;
+        if(left && right) return root;
+        return nullptr;
+    }
+};
+```
