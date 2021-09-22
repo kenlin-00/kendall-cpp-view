@@ -16,6 +16,7 @@
 - [103. 二叉树的锯齿形层序遍历](#103-二叉树的锯齿形层序遍历)
 - [88. 合并两个有序数组](#88-合并两个有序数组)
 - [236. 二叉树的最近公共祖先](#236-二叉树的最近公共祖先)
+- [415. 字符串相加](#415-字符串相加)
 
 ---- 
 
@@ -853,6 +854,11 @@ public:
 解释：节点 5 和节点 1 的最近公共祖先是节点 3 
 ```
 
+先判断 root 是否等于 q 或者 p，是就直接返回
+
+分别对 left 和 right 使用递归
+
+
 ```cpp
 /**
  * Definition for a binary tree node.
@@ -877,6 +883,101 @@ public:
         if(right == nullptr) return left;
         if(left && right) return root;
         return nullptr;
+    }
+};
+```
+
+[leetcode题目](https://leetcode-cn.com/problems/valid-parentheses/)
+
+给定一个只包括 '('，')'，'{'，'}'，'['，']' 的字符串 s ，判断字符串是否有效。
+
+有效字符串需满足：
+
+左括号必须用相同类型的右括号闭合。
+左括号必须以正确的顺序闭合。
+
+```
+输入：s = "()"
+输出：true
+
+输入：s = "()[]{}"
+输出：true
+```
+
+使用哈希表和栈
+
+- 先考虑括号字符串为空或者只有一个括号
+- 如果第一个括号不是左括号，就返回
+- 接着看和栈顶是否匹配，
+
+
+```cpp
+class Solution {
+public:
+    bool isValid(string s) {
+        //如果s为空，或者只有一个括号，那么久直接返回false
+        if(s.size() < 2) return false;
+        unordered_map<char,char> mp;
+        mp['('] = ')';
+        mp['['] = ']';
+        mp['{'] = '}';
+        //如果一来是都不是左括号，那就返回false
+        if(mp.count(s[0]) == 0) return false;
+        stack<char> st;
+        st.push(s[0]);
+        for(int i=1;i<s.size();++i) {
+            if(!st.empty() && mp[st.top()] == s[i]) {
+                st.pop();
+            }
+            //如果和栈顶的括号不匹配，还是个右括号，那么就返回false
+            else if(mp.count(s[i]) == 0) {
+                return false;
+            }
+            //最后是最括号就压栈
+            else {
+                st.push(s[i]);
+            }
+        }
+        //这里需要保证栈为空才能返回true
+        return st.empty() ? true : false;
+    }
+};
+```
+
+## 415. 字符串相加
+
+[leetcode](https://leetcode-cn.com/problems/add-strings/)
+
+给定两个字符串形式的非负整数 num1 和 num2 ，计算它们的和。
+
+题解：
+
+在循环中现价一个数，再加另一个数，最后把 和的各位转成字符相加。
+
+```cpp
+class Solution {
+public:
+    string addStrings(string num1, string num2) {
+        int len1 = num1.size() - 1;
+        int len2 = num2.size() - 1;
+        int sum = 0;
+        string res = "";
+        while(len1 >= 0 || len2 >= 0 || sum != 0) {
+            //字符串num1
+            if(len1 >= 0) {
+                sum += num1[len1] - '0';
+                --len1;
+            }
+            if(len2 >= 0) {
+                sum += num2[len2] - '0';
+                --len2;
+            }
+            // 然后将 sum 各个位加到字符串
+            res = char('0' + sum % 10) + res;
+            //sum只保留十位
+            sum /= 10;
+        }
+        return res;
     }
 };
 ```
