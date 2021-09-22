@@ -18,6 +18,9 @@
 	- [修改文件所有者和所属组](#修改文件所有者和所属组)
 - [说一下 makefile](#说一下-makefile)
 	- [要生成静态库和动态库, Makefile怎么写？](#要生成静态库和动态库-makefile怎么写)
+- [linux 内核中的链表](#linux-内核中的链表)
+	- [队列](#队列)
+	- [红黑树](#红黑树)
 
 <!-- /TOC -->
 
@@ -313,10 +316,6 @@ sudo chown mytest.mytest file.txt
 > 注意:普通用户需要使用管理员执行该命令     
 >注意: 若系统没有其他用户, 可以使用sudo adduser 用户名 创建一个新用户.
 
-
-
-
-
 ## 说一下 makefile
 
 makefile文件定义了一系列的规则来指定，哪些文件需要先编译，哪些文件需要后编译，哪些文件需要重新编译，甚至还能进行更复杂的功能操作。makefile带来的好处就是“**自动化编译**”，一旦写好只需要一个make命令就可以自动编译整个工程。
@@ -472,20 +471,110 @@ clean:
 
 -----
 
+## linux 内核中的链表
+
+linux内核中的链表使用方法和一般数据结构中定义的链表是有所不同的。
 
 
+一般的双向链表一般是如下的结构，
+
+- 有个单独的头结点(head)
+- 每个节点(node)除了包含必要的数据之外，还有2个指针(pre,next)
+- pre指针指向前一个节点(node)，next指针指向后一个节点(node)
+- 头结点(head)的pre指针指向链表的最后一个节点
+- 最后一个节点的next指针指向头结点(head)
+
+![](https://img-blog.csdnimg.cn/20190319093610301.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JpbmdmZWlsb25neGlu,size_16,color_FFFFFF,t_70)
+
+传统的链表有个最大的缺点就是不好共通化，因为每个node中的data1，data2等等都是不确定的(无论是个数还是类型)。
+
+linux中的链表巧妙的解决了这个问题，linux的链表不是将用户数据保存在链表节点中，而是将链表节点保存在用户数据中。
+
+linux的链表节点只有2个指针(pre和next)，这样的话，链表的节点将独立于用户数据之外，便于实现链表的共同操作。
+
+```c
+struct list_head {
+	struct list_head *next;
+	struct list_head *prev;
+}
+```
+
+![](https://img-blog.csdnimg.cn/20190319093908862.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JpbmdmZWlsb25neGlu,size_16,color_FFFFFF,t_70)
+
+内核中使用 container_of() 让我们能够从链表指针找到父结构中的变量
+
+```c
+#define container_of(ptr, type, member) ({          \
+    const typeof(((type *)0)->member)*__mptr = (ptr);    \
+             (type *)((char *)__mptr - offsetof(type, member)); })
+```
+
+这里面的 type 一般是个结构体，也就是包含用户数据和链表节点的结构体。
+
+ptr 是指向 type 中链表节点的指针
+
+member 则是 type 中定义链表节点是用的名字
+
+比如：
+
+```c
+struct student
+{
+    int id;
+    char* name;
+    struct list_head list;
+};
+```
+
+- type 是 struct student ptr 是指向 stuct
+- list 的指针，也就是指向 member 类型的指针
+- member 就是 list
+
+分析一下 container_of 宏:
+
+```c
+// 步骤1：将数字0强制转型为type*，然后取得其中的member元素
+((type *)0)->member  // 相当于((struct student *)0)->list
+
+// 步骤2：定义一个临时变量__mptr，并将其也指向ptr所指向的链表节点
+const typeof(((type *)0)->member)*__mptr = (ptr);
+
+// 步骤3：计算member字段距离type中第一个字段的距离，也就是type地址和member地址之间的差
+// offset(type, member)也是一个宏，定义如下：
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+
+// 步骤4：将__mptr的地址 - type地址和member地址之间的差
+// 其实也就是获取type的地址
+```
+
+步骤1，2，4比较容易理解，下面的图以sturct student为例进行说明步骤3：
+
+首先需要知道 ((TYPE *)0) 表示将地址0转换为 TYPE 类型的地址
+
+由于TYPE的地址是0，所以((TYPE *)0)->MEMBER 也就是 MEMBER的地址和TYPE地址的差，如下图所示：
+
+![](https://img-blog.csdnimg.cn/20190319094233864.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JpbmdmZWlsb25neGlu,size_16,color_FFFFFF,t_70)
+
+### 队列
+
+内核中的队列是以字节形式保存数据的，所以获取数据的时候，需要知道数据的大小。
+
+如果从队列中取得数据时指定的大小不对的话，取得数据会不完整或过大。
+
+### 红黑树
+
+红黑树由于节点颜色的特性，保证其是一种自平衡的二叉搜索树。
 
 
+红黑树必须满足的规则：
 
-
-
-
-
-
-
-
-
-
+- 所有节点都有颜色，要么红色，要么黑色
+- 根节点是黑色，所有叶子节点也是黑色
+- 叶子节点中不包含数据
+- 非叶子节点都有2个子节点
+- 如果一个节点是红色，那么它的父节点和子节点都是黑色的
+- 从任何一个节点开始，到其下叶子节点的路径中都包含相同数目的黑节点
+- 红黑树中最长的路径就是红黑交替的路径，最短的路径是全黑节点的路径，再加上根节点和叶子节点都是黑色，从而可以保证红黑树中最长路径的长度不会超过最短路径的2倍。
 
 
 
