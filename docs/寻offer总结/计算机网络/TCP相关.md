@@ -27,7 +27,6 @@
   - [三次握手的最后一个 ACK 丢失了会怎样](#三次握手的最后一个-ack-丢失了会怎样)
   - [如何查看 TCP 状态](#如何查看-tcp-状态)
   - [TIME_WAIT 为什么要等于`2MSL`](#time_wait-为什么要等于2msl)
-  - [假设 TIME-WAIT 没有等待时间或时间过短，断开连接会造成什么问题呢](#假设-time-wait-没有等待时间或时间过短断开连接会造成什么问题呢)
     - [Time_wait状态的链接过多会怎样](#time_wait状态的链接过多会怎样)
     - [如何优化Time_wait](#如何优化time_wait)
   - [如果已经建立了连接，但是客户端突然出现故障了怎么办](#如果已经建立了连接但是客户端突然出现故障了怎么办)
@@ -127,7 +126,7 @@ TCP 是一个**面向连接的**、**可靠的**、**基于字节流**的传输�
 服务器的 IP 地址和端口号一般是固定不变的，等待客户端的连接请求。
 
 客户端 IP 和 端口是可变的，其理论值计算公式如下:
-  
+
 <strong><font color="orange" size=5 >最大 TCP 连接数 = 客户端的 IP 数 * 客户端的端口数</font></strong>
 
 - 对 IPv4，客户端的 IP 数最多为 2 的 32 次方，客户端的端口数最多为 2 的 16 次方，也就是服务端单机最 大 TCP 连接数，约为 2 的 48 次方。
@@ -235,7 +234,7 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 - 第三次握手
 
-客户端收到服务端的回复后发现`ACK=1`并且`ack=101`,于是知道服务端已经收到了序列号为`100`的那段报文；同时发现`SYN=1`，知道了服务端同意了这次连接，于是就将服务端的序列号`300`给存下来。然后客户端再回复一段报文给服务端，报文包含`ACK`标志位(`ACK=1`)、`ack=301`(*服务端序列号+1*)、`seq=101`(第一次握手时发送报文是占据一个序列号的，所以这次`seq`就从`101`开始，需要注意的是不携带数据的`ACK`报文是不占据序列号的，所以后面第一次正式发送数据时`seq`还是`101`)。当服务端收到报文后发现`ACK=1`并且`ack=301`，就知道客户端收到序列号为`300`的报文了，就这样客户端和服务端通过`TCP`建立了连接。
+客户端收到服务端的回复后发现`ACK=1`并且`ack=101`,于是知道服务端已经收到了序列号为`100`的那段报文；同时发现`SYN=1`，知道了服务端同意了这次连接，于是就将服务端的序列号`300`给存下来。然后客户端再回复一段报文给服务端，报文包含`ACK`标志位(`ACK=1`)、`ack=301`(*服务端序列号+1*)、`seq=101` (第一次握手时发送报文是占据一个序列号的，所以这次`seq`就从`101`开始，需要注意的是不携带数据的`ACK`报文是不占据序列号的，所以后面第一次正式发送数据时`seq`还是`101`)。当服务端收到报文后发现`ACK=1`并且`ack=301`，就知道客户端收到序列号为`300`的报文了，就这样客户端和服务端通过`TCP`建立了连接。
 
 
 > 上面过程中，**第三次握手是可以携带数据的，前两次握手不可以携带数据。**        
@@ -255,6 +254,8 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 ![](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU0JUI4JTg5JUU2JUFDJUExJUU2JThGJUExJUU2JTg5JThCJUU1JTkyJThDJUU1JTlCJTlCJUU2JUFDJUExJUU2JThDJUE1JUU2JTg5JThCLzE5LmpwZw?x-oss-process=image/format,png)
 
+-----
+
 - **三次握手可以同步双方的初始序列号**
 
 为了保证数据传输的可靠性，当客户端发送携带「初始序号`seq`」的 `SYN`报文的时候，需要服务端回一个 `ACK` 应答报文，表示客户端的 `SYN` 报文已被服务端成功接收，那当服务端发送「初始序列号」给客户端的时候，依然也要得到客户端的应答回应，这样一来一回，才能确保双方的初始序列号能被可靠的同步。
@@ -264,6 +265,8 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 - 接收方可以去除重复的数据；
 - 接收方可以根据数据包的序列号按序接收；
 - 可以标识发送出去的数据包中， 哪些是已经被对方收到的；
+
+----
 
 - **三次握手才可以避免资源浪费**
 
@@ -405,8 +408,8 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
     - 当 「 SYN 队列」满之后，后续服务器收到 SYN 包，不进入「 SYN 队列」；
     - 计算出一个 cookie 值，再以 SYN + ACK 中的「序列号」返回客户端，
-    - 服务端接收到客户端的应答报文时，服务器会检查这个 ACK 包的合法性。如果合法，直接- 放入到「 Accept 队列」。
-    - 最后应用通过调用 `accpet()` socket 接口，从「 Accept 队列」取出的连接。
+    - 服务端接收到客户端的应答报文时，服务器会检查这个 ACK 包的合法性。如果合法，直接放入到「 Accept 队列」。
+    - 最后应用通过调用 「accpet()」 socket 接口，从「 Accept 队列」取出的连接。
 
 ### 什么是半连接队列
 
@@ -446,10 +449,6 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 
 注意：**只有发起连接终止的一方会进入 TIME_WAIT 状态**。
-
-### 假设 TIME-WAIT 没有等待时间或时间过短，断开连接会造成什么问题呢
-
-![](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU0JUI4JTg5JUU2JUFDJUExJUU2JThGJUExJUU2JTg5JThCJUU1JTkyJThDJUU1JTlCJTlCJUU2JUFDJUExJUU2JThDJUE1JUU2JTg5JThCLzMyLmpwZw?x-oss-process=image/format,png)
 
 
 
