@@ -7,62 +7,42 @@
 Nginx 的源码主要分布在`src/`目录下，而`src/`目录下主要包含三部分比较重要的模块。
 
 - core：包含了 Nginx 的最基础的库和框架。包括了内存池、链表、hashmap、String 等常用的数据结构。
-- event：事件模块。Nginx 自己实现了事件模型。而我们所熟悉的 Memcached 是使用了 Libevent 的事件库。自己实现 event 会性能和效率方便更加高效。
+- event：事件模块。Nginx 自己实现了事件模型。*而我们所熟悉的 Memcached 是使用了 Libevent 的事件库。自己实现 event 会性能和效率方便更加高效。*
 - http：实现 HTTP 的模块。实现了HTTP的具体协议的各种模块，该部分内容量比较大。
 
-### nginx 进程结构
+<font color="orange" size=4>**Nginx的架构是这样**：</font>
 
-Nginx 是一款多进程的软件。Nginx 启动后，会产生一个 master 进程和 N 个工作进程。其中 `nginx.conf` 中可以配置工作进程的个数：
+1.**Nginx 是一款多进程的软件**。Nginx 启动后，会产生一个 Master 进程和 N 个工作 ( worker ) 进程。其中 `nginx.conf` 中可以配置工作进程的个数：多进程模块有一个非常大的好处，就是不需要太多考虑并发锁的问题
 
-```
-worker_processes  1;
-```
+2.在客户端请求动态站点的过程中，Nginx服务器还涉及和后端服务器的通信。Nginx  将接收到的Web 请求通过代理转发到后端服务器，由后端服务器进行数据处理和组织；
 
- 多进程模块有一个非常大的好处，就是不需要太多考虑并发锁的问题
-
- ![](https://img-blog.csdn.net/20160127165343223?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
-
- ![](https://pic4.zhimg.com/80/v2-9f728a1841b9d7136755629122c504ff_1440w.jpg)
-
-
-Nginx的架构就是这样：
-
-1.Nginx启动后，会产生一个主进程，主进程执行一系列的工作后会产生一个或者多个工作进程；
-
-2.在客户端请求动态站点的过程中，Nginx服务器还涉及和后端服务器的通信。Nginx将接收到的Web请求通过代理转发到后端服务器，由后端服务器进行数据处理和组织；
-3.Nginx为了提高对请求的响应效率，降低网络压力，采用了缓存机制，将历史应答数据缓存到本地。保障对缓存文件的快速访问；
+3.Nginx 为了提高对请求的响应效率，降低网络压力，采用了缓存机制，将历史应答数据缓存到本地。保障对缓存文件的快速访问；
 
 **工作进程**
 
 工作进程的主要工作有以下几项：
 
-接收客户端请求；
+- 接受客户端请求
+- 将请求一次送入各个功能模块进行过滤处理
+- 接着是 IO 调用，获取响应数据
+- 与后端服务器通信，接受后端服务器处理返回的结果
+- 然后进行数据缓存，再响应给客户端
 
-将请求一次送入各个功能模块进行过滤处理；
-
-IO调用，获取响应数据；
-
-与后端服务器通信，接收后端服务器处理结果；
-
-数据缓存
-
-响应客户端请求；
- 
 **进程交互**
 
-Nginx服务器在使用Master-Worker模型时，会涉及到主进程和工作进程的交互和工作进程之间的交互。这两类交互都依赖于管道机制。
+Nginx服务器在使用 Master-Worker 模型时，会涉及到主进程和工作进程的交互和工作进程之间的交互。这两类交互都依赖于**管道机制**。
 
 1.Master-Worker交互
 
-这条管道与普通的管道不同，它是由主进程指向工作进程的单向管道，包含主进程向工作进程发出的指令，工作进程ID等；同时主进程与外界通过信号通信；
+这条管道与普通的管道不同，它是由主进程指向工作进程的单向管道「master --> worker」，包含主进程向工作进程发出的指令，工作进程ID等；同时主进程与外界通过信号通信；
 
 2.worker-worker交互
 
-这种交互是和Master-Worker交互是基本一致的。但是会通过主进程。工作进程之间是相互隔离的，所以当工作进程W1需要向工作进程W2发指令时，首先找到W2的进程ID，然后将正确的指令写入指向W2的通道。W2收到信号采取相应的措施。 
+这种交互是和Master-Worker交互是基本一致的。但是会通过主进程「 Master 」。工作进程之间是相互隔离的，所以当工作进程 Worker1 需要向工作进程 Woker2 发指令时，首先找到 Woker2 的进程 ID，然后将正确的指令写入指向 Woker2 的通道。Woker2 收 到信号采取相应的措施。 
 
 
  ## 内存池 `ngx_palloc.c`
- 
+
  ### 内存池的好处
 
 - 提升内存分配效率。不需要每次分配内存都执行 `malloc/alloc` 等函数。
@@ -73,14 +53,16 @@ Nginx服务器在使用Master-Worker模型时，会涉及到主进程和工作�
 
 内存分配逻辑:
 
-分配一块内存，如果分配的内存size小于内存池的pool->max的限制，则属于小内存块分配，走小内存块分配逻辑；否则走大内存分配逻辑。
+分配一块内存，如果分配的内存 size 小于内存池的 `pool->max` 的限制，则属于小内存块分配，走小内存块分配逻辑；否则走大内存分配逻辑。
 
-- 小内存分配逻辑：循环读取 pool->d 上的内存块，是否有足够的空间容纳需要分配的size，如果可以容纳，则直接分配内存；否则内存池需要申请新的内存块，调用ngx_palloc_block。
+- 小内存分配逻辑：循环读取 `pool->d` 上的内存块，是否有足够的空间容纳需要分配的 size，如果可以容纳，则直接分配内存；否则内存池需要申请新的内存块，调用 `ngx_palloc_block` 。
+- 大内存分配逻辑：当分配的内存 size 大于内存池的 ` pool->max`  的限制，则会直接调用 `ngx_palloc_large ` 方法申请一块独立的内存块，并且将内存块挂载到 `pool->large` 的链表上进行统一管理。
 
-- 大内存分配逻辑：当分配的内存size大于内存池的 pool->max 的限制，则会直接调用ngx_palloc_large 方法申请一块独立的内存块，并且将内存块挂载到pool->large的链表上进行统一管理。
+>  Nginx 的内存池会放在 ngx_pool_t 的数据结构上，当初始化分配的内存块大小不能满足需求的时候，Nginx 就会调用 ngx_palloc_block 函数来分配一个新的内存块，通过链表的形式连接起来。
 
 
 ### ngx_pool_data_t
+
 
 > 可以讲 ngx_pool_data_t 有一个 failed 成员
 
@@ -93,14 +75,14 @@ ngx_pool_t *next：指向下一个 ngx_pool_t 指针。
 ngx_uint_t failed：存储本 ngx_pool_t 结构体分配失败次数。
 ```
 
-![](https://cdn.jsdelivr.net/gh/lichuang/lichuang.github.io/media/imgs/20190214-nginx-memory-pool/ngx_pool_data_t.png)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/nginx_内存池数据结构01.2639fd9q4t8g.png)
 
-failed 成员的引入是为了避免某个 pool 虽然还有可用的空间，但是由于空间很小了所以经常性的分配空间失败，当累计失败的次数达到某个阈值时，下一次再次查找内存就直接跳过这个pool，而去寻找内存池链表中的下一个 pool。
+failed 成员的引入是为了避免某个 pool 虽然还有可用的空间，但是由于空间很小了所以经常性的分配空间失败，当累计失败的次数达到某个阈值时，下一次再次查找内存就直接跳过这个 pool，而去寻找内存池链表中的下一个 pool。
 
 
 ### ngx_pool_large_t
 
-ngx_pool_large_t 结构体用于保存大内存块，这一块就比较简单粗暴了，直接分配一块大内存来使用。另外，多个大内存块之间也是以链表形式来组织数据。
+ngx_pool_large_t 结构体用于保存大内存块，这一块就比较简单粗暴了，直接分配一块大内存来使用。另外，多个大内存块之间也是以**链表形式**来组织数据。
 
 ```c
 // 管理超大空间的结构体
@@ -139,13 +121,13 @@ ngx_int_t ngx_pfree(ngx_pool_t *pool, void *p) {
 }
 ```
 
-cleanup机制 可以回调函数清理数据
+**cleanup机制 可以回调函数清理数据**
 
-Nginx的内存池cleanup机制，设计的非常巧妙。pool->cleanup本身是一个链表，每个ngx_pool_cleanup_t的数据结构上，保存着内存数据的本身cleanup->data和回调清理函数cleanup->handler。
+Nginx 的内存池 cleanup 机制，设计的非常巧妙。`pool->cleanup` 本身是一个链表，每个 `ngx_pool_cleanup_t` 的数据结构上，保存着内存数据的本身`cleanup->data` 和回调清理函数 `cleanup->handler` 。
 
-通过cleanup的机制，我们就可以在内存池上保存例如文件句柄fd的资源。当我们调用ngx_destroy_pool方法销毁内存池的时候，首先会来清理pool->cleanup，并且都会执行c->handler(c->data)回调函数，用于清理资源。
+通过`cleanup`  的机制，我们就可以在内存池上保存例如文件句柄 fd 的资源。当我们调用 `ngx_destroy_pool` 方法销毁内存池的时候，首先会来清理 `pool->cleanup` ，并且都会执行 `c->handler(c->data)` 回调函数，用于清理资源。
 
-Nginx的这个机制，最显著的就是让文件描述符和需要自定义清理的数据的管理变得更加简单。
+Nginx 的这个机制，**最显著的就是让文件描述符和需要自定义清理的数据的管理变得更加简单**。
 
 ## 双向链表结构
 
@@ -166,7 +148,14 @@ Nginx的这个机制，最显著的就是让文件描述符和需要自定义清
 
 ## 多进程实现
 
-![](https://img-blog.csdn.net/20160821091508128?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+| 实现函数  | 功能 |
+| :------------------------------- | :--------------------------------------------------: |
+| 1.ngx_master_process_cycle | 启动 Nginx 的进程模式，主进程信号监听和启动工作进程 |
+| 2.ngx_start_worker_processes | 创建和启动工作进程，工作进程一般是 CPU 个数的 1-2 倍，`ccf->worker_processes`配置 |
+| 3. ngx_spawn_process | fork() 出工作进程的子进程，启动成功后，调用 ngx_worker_process_cycle方法 |
+| 4. ngx_worker_process_cycle | 各个进程的处理逻辑都在这个方法实现 |
+| 5. ngx_worker_process_init | 工作进程初始化 |
+| 6. Ngx_process_events_end_timer | 进入时间驱动循环 |
 
 - **ngx_master_process_cycle 进入多进程模式**
 
@@ -180,7 +169,7 @@ ngx_master_process_cycle方法主要做了两个工作：
 
 1.通过循环创建N个子进程。每个子进程都有独立的内存空间
 
-2.子进程的个数由Nginx的配置：ccf->worker_processes决定
+2.子进程的个数由Nginx的配置：ccf->worker_processes 
 
 
 - **ngx_spawn_process fork工作进程**
@@ -295,4 +284,6 @@ Nginx 采用的是多进程的模式。假设Linux系统是2.6版本以前，当
 ## 如何处理一个 HTTP 请求的
 
 > https://blog.51cto.com/quietmadman/1121348
+>
+> https://blog.csdn.net/initphp/article/details/54097919
 
