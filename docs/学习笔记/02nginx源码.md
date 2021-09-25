@@ -1,4 +1,5 @@
 > 参考：https://blog.csdn.net/yangyin007/article/details/82777086
+> https://blog.csdn.net/apelife/category_9267226.html
 
 ------
 
@@ -286,4 +287,19 @@ Nginx 采用的是多进程的模式。假设Linux系统是2.6版本以前，当
 > https://blog.51cto.com/quietmadman/1121348
 >
 > https://blog.csdn.net/initphp/article/details/54097919
+
+
+## ngx_list_t数据结构
+
+https://blog.51cto.com/sofar/1316475
+
+https://segmentfault.com/a/1190000002764763
+
+## 获取HTTP包体
+
+HTTP包体的长度有可能非常大，如果试图一次性调用并读取完所有的包体，那么多半会阻塞Nginx进程。HTTP框架提供了一种方法来异步地接收包体
+
+```
+ngx_int_t ngx_http_read_client_request_body(ngx_http_request_t *r, ngx_http_client_body_handler_pt post_handler
+```
 
