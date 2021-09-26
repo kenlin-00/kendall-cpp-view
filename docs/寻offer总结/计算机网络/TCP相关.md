@@ -62,7 +62,7 @@
 
 > `TCP`的全部功能体现在它首部中的各字段的中。tcp 首部有 20 个字节
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/OfficialAccounts/tcp首部.3bk2olobrrm0.png)
+<img src="https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/OfficialAccounts/tcp首部.3bk2olobrrm0.png" style="zoom:67%;" />
 
 
 （1）源端口，`2`个字节；发送报文的进程的端口号
@@ -139,7 +139,7 @@ TCP 是一个**面向连接的**、**可靠的**、**基于字节流**的传输�
 
 > 首部字段很简单，只有`8`个字节
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/udp头部.20nt6p2qxqw0.png)
+<img src="https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/udp头部.20nt6p2qxqw0.png" style="zoom:50%;" />
 
 - （1）源端口：发送报文的进程的端口号。在需要对方回信时选用。不需要时可用全`0`。
 
@@ -218,7 +218,7 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 ### TCP 三次握手
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/三次握手.4vj51xsb8mc0.png)
+<img src="https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/三次握手.4vj51xsb8mc0.png" style="zoom:50%;" />
 
 - 第一次握手：
 
@@ -252,7 +252,7 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 但是如果是两次握手，客户端就不能判断连接是否是历史连接。
 
-![](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU0JUI4JTg5JUU2JUFDJUExJUU2JThGJUExJUU2JTg5JThCJUU1JTkyJThDJUU1JTlCJTlCJUU2JUFDJUExJUU2JThDJUE1JUU2JTg5JThCLzE5LmpwZw?x-oss-process=image/format,png)
+<img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU0JUI4JTg5JUU2JUFDJUExJUU2JThGJUExJUU2JTg5JThCJUU1JTkyJThDJUU1JTlCJTlCJUU2JUFDJUExJUU2JThDJUE1JUU2JTg5JThCLzE5LmpwZw?x-oss-process=image/format,png" style="zoom:50%;" />
 
 -----
 
@@ -276,7 +276,7 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 > 四次握手其实也能够可靠的同步双方的初始化序号，但由于第二步和第三步可以优化成一步，没必要两次握手来分别发送 ACK 报文 和 SYN 报文。所以就成了「三次握手」
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/四次握手.6az8xsuu6sg0.png)
+<img src="https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/四次握手.6az8xsuu6sg0.png" style="zoom: 50%;" />
 
 -----
 
@@ -296,7 +296,7 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 - 第四次挥手。客户端收到服务器的 `FIN` 包后，向服务端返回确认报文（`ACK=1，ack=w+1`），这个时候客户端就进入了 `TIME_WAIT` （时间等待）状态。注意此时 `TCP` 连接还没有释放，必须经过 `2*MSL` 后，才进入 `CLOSED` 状态。而服务器端收到客户端的确认包 `ACK` 后就进入了 `CLOSED` 状态，可以看出服务器端结束 `TCP` 连接的时间要比客户端早一些。
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/四次握手.7do6qsang0g.jpg)
+<img src="https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/四次握手.7do6qsang0g.jpg" style="zoom:67%;" />
 
 ### 为什么连接的时候是三次握手，关闭的时候却是四次握手
 
@@ -329,7 +329,7 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 - MTU：一个网络包的最大长度，以太网中一般为 1500 字节。
 - MSS：除去 IP 和 TCP 头部之后，一个网络包所能容纳的 TCP 数据的最大长度。「TCP 最大分段长度」
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/tcp分割数据.66xmbk7p3ig0.png)
+<img src="https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/tcp分割数据.66xmbk7p3ig0.png" style="zoom:67%;" />
 
 > 如果在 TCP 的整个报文（头部 + 数据）交给 IP 层进行分片，会有什么异常呢？
 
@@ -383,7 +383,7 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 分析这个要从 Linux 内核中的 SYN （未完成连接建立）队列与 Accpet （已完成连接建立）队列是如何工作入手分析。
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/SYN攻击避免01.3fi25a873ee0.png)
+<img src="https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/SYN攻击避免01.3fi25a873ee0.png" style="zoom: 67%;" />
 
 正常流程：
 
@@ -436,7 +436,7 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 在linux系统中可以通过 `netstat -napt` 命令查看。
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/查看tcp状态.3k61escyq340.png)
+<img src="https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/查看tcp状态.3k61escyq340.png" style="zoom: 67%;" />
 
 
 ----
@@ -455,7 +455,7 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
   如果 TIME-WAIT  没有等待时间或时间过短
 
-  ![](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU0JUI4JTg5JUU2JUFDJUExJUU2JThGJUExJUU2JTg5JThCJUU1JTkyJThDJUU1JTlCJTlCJUU2JUFDJUExJUU2JThDJUE1JUU2JTg5JThCLzMxLmpwZw?x-oss-process=image/format,png)
+  <img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU0JUI4JTg5JUU2JUFDJUExJUU2JThGJUExJUU2JTg5JThCJUU1JTkyJThDJUU1JTlCJTlCJUU2JUFDJUExJUU2JThDJUE1JUU2JTg5JThCLzMxLmpwZw?x-oss-process=image/format,png" style="zoom: 50%;" />
 
   - 如上图黄色框框服务端在关闭连接之前发送的 `SEQ = 301` 报文，被网络延迟了。
   - 这时有相同端口的 TCP 连接被复用后，被延迟的 `SEQ = 301` 抵达了客户端，那么客户端是有可能正常接收这个过期的报文，这就会产生数据错乱等严重的问题。
@@ -463,7 +463,7 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 - 保证连接正确关闭
   如果 TIME-WAIT  没有等待时间或时间过短
 
-  ![](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU0JUI4JTg5JUU2JUFDJUExJUU2JThGJUExJUU2JTg5JThCJUU1JTkyJThDJUU1JTlCJTlCJUU2JUFDJUExJUU2JThDJUE1JUU2JTg5JThCLzMyLmpwZw?x-oss-process=image/format,png)
+  <img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU0JUI4JTg5JUU2JUFDJUExJUU2JThGJUExJUU2JTg5JThCJUU1JTkyJThDJUU1JTlCJTlCJUU2JUFDJUExJUU2JThDJUE1JUU2JTg5JThCLzMyLmpwZw?x-oss-process=image/format,png" style="zoom:67%;" />
 
   - TIME-WAIT 作用是**等待足够的时间以确保最后的 ACK 能让被动关闭方接收，从而帮助其正常关闭**
   - 当客户端发起建立连接的 `SYN` 请求报文后，服务端会发送 `RST` 报文给客户端，连接建立的过程就会被终止
@@ -539,7 +539,7 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 ## TCP怎么保证可靠传输的
 
-<font color=orange size=4>**重传机制**</font>
+### <font color=orange size=5>**重传机制**</font>
 
 在 TCP 中，当发送端的数据到达接收主机时，接收端主机会返回一个确认应答消息，表示已收到消息。
 
@@ -547,13 +547,15 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 **接下来说说常见的重传机制**：
 
-- **1.超时重传**：重传机制的其中一个方式，就是在发送数据时，设定一个定时器，当超过指定的时间后，没有收到对方的 `ACK` 确认应答报文，就会重发该数据，也就是我们常说的**超时重传**。
+- <font color=orange size=5>**1.超时重传**</font>
+
+重传机制的其中一个方式，就是在发送数据时，设定一个定时器，当超过指定的时间后，没有收到对方的 `ACK` 确认应答报文，就会重发该数据，也就是我们常说的**超时重传**。
 
 > 先来链接一下什么是 RTT
 >
 > `RTT` 就是**数据从网络一端传送到另一端所需的时间**，也就是包的往返时间。
 
-![](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU1JThGJUFGJUU5JTlEJUEwJUU3JTg5JUI5JUU2JTgwJUE3LzYuanBn?x-oss-process=image/format,png)
+<img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU1JThGJUFGJUU5JTlEJUEwJUU3JTg5JUI5JUU2JTgwJUE3LzYuanBn?x-oss-process=image/format,png" style="zoom:67%;" />
 
 超时重传时间是以 `RTO` （Retransmission Timeout 超时重传时间）表示。
 
@@ -564,87 +566,71 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 **超时重传时间 RTO 的值应该略大于报文往返 RTT 的值**。
 
+-------
+
+- <font color=orange size=5>**2.快速重传**</font>
+
+TCP 还有另外一种快速重传（Fast Retransmit）机制，它不以时间为驱动，而是以数据驱动重传。
+
+<img src="https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/快速重传01.21a9dmnfvigw.png"  />
+
+发送方发出了 1，2，3，4，5 份数据：
+
+- 第一份 Seq1 先送到了，于是就 Ack 回 2；
+- 结果 Seq2 因为某些原因没收到，Seq3 到达了，于是还是 Ack 回 2；
+
+- 后面的 Seq4 和 Seq5 都到了，但还是 Ack 回 2，因为 Seq2 还是没有收到；
+
+- **发送端收到了三个 Ack = 2 的确认，知道了 Seq2 还没有收到，就会在定时器过期之前，重传丢失的 Seq2**。
+
+- 最后，收到了 Seq2，此时因为 Seq3，Seq4，Seq5 都收到了，于是 Ack 回 6 。
+
+> 快速重传的工作方式是当收到三个相同的 ACK 报文时，会在定时器过期之前，重传丢失的报文段。
 
 
-- **快速重传**：TCP 还有另外一种快速重传（Fast Retransmit）机制，它不以时间为驱动，而是以数据驱动重传。
 
+**快速重传的问题**：
 
+- **重传的时候，是重传之前的一个，还是重传所有的问题。**
 
+比如对于上面的例子，是重传 Seq2 呢？还是重传 Seq2、Seq3、Seq4、Seq5 呢？因为发送端并不清楚这连续的三个 Ack 2 是谁传回来的。
 
+> 为了解决不知道该重传哪些 TCP 报文，于是就有 **SACK** 方法。
 
+-----
 
-
-
-
-
-
-- **重传机制**：接收方收到报文就会确认，发送方发送一段时间后没有收到确认就会重传。
-- **数据校验**：`TCP`报文头有校验和，用于校验报文是否损坏。
-- **数据合理分片和排序**：`tcp`会按最大传输报文段长度(MSS)合理分片，接收方如果收到的数据不按顺序的时候，就会对它重新排序再交给应用层。
-  - 而对于UDP：`IP`数据报如果大于1500字节，也就是大于`MTU`。这个时候就会对数据包进行分片，让每一片都少于`MTU`，由于`UDP`的特性，有些分片会被丢弃，所以导致最终无法重组数据包，导致丢弃整个UDP数据报。
-- **流量控制**：当接收方来不及处理发送方的数据，能通过滑动窗口，提示发送方降低发送的速率，防止包丢失。
-- **拥塞控制**：当网络拥塞时，通过拥塞窗口，减少数据的发送，防止包丢失。
-
-> 拥塞控制有四种算法，**慢启动、拥塞避免，快速重传和快速恢复**
-
-
-### RTT 和 RTO 是什么
-
-RTT 就是数据从网络一端传送到另一端所需要的时间，也就是数据包的往返时间
-
-RTO 是超时重传时间，RTO 的值非常重要，因为精确的测量超时时间 RTO 可以让我们冲床机制更加高效
-
-> 超时重传时间 RTO > 报文往返时间 RTT
-
-### 快速重传是如何工作的
-
-快速重传（Fast Retransmit）机制，它不以时间为驱动，而是**以数据驱动重传**。
-
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/快速重传01.21a9dmnfvigw.png)
-
-在上图，发送方发出了 1，2，3，4，5 份数据
-
-- 第一份 Seq1 先送到了，于是就 ACK 回 2；
-- 结果 Seq2 因为某些原因没收到，Seq3 到达了，于是还是 ACK 回 2；
-- 后面的 Seq4 和 Seq5 都到了，但还是 ACK 回 2，因为 Seq2 还是没有收到；
-- 发送端收到了三个 ACK = 2 的确认，知道了 Seq2 还没有收到，就会在定时器过期之前，重传丢失的 Seq2。
-- 最后，收到了 Seq2，此时因为 Seq3，Seq4，Seq5 都收到了，于是 ACK 回 6 
-
-所以，快速重传的工作方式是当收到三个相同的 ACK 报文时，会在定时器过期之前，重传丢失的报文段。
-
-快速重传机制只解决了一个问题，就是超时重传的问题，但是它依然面临着另外一个问题。就是重传的时候，是重传之前的一个，还是重传所有的问题。
-
-比如对于上面的例子，是重传 Seq2 呢？还是重传 Seq2、Seq3、Seq4、Seq5 呢？因为发送端并不清楚这连续的三个 ACK 2 是谁传回来的。
-
-为了解决不知道该重传哪些 TCP 报文，于是就有 SACK 方法。
-
-#### SACK 方法
-
-SACK（ Selective Acknowledgment 选择性确认）是一种实现重传机制的方式。
+<font size=5 color="orange">**3.SACK 方法**</font>
 
 这种方式需要在 TCP 头部「选项」字段里加一个 SACK 的东西，它可以将缓存的信息发送给发送方，这样发送方就可以知道哪些数据收到了，哪些数据没收到，知道了这些信息，就可以只重传丢失的数据。
 
+<img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU1JThGJUFGJUU5JTlEJUEwJUU3JTg5JUI5JUU2JTgwJUE3LzExLmpwZw?x-oss-process=image/format,png" style="zoom:80%;" />
+
 如果要支持 SACK，必须双方都要支持。在 Linux 下，可以通过 net.ipv4.tcp_sack 参数打开这个功能（Linux 2.4 后默认打开）。
 
-#### D-SACK
 
-Duplicate SACK 又称 D-SACK，其主要使用了 SACK 来告诉「发送方」有哪些数据被重复接收了。
+
+<font size=5 color="orange">**4.D-SACK**</font>
+
+又称 `D-SACK`，其主要**使用了 SACK 来告诉「发送方」有哪些数据被重复接收了。**
 
 - **例如 ACK 丢包情况**
-
   - 「接收方」发给「发送方」的两个 ACK 确认应答都丢失了，所以发送方超时后，重传第一个数据包（3000 ~ 3499）
   - 于是「接收方」发现数据是重复收到的，于是回了一个 SACK = 3000~3500，告诉「发送方」 3000~3500 的数据早已被接收了，因为 ACK 都到了 4000 了，已经意味着 4000 之前的所有数据都已收到，所以这个 SACK 就代表着 D-SACK。
   - 这样「发送方」就知道了，数据没有丢，是「接收方」的 ACK 确认报文丢了。
 
-
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/快速重传02.6k0rqb81qbc0.png)
+<img src="https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/快速重传02.6k0rqb81qbc0.png" style="zoom: 67%;" />
 
 - **例如 网络延时**
 
   - 数据包（1000~1499） 被网络延迟了，导致「发送方」没有收到 Ack 1500 的确认报文。
+
   - 而后面报文到达的三个相同的 ACK 确认报文，就触发了快速重传机制，但是在重传后，被延迟的数据包（1000~1499）又到了「接收方」；
+
   - 所以「接收方」回了一个 SACK=1000~1500，因为 ACK 已经到了 3000，所以这个 SACK 是 D-SACK，表示收到了重复的包。
+
   - 这样发送方就知道快速重传触发的原因不是发出去的包丢了，也不是因为回应的 ACK 包丢了，而是因为网络延迟了。
+
+    <img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU1JThGJUFGJUU5JTlEJUEwJUU3JTg5JUI5JUU2JTgwJUE3LzEzLmpwZw?x-oss-process=image/format,png" style="zoom:67%;" />
 
 **D-SACK 有这么几个好处**：
 
@@ -653,29 +639,63 @@ Duplicate SACK 又称 D-SACK，其主要使用了 SACK 来告诉「发送方」�
 - 可以知道网络中是不是把「发送方」的数据包给复制了;
 - 在 Linux 下可以通过 net.ipv4.tcp_dsack 参数开启/关闭这个功能（Linux 2.4 后默认打开）。
 
-### 滑动窗口
 
-在数据包传输过程中有一个问题，就是 **数据包的往返时间越长，通信的效率就越低**
 
-为了解决这个问题，所以 TCP 就引入了 窗口 这个概念，即使在 往返时间较长的情况下，它也不会降低网络通信的效率。
+------
 
-- 发送方的滑动窗口
+### <font color=orange size=5>**滑动窗口**</font>
+
+我们都知道 TCP 是每发送一个数据，都要进行一次确认应答。当上一个数据包收到了应答了， 再发送下一个。
+
+所以 **数据包的往返时间越长，通信的效率就越低**
+
+为了解决这个问题，所以 TCP 就引入了 **窗口** 这个概念，即使在 往返时间较长的情况下，它也不会降低网络通信的效率。有了窗口，就可以指定窗口大小，窗口大小就是指**无需等待确认应答，而可以继续发送数据的最大值**
+
+> 假设窗口大小为 `3` 个 TCP 段，那么发送方就可以「连续发送」 `3` 个 TCP 段，并且中途若有 ACK 丢失，可以通过「下一个确认应答进行确认」。如下图：
+
+<img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QyLyVFOCVBRSVBMSVFNyVBRSU5NyVFNiU5QyVCQSVFNyVCRCU5MSVFNyVCQiU5Qy9UQ1AtJUU1JThGJUFGJUU5JTlEJUEwJUU3JTg5JUI5JUU2JTgwJUE3LzE1LmpwZw?x-oss-process=image/format,png" style="zoom:80%;" />
+
+ACK 600 确认应答报文丢失，也没关系，因为可以通过下一个确认应答进行确认，只要发送方收到了 ACK 700 确认应答，就意味着 700 之前的所有数据「接收方」都收到了。这个模式就叫**累计确认**或者**累计应答**。
+
+
+
+#### 窗口大小由哪一方决定
+
+TCP 头里有一个字段叫 `Window`，也就是窗口大小
+
+**这个字段是接收端告诉发送端自己还有多少缓冲区可以接收数据。于是发送端就可以根据这个接收端的处理能力来发送数据，而不会导致接收端处理不过来。**
+
+所以，通常窗口的大小是由接收方的窗口大小来决定的。
+
+发送方发送的数据大小不能超过接收方的窗口大小，否则接收方就无法正常接收到数据。
+
+- **发送方的滑动窗口**
 
 当发送方把数据「全部」都一下发送出去后，可用窗口的大小就为 0 了，表明可用窗口耗尽，在没收到 ACK 确认之前是无法继续发送数据了。
 
 假如当发送方收到之前发送数据的 5 个字节的 ACK 确认后，则滑动窗口往右边移动 5 个字节，因为有 5 个字节的数据被应答确认，
 
-- 接收方的滑动窗口
+> [更详细的滑动窗口参考](https://blog.csdn.net/qq_34827674/article/details/105606205)
+
+- **接收方的滑动窗口**
 
 接收窗口和发送窗口的大小，并不是完全相等，接收窗口的大小是**约等于**发送窗口的大小的。
 
 因为滑动窗口并不是一成不变的。比如，当接收方的应用进程读取数据的速度非常快的话，这样的话接收窗口可以很快的就空缺出来。那么新的接收窗口大小，是通过 TCP 报文中的 Windows 字段来告诉发送方。那么这个传输过程是存在时延的，所以接收窗口和发送窗口是约等于的关系。
 
-### 流量控制
+### <font color=orange size=5>**流量控制**</font>
 
 发送方不可能一直给接收方发送数据，因为需要考虑到接收方的处理能力，如果接收方处理不过来，那么就会导致触发重发机制，从而导致网络流量的无端的浪费
 
 流量控制就是保证 TCP 可以让「发送方」根据「接收方」的实际接收能力控制发送的数据量。
+
+------
+
+-----
+
+----
+
+
 
 ### 操作系统缓冲区与滑动窗口的关系
 
