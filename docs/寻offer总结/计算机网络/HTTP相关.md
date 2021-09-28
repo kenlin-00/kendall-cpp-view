@@ -164,7 +164,7 @@ DNS（Domain Name System）是域名解析系统，就是在因特网上作为�
 
 ### HTTP常见字段
 
-- Host: 客户端发送请求时，用来指定服务器的域名。有了`host`字段，就可以将请求发往**同一台服务器上的不同网站**了。'Host: www.AAA.com'
+- Host: 客户端发送请求时，用来指定服务器的域名。有了`host`字段，就可以将请求发往**同一台服务器上的不同网站**了。`Host: www.AAA.com'`
 - Content-Length: 表示服务器返回的数据长度
 - Connection: `HTTP/1.1` 默认是持久连接，但是为了兼容老版本的 HTTP，需要制定 Connection 首部字段的值为 Keep-alive，简单说就是实现长连接，实现 TCP 复用
 - Content-Type: 告诉客户端，本次数据是什么格式，也就是数据类型。
@@ -319,6 +319,8 @@ cookie 技术可以用来解决 HTTP 请求和相应无状态问题，相当于�
 
 为了解决这一问题，于是就有了 **DH 密钥协商算法**
 
+客户端和服务端各自会生成随机数，并以此作为私钥，然后根据公开的 DH 计算公式算出各自的公钥，通过 TLS 握手双方交换各自的公钥，这样双方都有自己的私钥和对方的公钥，然后双方根据各自持有的材料算出一个随机数，这个随机数的值双方都是一样的，这就可以作为后续对称加密时使用的密钥。
+
 DH 密钥交换过程中，即使第三方截获了 TLS 握手阶段传递的公钥，在不知道的私钥的情况下，也是无法计算出密钥的，而且每一次对称加密密钥都是实时生成的，实现前向保密。
 
 ### 数字证书
@@ -336,7 +338,7 @@ DH 密钥交换过程中，即使第三方截获了 TLS 握手阶段传递的公
 - 如果确定是真实后就用公钥加密信息成密文后发送给服务端
 - 服务端用私钥进行解密 
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/数字证书工作流程01.5cveh79fxy40.webp)
+![](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL3hpYW9saW5jb2Rlci9JbWFnZUhvc3QvJUU4JUFFJUExJUU3JUFFJTk3JUU2JTlDJUJBJUU3JUJEJTkxJUU3JUJCJTlDL0hUVFAvMjItJUU2JTk1JUIwJUU1JUFEJTk3JUU4JUFGJTgxJUU0JUI5JUE2JUU1JUI3JUE1JUU0JUJEJTlDJUU2JUI1JTgxJUU3JUE4JThCLnBuZw?x-oss-process=image/format,png)
 
 ### HTTP1.1 不足
 
