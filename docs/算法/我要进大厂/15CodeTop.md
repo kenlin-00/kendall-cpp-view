@@ -17,6 +17,7 @@
 - [88. 合并两个有序数组](#88-合并两个有序数组)
 - [236. 二叉树的最近公共祖先](#236-二叉树的最近公共祖先)
 - [415. 字符串相加](#415-字符串相加)
+- [647. 回文子串](#647-回文子串)
 - [5. 最长回文子串](#5-最长回文子串)
 
 ----
@@ -982,6 +983,68 @@ public:
 };
 ```
 
+## 647. 回文子串
+
+[leetcode](https://leetcode-cn.com/problems/palindromic-substrings/)
+
+给你一个字符串 s ，请你统计并返回这个字符串中 回文子串 的数目。
+
+回文字符串 是正着读和倒过来读一样的字符串。
+
+子字符串 是字符串中的由连续字符组成的一个序列。
+
+具有不同开始位置或结束位置的子串，即使是由相同的字符组成，也会被视作不同的子串。
+
+```
+输入：s = "abc"
+输出：3
+解释：三个回文子串: "a", "b", "c"
+```
+
+[参考题解](https://programmercarl.com/0647.%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2.html#_647-%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2)
+
+布尔类型的dp[i][j]：表示区间范围[i,j] （注意是左闭右闭）的子串是否是回文子串，如果是dp[i][j]为true，否则为false。
+
+整体上是两种，就是s[i]与s[j]相等，s[i]与s[j]不相等这两种。
+
+当s[i]与s[j]不相等，那没啥好说的了，dp[i][j]一定是false。
+
+当s[i]与s[j]相等时，这就复杂一些了，有如下三种情况
+```
+情况一：下标i 与 j相同，同一个字符例如a，当然是回文子串
+情况二：下标i 与 j相差为1，例如aa，也是文子串
+情况三：下标：i 与 j相差大于1的时候，例如cabac，此时s[i]与s[j]已经相同了，我们看i到j区间是不是回文子串就看aba是不是回文就可以了，那么aba的区间就是 i+1 与 j-1区间，这个区间是不是回文就看dp[i + 1][j - 1]是否为true。
+```
+
+所以遍历需要从左下角开始
+
+```cpp
+class Solution {
+public:
+    int countSubstrings(string s) {
+        vector<vector<bool>> dp(s.size(),vector<bool> (s.size(),false));
+        int ans = 0;
+        for(int i=s.size()-1;i>=0;--i) {
+            for(int j=i;j<s.size();++j) {
+                //不用考虑s[1] != s[j] ,因为初始化就是为false
+                if(s[i] == s[j]) {
+                    if(j-i<=1) {
+                        ans++;
+                        dp[i][j] = true;
+                    }
+                    else if(dp[i+1][j-1]) {
+                        ans++;
+                        dp[i][j] = true;
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
+
 ## 5. 最长回文子串
 
 [leetcode](https://leetcode-cn.com/problems/palindromic-substrings/)
@@ -1002,29 +1065,33 @@ public:
 
 动态规划
 
-[参考题解](https://programmercarl.com/0647.%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2.html#_647-%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2)
+dp[i][j]：字符串 s 从第 i 为到 第 j 为是不是回文子串。
+
+[参考题解](https://leetcode-cn.com/problems/longest-palindromic-substring/solution/5-zui-chang-hui-wen-zi-chuan-dong-tai-gu-jy7k/)
 
 ```cpp
 class Solution {
 public:
-    int countSubstrings(string s) {
-        // 表示区间范围[i,j] （注意是左闭右闭）的子串是否是回文子串，如果是dp[i][j]为true，否则为false。
-        vector<vector<bool>> dp (s.size(),vector<bool> (s.size(),false));
-        int result = 0;
-        for(int i = s.size() - 1;i >=0 ;--i ) {
-            for(int j=i; j<s.size();++j) {
-                if(s[i] == s[j]) {
-                    if(j - i <= 1) {
-                        ++result;
-                        dp[i][j] = true;
-                    } else if(dp[i + 1][j - 1]) {
-                        result++;
-                        dp[i][j] = true;
-                    }
+    string longestPalindrome(string s) {
+        vector<vector<int>> dp(s.size(), vector<int>(s.size(), 0));
+        int maxlenth = 0;
+        int left = 0;
+        int right = 0;
+        for (int i = s.size() - 1; i >= 0; i--) {
+            for (int j = i; j < s.size(); j++) {
+                if (s[i] == s[j] && (j - i <= 1 || dp[i + 1][j - 1])) {
+                    dp[i][j] = true;
+                }
+                if (dp[i][j] && j - i + 1 > maxlenth) {
+                    maxlenth = j - i + 1;
+                    left = i;
+                    right = j;
                 }
             }
         }
-        return result;
+        return s.substr(left, maxlenth);
     }
 };
 ```
+
+
