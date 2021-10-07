@@ -19,6 +19,7 @@
 - [415. 字符串相加](#415-字符串相加)
 - [647. 回文子串](#647-回文子串)
 - [5. 最长回文子串](#5-最长回文子串)
+- [200. 岛屿数量](#200-岛屿数量)
 
 ----
 
@@ -1094,4 +1095,74 @@ public:
 };
 ```
 
+## 200. 岛屿数量
 
+给你一个由 '1'（陆地）和 '0'（水）组成的的二维网格，请你计算网格中岛屿的数量。
+
+岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。
+
+此外，你可以假设该网格的四条边均被水包围。
+
+```
+输入：grid = [
+  ["1","1","1","1","0"],
+  ["1","1","0","1","0"],
+  ["1","1","0","0","0"],
+  ["0","0","0","0","0"]
+]
+输出：1
+```
+
+题解：
+
+首先两层循环遍历，如果遇到陆地 1，就 ans++，然后开始深度优先搜索
+
+需要定义上下左右遍历数组，遍历上下左右，并将遍历到的点标记为 0，以免重复遍历
+
+
+> 特别注意 nowx nowy 顺序和 i j 顺序
+
+```cpp
+class Solution {
+public:
+    //方向数组
+    vector<int> dx = {0,0,1,-1};  //左右
+    vector<int> dy = {1,-1,0,0};   //上下
+    void dfs(vector<vector<char>> &grid,int x,int y) {
+        int row = grid.size();
+        int col = grid[0].size();
+        //标记前后左右的坐标
+        int nowx, nowy;
+        //前后左右遍历四次
+        for(int i=0;i<4;++i) {
+            //左右
+            nowx = x + dx[i];
+            //上下
+            nowy = y + dy[i];
+            //先保证不越界,在判断是不是陆地
+            if(nowx >= 0 && nowy >= 0 && nowx < col && nowy < row 
+               && grid[nowy][nowx] == '1') {
+                  //如果是陆地就把它标记为0，以免下次重复遍历
+                  grid[nowy][nowx] = '0';  //这里是 nowy 和 nowx
+                  dfs(grid,nowx,nowy);
+              }
+        }
+    }
+    int numIslands(vector<vector<char>>& grid) {
+        int ans = 0;
+        int row = grid.size();
+        int col = grid[0].size();
+        for(int i=0;i<row;++i) {
+            for(int j=0;j<col;++j) {
+                //如果遇到陆地 ans+1
+                if(grid[i][j] == '1') {
+                    ++ans;
+                    grid[i][j] = '0';
+                    dfs(grid,j,i);  //注意这是 j,i
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
