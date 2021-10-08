@@ -20,6 +20,10 @@
 - [647. 回文子串](#647-回文子串)
 - [5. 最长回文子串](#5-最长回文子串)
 - [200. 岛屿数量](#200-岛屿数量)
+- [链表中环的入口结点](#链表中环的入口结点)
+- [33. 搜索旋转排序数组](#33-搜索旋转排序数组)
+- [排列问题-46. 全排列](#排列问题-46-全排列)
+  - [47. 全排列 II](#47-全排列-ii)
 
 ----
 
@@ -1097,6 +1101,13 @@ public:
 
 ## 200. 岛屿数量
 
+
+[leetcode题目](https://leetcode-cn.com/problems/number-of-islands/)
+
+
+[牛客题目](https://www.nowcoder.com/practice/0c9664d1554e466aa107d899418e814e?tpId=188&&tqId=38590&rp=1&ru=/activity/oj&qru=/ta/job-code-high-week/question-ranking)
+
+
 给你一个由 '1'（陆地）和 '0'（水）组成的的二维网格，请你计算网格中岛屿的数量。
 
 岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。
@@ -1129,8 +1140,8 @@ public:
     vector<int> dx = {0,0,1,-1};  //左右
     vector<int> dy = {1,-1,0,0};   //上下
     void dfs(vector<vector<char>> &grid,int x,int y) {
-        int row = grid.size();
-        int col = grid[0].size();
+        int m = grid.size();
+        int n = grid[0].size();
         //标记前后左右的坐标
         int nowx, nowy;
         //前后左右遍历四次
@@ -1140,7 +1151,7 @@ public:
             //上下
             nowy = y + dy[i];
             //先保证不越界,在判断是不是陆地
-            if(nowx >= 0 && nowy >= 0 && nowx < col && nowy < row 
+            if(nowx >= 0 && nowy >= 0 && nowx < n && nowy < m 
                && grid[nowy][nowx] == '1') {
                   //如果是陆地就把它标记为0，以免下次重复遍历
                   grid[nowy][nowx] = '0';  //这里是 nowy 和 nowx
@@ -1166,3 +1177,216 @@ public:
     }
 };
 ```
+
+## 链表中环的入口结点
+
+[剑指offer题目](https://www.nowcoder.com/practice/253d2c59ec3e4bc68da16833f79a38e4?tpId=13&rp=1&ru=%2Fta%2Fcoding-interviews&qru=%2Fta%2Fcoding-interviews%2Fquestion-ranking)
+
+[leetcode题目](https://leetcode-cn.com/problems/linked-list-cycle-ii/)
+
+给一个链表，若其中包含环，请找出该链表的环的入口结点，否则，输出 null。
+
+思路：
+
+使用快慢指针，但是注意不是快慢指针相等就是环的入口
+
+如果有环就用一个指针从头开始追，一步步追到慢指针就是入口啦
+
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode *detectCycle(ListNode *head) {
+        if(head == nullptr) return head;
+        if(head->next == nullptr) return nullptr;
+        ListNode *fast = head;
+        ListNode *slow = head;
+        ListNode *temp = head;
+
+        while(fast && fast->next && slow ) {
+            slow = slow->next;
+            fast = fast->next->next;
+            if(fast == slow) {
+                ListNode * temp = head;
+                while(temp != slow) {
+                    temp = temp->next;
+                    slow = slow->next;
+                }
+                return temp;
+            }
+        }
+        return nullptr;
+    }
+};
+```
+
+
+## 33. 搜索旋转排序数组
+
+[leetcode](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/)
+
+整数数组 nums 按升序排列，数组中的值 互不相同 。
+
+在传递给函数之前，nums 在预先未知的某个下标 k（`0 <= k < nums.length`）上进行了 旋转，使数组变为 `[nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]`（下标 从 0 开始 计数）。例如， `[0,1,2,4,5,6,7]` 在下标 3 处经旋转后可能变为 `[4,5,6,7,0,1,2]` 。
+
+给你 旋转后 的数组 nums 和一个整数 target ，如果 nums 中存在这个目标值 target ，则返回它的下标，否则返回 -1 。
+
+思路
+
+先判断左边是不是有序，然后可能在作弊那
+
+再判断右边是不是有序， 可能在右边
+
+都无序亏 ++left
+
+```
+class Solution {
+public:
+    int search(vector<int>& nums, int target) {
+        int left = 0,right = nums.size() - 1;
+        while(left <= right) {
+            int mid = left + ( (right-left) >> 1 );
+            if(nums[mid] == target) return mid;
+            //先判断左边是不是有序
+            if(nums[left] < nums[mid]) {
+                //在左边
+                if(nums[left] <= target && nums[mid] > target) {
+                    right = mid - 1;
+                }
+                //在右边
+                else {
+                    left = mid + 1;
+                }
+            }
+            //左边无序，右边有序
+            else if(nums[left] > nums[mid]){
+                //在右边
+                if(nums[mid] < target && nums[right] >= target) {
+                    left = mid + 1;
+                }
+                else {
+                    right = mid - 1;
+                }
+            }
+            else {
+                ++left;
+            }
+        }
+        return -1;
+    }
+};
+```
+
+
+## 排列问题-46. 全排列
+
+[题目来源](https://leetcode-cn.com/problems/permutations/)
+
+给定一个不含重复数字的数组 nums ，返回其 所有可能的全排列 。你可以 按任意顺序 返回答案。
+
+
+示例 1：
+```
+输入：nums = [1,2,3]
+输出：[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+```
+
+- 需要一个数组记录是否被访问过
+- 当遍历到最后一个数的时候就是循环结束条件
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> ans;
+    vector<int> path;
+    void backtracking(vector<int> &nums,vector<bool> &used) {
+        //终止条件
+        //遍历到最后一个数了
+        if(path.size() == nums.size()) {
+            ans.push_back(path);
+            return;
+        }
+        for(int i=0;i<nums.size();++i) {
+            if(used[i] == true ) continue;  //path 已经收录了，直接略过
+            used[i] = true;
+            path.push_back(nums[i]);
+            backtracking(nums,used);
+            path.pop_back();
+            used[i] = false;
+        }
+    }
+
+    vector<vector<int>> permute(vector<int>& nums) {
+        vector<bool> used (nums.size(),false);
+        backtracking(nums,used);
+        return ans;
+    }
+};
+```
+
+
+### 47. 全排列 II
+
+[leetcode](https://leetcode-cn.com/problems/permutations-ii/)
+
+给定一个可包含重复数字的序列 nums ，按任意顺序 返回所有不重复的全排列。
+
+ 
+
+示例 1：
+```
+输入：nums = [1,1,2]
+输出：
+[[1,1,2],
+ [1,2,1],
+ [2,1,1]]
+```
+这道题目和回溯算法：排列问题I 的区别在于「给定一个可包含重复数字的序列」，要返回「所有不重复的全排列」。
+
+- 需要一个数组记录是否被访问过
+- 当遍历到最后一个数的时候就是循环结束条件
+- `if (i > 0 && nums[i] == nums[i - 1] && used[i - 1] == false)` continue
+
+**得提前排序**
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> ans;
+    vector<int> path;
+    void backtrackintg(vector<int> &nums,vector<bool> &used) {
+        //递归终止条件
+        if(path.size() == nums.size() ) {
+            ans.push_back(path);
+            return ;
+        }
+        for(int i=0;i<nums.size();++i ) {
+            if(i > 0 && nums[i] == nums[i-1] && used[i-1] == true) { //注意这里used[i-1] == true
+                continue;
+            }
+            if(used[i] == false) {
+                used[i] = true;  //标志位访问过
+                path.push_back(nums[i]);
+                backtrackintg(nums,used);
+                used[i] = false;
+                path.pop_back();
+            }
+        }
+    }
+    vector<vector<int>> permuteUnique(vector<int>& nums) {
+        sort(nums.begin(),nums.end());
+        vector<bool> used (nums.size(),false);
+        backtrackintg(nums,used);
+        return ans;
+    }
+};
+```
+
