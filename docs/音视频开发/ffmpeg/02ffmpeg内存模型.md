@@ -7,11 +7,11 @@
 
 - （1）两个 `Packet` 的`buf`引用的是同一数据缓存空间。这时需要注意的是数据缓存空间的释放问题，（浅拷贝）
 
-![](./img/ffmpeg内存模型01.png)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/ffmpeg内存模型01.fx9uh9zlvgg.png)
 
 - （2）两个`Packet`的`buf`引用不同的数据缓存空间。每个`Packet`都有数据缓存空间的copy（深拷贝）
 
-![](./img/ffmpeg内存模型02.png)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/ffmpeg内存模型02.5bp5sxiy4h40.png)
 
 我们主要是基于第一种方式进行介绍。
 
