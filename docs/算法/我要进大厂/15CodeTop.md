@@ -24,6 +24,7 @@
 - [33. 搜索旋转排序数组](#33-搜索旋转排序数组)
 - [排列问题-46. 全排列](#排列问题-46-全排列)
   - [47. 全排列 II](#47-全排列-ii)
+- [92. 反转链表 II](#92-反转链表-ii)
 
 ----
 
@@ -1205,8 +1206,7 @@ public:
 class Solution {
 public:
     ListNode *detectCycle(ListNode *head) {
-        if(head == nullptr) return head;
-        if(head->next == nullptr) return nullptr;
+        if(head == nullptr || head->next == nullptr) return nullptr;
         ListNode *fast = head;
         ListNode *slow = head;
         ListNode *temp = head;
@@ -1241,13 +1241,13 @@ public:
 
 思路
 
-先判断左边是不是有序，然后可能在作弊那
+先判断左边是不是有序，然后可能在左边
 
 再判断右边是不是有序， 可能在右边
 
 都无序亏 ++left
 
-```
+```cpp
 class Solution {
 public:
     int search(vector<int>& nums, int target) {
@@ -1386,6 +1386,65 @@ public:
         vector<bool> used (nums.size(),false);
         backtrackintg(nums,used);
         return ans;
+    }
+};
+```
+
+
+## 92. 反转链表 II
+
+
+给你单链表的头指针 head 和两个整数 left 和 right ，其中 left <= right 。请你反转从位置 left 到位置 right 的链表节点，返回 反转后的链表 。
+
+![](https://assets.leetcode.com/uploads/2021/02/19/rev2ex2.jpg)
+
+```c
+输入：head = [1,2,3,4,5], left = 2, right = 4
+输出：[1,4,3,2,5]
+```
+
+先用一个虚拟头结点，接在 head 前面，并用 pre 保存开始遍历的前一个节点，所以变得的时候到 left-1 就可以了。
+
+然后用一个 pr 保存最后一个节点，开始翻转
+
+最后接上后面的节点，这时候 pl 指向后面的节点。
+
+- 需要用虚拟头结点
+- 找到要翻转的前一个，用 last 记录要翻转的第一个节点，是为了接上后面的节点
+- 使用头插法翻转
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* reverseBetween(ListNode* head, int left, int right) {
+        if(head == nullptr|| head->next == nullptr) return head;
+        ListNode *dumpy = new ListNode(-1);
+        ListNode *pre = dumpy;
+        pre->next = head;
+        for(int i=1;i<left;++i) {
+            pre = pre->next;  //遍历到要翻转的前一个
+        }
+        ListNode *cur = pre->next;
+        ListNode *last = cur;  //一直指着翻转的第一个，翻转后就是最后一个
+        pre->next = nullptr;
+        for(int i=0;i<=(right-left);++i) {
+            ListNode *temp = cur->next;
+            cur->next = pre->next;
+            pre->next = cur;
+            cur = temp;
+        }
+        last->next = cur;  //接上最后一个，
+        return dumpy->next;
     }
 };
 ```
