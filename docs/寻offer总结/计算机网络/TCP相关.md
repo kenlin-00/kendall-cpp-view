@@ -475,6 +475,18 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 - 第二是对端口资源的占用，一个 TCP 连接至少消耗一个本地端口。要知道，端口资源也是有限的，一般可以开启的端口为 32768～61000 ，*也可以通过`net.ipv4.ip_local_port_range`指定*，如果 TIME_WAIT 状态过多，会导致无法创建新连接。
 
+> 可以使用 SO_REUSEADDR 解决 TIME_WAIT 状态导致 bind 失败的问题
+
+```c
+	int reuseaddr = 1;
+	//SO_REUSEADDR 即使有 time_wait 出现的时候，也能bind成功
+	if(setsockopt(listenfd,	SOL_SOCKET,SO_REUSEADDR,(const void*) &reuseaddr,sizeof(reuseaddr)) < 0) { 
+         char *perrorinfo = strerror(errno); 
+        printf("setsockopt(SO_REUSEADDR)返回值为%d,错误码为:%d，错误信息为:%s;\n",-1,errno,perrorinfo);
+	}
+```
+
+
 #### 如何优化Time_wait
 
 - 【最提倡】修改内存选项，`net.ipv4.tcp_tw_reuse` 和  `tcp_timestamp` ，这个参数开启后，就可以复用处于 TIME_WAIT 的 socket 为新的连接所用。有一点需要注意的是，**tcp_tw_reuse 功能只能用客户端（连接发起方），因为开启了该功能，在调用 connect() 函数时，内核会随机找一个 time_wait 状态超过 1 秒的连接给新的连接复用。**
