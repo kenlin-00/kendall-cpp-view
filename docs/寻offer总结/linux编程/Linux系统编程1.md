@@ -113,7 +113,7 @@ gcc test.o -o test
 
 在此后的过程中，你将以用户(user) kendall 的身份操作电脑。此外，根据你创建用户时的设定，Linux 还会将你归到某个组( group )中，比如可以是stupid 组，或者是 kendall 组。
 
-所以你将是用户 kendall ， 同时是 kendall 组的组员。(注意，组 kendall 和用户 kendall 只是重名而已，就好像你可以叫 Dell, 同时还是 Dell 公司的老板一样。你完全也可以是用户  kendall，同时为stupid 组的组员)
+所以你将是用户 kendall ， 同时是 kendall 组的组员。(注意，组 kendall 和用户 kendall 只是重名而已。你完全也可以是用户  kendall，同时为stupid 组的组员)
 
 > 总结：BIOS -> MBR -> 引导加载程序 -> 内核 -> init process -> login
 

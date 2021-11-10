@@ -10,9 +10,6 @@
 - [说一说strcpy、sprintf与memcpy这三个函数的不同之处](#说一说strcpysprintf与memcpy这三个函数的不同之处)
   - [strcpy函数和strncpy函数的区别,哪个函数更安全？](#strcpy函数和strncpy函数的区别哪个函数更安全)
   - [memmove 与 memcpy 的区别及实现](#memmove-与-memcpy-的区别及实现)
-- [C++ 11有哪些新特性](#c-11有哪些新特性)
-  - [nullptr 和 NULL 的区别](#nullptr-和-null-的区别)
-  - [说一下C++左值引用和右值引用](#说一下c左值引用和右值引用)
 - [你知道回调函数吗,它的作用](#你知道回调函数吗它的作用)
 - [C++如何解决头文件重复问题](#c如何解决头文件重复问题)
 - [C++的四种强制转换](#c的四种强制转换)
@@ -26,6 +23,26 @@
 - [`void*` 可以直接输出值吗](#void-可以直接输出值吗)
 - [inline 内联函数](#inline-内联函数)
 - [C++ 程序如何引入 C 函数](#c-程序如何引入-c-函数)
+- [C++ 11有哪些新特性](#c-11有哪些新特性)
+  - [nullptr 和 NULL 的区别](#nullptr-和-null-的区别)
+  - [说一下C++左值引用和右值引用](#说一下c左值引用和右值引用)
+- [C++11多线程](#c11多线程)
+  - [怎么样实现并发](#怎么样实现并发)
+  - [C++11新标准线程库](#c11新标准线程库)
+    - [thread](#thread)
+    - [join](#join)
+    - [detach 函数](#detach-函数)
+    - [joinable](#joinable)
+  - [使用 detach 时候需要注意什么问题(线程安全问题)](#使用-detach-时候需要注意什么问题线程安全问题)
+    - [C++中的 mutable 关键字](#c中的-mutable-关键字)
+- [C++11 中互斥量](#c11-中互斥量)
+  - [C++11 中解决死锁](#c11-中解决死锁)
+    - [关于 std::adopt_lock 参数](#关于-stdadopt_lock-参数)
+  - [lock_guard 与 unique_lock](#lock_guard-与-unique_lock)
+  - [c++ overwrite(重写)](#c-overwrite重写)
+- [`A a`和`A *aa = new A()`区别](#a-a和a-aa--new-a区别)
+- [C语言的宏中#和##的区别](#c语言的宏中和的区别)
+- [C语言中 struct（结构体） 和 union（联合体） 的区别时什么](#c语言中-struct结构体-和-union联合体-的区别时什么)
 
 <!-- /TOC -->
 
@@ -40,6 +57,7 @@
 ### 堆快一点还是栈快一点？
 
 栈快一点。因为操作系统会在底层对栈提供支持，会分配专门的寄存器存放栈的地址，栈的入栈出栈操作也十分简单，并且有专门的指令执行，所以栈的效率比较高也比较快。而堆的操作是由`C/C++`函数库提供的，堆在分配和释放时都要调用函数（`malloc,free`)，比如分配时会到堆空间去寻找足够大小的空间（因为多次分配释放后会造成内存碎片），这些都会花费一定的时间。并且获取堆的内容需要两次访问，第一次访问指针，第二次根据指针保存的地址访问内存，因此堆比较慢。
+
 
 ## C++中的重载和重写的区别
 
@@ -191,65 +209,6 @@ void* _memmove(void* dest, const void* src, size_t count)
 	return dest;
 }
 ```
-
-## C++ 11有哪些新特性
-
-- `nullptr`替代 `NULL`
-- 引入了 `auto` 和 `decltype` 这两个关键字实现了类型推导
-- 基于范围的 `for` 循环`for(auto& i : res){}` 类和结构体的中初始化列表
-- `Lambda` 表达式(匿名函数) `std::forward_list`(单向链表)
-- 右值引用和`move`语义
-- 新的智能指针 `unique_ptr`和`shared_ptr`
-
-### nullptr 和 NULL 的区别
-
-`NULL`在`C++`中就是 0，这是因为在 C++ 中`void*` 类型是不允许隐式转换成其他类型的，所以之前 C++ 中用 0 来代表空指针，但是在重载整型的情况下，会出现空指针二义性问题。所以，`C++11`加入了`nullptr`，可以保证在任何情况下都代表空指针，而不会出现上述的情况，因此，建议以后还是都用`nullptr`替代`NULL`吧，而`NULL`就当做 0 使用。
-
-### 说一下C++左值引用和右值引用
-
-右值引用和左值引用都是引用，都是一个变量（即都是一个左值），左值引用通过在类型名后加 & 来表示，而右值引用则通过在类型名后加 && 表示。只不过左值引用引用的是左值，而右值引用只能引用右值。左值可以取地址，右值不可以取地址。
-    
-- **左值引用**：传统的 C++ 中引用就是左值引用   
-- **右值引用**：<u>`C++11`中增加了右值引用，右值引用关联到右值时，右值被存储到特定位置，右值引用指向该特定位置，也就是说，右值虽然无法获取地址，但是右值引用是可以获取地址的，该地址表示临时对象的存储位置</u>   
-
-**函数形参都是左值，因为函数形参都有名称，都可以对形参进行取地址操作**。
-
-举个例子：
-```cpp
-#include <bits/stdc++.h>
-using namespace std;
-
-template<typename T>
-void fun(T&& t)
-{
-	cout << t << endl;
-}
-
-int getInt()
-{
-	return 5;
-}
-
-int main() {
-	
-	int a = 10;
-	int& b = a;  //b是左值引用
-	int& c = 10;  //错误，c是左值不能使用右值初始化
-	int&& d = 10;  //正确，右值引用用右值初始化
-	int&& e = a;  //错误，e是右值引用不能使用左值初始化
-	const int& f = a; //正确，左值常引用相当于是万能型，可以用左值或者右值初始化
-	const int& g = 10;//正确，左值常引用相当于是万能型，可以用左值或者右值初始化
-	const int&& h = 10; //正确，右值常引用
-	const int& aa = h;//正确
-	int& i = getInt();  //错误，i是左值引用不能使用临时变量（右值）初始化
-	int&& j = getInt();  //正确，函数返回值是右值
-	fun(10); //此时fun函数的参数t是右值
-	fun(a); //此时fun函数的参数t是左值
-	return 0;
-}
-```
-
-> 《c++右值引用以及使用》：https://www.cnblogs.com/likaiming/p/9045642.html
 
 
 ## 你知道回调函数吗,它的作用
@@ -488,6 +447,16 @@ int main() {
 
 - 对 sizeof 而言，因为缓冲区已经用已知字符串进行了初始化，其长度是固定的，所以 sizeof 在**编译时**计算缓冲区的长度。也正是由于在编译时计算，因此 sizeof 不能用来返回动态分配的内存空间的大小。
 
+- stelen 是在运行时计算的，用来计算字符串的实际长度，而不是类型所占内存大小。
+
+```cpp
+char str[] = "12345";
+cout << sizeof(str) << endl;  //6
+cout << strlen(str) << endl;  //5
+int num[5];
+cout << sizeof(num) << endl;  //20
+```
+
 
 ## 迭代器：++it、it++哪个好，为什么
 
@@ -716,6 +685,398 @@ extern “C”
 
 
 -----
+
+
+## C++ 11有哪些新特性
+
+- `nullptr`替代 `NULL`
+- 引入了 `auto` 和 `decltype` 这两个关键字实现了类型推导
+- 基于范围的 `for` 循环`for(auto& i : res){}` 类和结构体的中初始化列表
+- `Lambda` 表达式(匿名函数) `std::forward_list`(单向链表)
+- 右值引用和`move`语义
+- 新的智能指针 `unique_ptr`和`shared_ptr`
+
+### nullptr 和 NULL 的区别
+
+`NULL`在`C++`中就是 0，这是因为在 C++ 中`void*` 类型是不允许隐式转换成其他类型的，所以之前 C++ 中用 0 来代表空指针，但是在重载整型的情况下，会出现空指针二义性问题。所以，`C++11`加入了`nullptr`，可以保证在任何情况下都代表空指针，而不会出现上述的情况，因此，建议以后还是都用`nullptr`替代`NULL`吧，而`NULL`就当做 0 使用。
+
+### 说一下C++左值引用和右值引用
+
+右值引用和左值引用都是引用，都是一个变量（即都是一个左值），左值引用通过在类型名后加 & 来表示，而右值引用则通过在类型名后加 && 表示。只不过左值引用引用的是左值，而右值引用只能引用右值。左值可以取地址，右值不可以取地址。
+    
+- **左值引用**：传统的 C++ 中引用就是左值引用   
+- **右值引用**：<u>`C++11`中增加了右值引用，右值引用关联到右值时，右值被存储到特定位置，右值引用指向该特定位置，也就是说，右值虽然无法获取地址，但是右值引用是可以获取地址的，该地址表示临时对象的存储位置</u>   
+
+**函数形参都是左值，因为函数形参都有名称，都可以对形参进行取地址操作**。
+
+举个例子：
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+template<typename T>
+void fun(T&& t)
+{
+	cout << t << endl;
+}
+
+int getInt()
+{
+	return 5;
+}
+
+int main() {
+	
+	int a = 10;
+	int& b = a;  //b是左值引用
+	int& c = 10;  //错误，c是左值不能使用右值初始化
+	int&& d = 10;  //正确，右值引用用右值初始化
+	int&& e = a;  //错误，e是右值引用不能使用左值初始化
+	const int& f = a; //正确，左值常引用相当于是万能型，可以用左值或者右值初始化
+	const int& g = 10;//正确，左值常引用相当于是万能型，可以用左值或者右值初始化
+	const int&& h = 10; //正确，右值常引用
+	const int& aa = h;//正确
+	int& i = getInt();  //错误，i是左值引用不能使用临时变量（右值）初始化
+	int&& j = getInt();  //正确，函数返回值是右值
+	fun(10); //此时fun函数的参数t是右值
+	fun(a); //此时fun函数的参数t是左值
+	return 0;
+}
+```
+
+> 《c++右值引用以及使用》：https://www.cnblogs.com/likaiming/p/9045642.html
+
+
+
+## C++11多线程
+
+线程不能越多越好，每个线程都需要一个独立的堆栈空间爱你，消耗内存，一个线程占用 1MB 堆栈空间，而且线程之间的切换也要保存很多中间状态等，也就是设计到上下文切换。 
+
+### 怎么样实现并发
+
+- 通过多个进程实现并发
+- 通过单独一个进程创建多个线程实现并发
+
+### C++11新标准线程库
+
+C++ 11 新标准引入了对多线程的支持，解决了跨平台问题。
+
+POSIX thread(pthread) 是可以跨平台的，但仍需要进行一些配置。
+
+使用 C++11 编写多线程
+
+#### thread
+
+thread 是 C++ 新标准库中的类，这个类就是用来创建线程的。这个类生成一个对象，里面是一个可调用对象（函数）
+
+#### join
+
+阻塞，主线程等待子线程执行完毕，执行流程最终汇合在一起。
+
+```cpp
+vo
+
+void myprint() {
+    cout << "我的线程开始执行"<< endl;
+
+    cout << "我的线程执行完毕了" << endl;
+}
+
+int main() {
+    cout << "main主线程开始" << endl;
+
+    std::thread mytoobj(myprint);
+    mytoobj.join();  //阻塞，等待子线程执行完毕
+
+    cout << "main 主线程结束" << endl;
+
+    return 0;
+}
+```
+
+结果
+
+```
+main主线程开始
+我的线程开始执行
+我的线程执行完毕了
+main 主线程结束
+```
+
+#### detach 函数
+
+如果创建了很多子线程，让主线程逐个等待子线程结束，这种方法就显得不是很好，所以需要引入 detach 这种写法，**让主线程和子线程分离**，主线程不必等待子进程运行结束。
+
+```cpp
+mytoobj.detach();
+```
+
+一旦调用了 detach，就不可再调用 join 了。
+
+#### joinable
+
+判断是否成功使用 join 或者 detach
+
+```cpp
+#include <iostream>
+#include <thread>
+using namespace std;
+
+void myprint()
+{
+    cout << "我的线程开始执行了"<<endl;
+
+
+    cout << "我的线程执行完毕了"<<endl;
+}
+
+int main(){
+    cout << "main主线程开始" << endl;
+
+    std::thread mytojob(myprint);
+
+    if(mytojob.joinable()) {
+        cout << "joinable is true" << endl;
+    }
+    else {
+        cout << "joinable is false" << endl;
+    }
+
+    mytojob.detach();
+
+    if(mytojob.joinable()) {
+        cout << "joinable is true" << endl;
+    }
+    else {
+        cout << "joinable is false" << endl;
+    }
+
+    cout << "main主线程结束" << endl;
+
+
+    return 0;
+}
+```
+
+结果：
+
+```
+main主线程开始
+joinable is true
+我的线程开始执行了
+我的线程执行完毕了
+joinable is false
+main主线程结束
+```
+
+### 使用 detach 时候需要注意什么问题(线程安全问题)
+
+- 不要往线程中传递引用，指针之类的参数
+- 建议使用值传递，建议在创建线程这一行就构造出临时对象，然后线程入口函数的形参**使用引用**来作为形参。 
+
+
+```cpp
+//不能这样使用
+void myprint(const int& i,const string& pmybuf) {...}
+
+//main()中
+std::thread mytojob(myprint,mvar,mybuf);
+mytojob.join();
+```
+
+C++ 语言只会为 const 引用临时对象，第一个参数不建议使用引用，因为 主线程可能先执行结束被回收了，导致 mvar 变量被回收。
+
+第二个参数系统内部隐式将 char 数组转成 string 对象，但是这个转换时机可能发生在 主线程 执行结束后，这时候 mybuf 被系统回收了。
+
+更改：
+```
+std::thread mytojob(myprint,mvar,string(mybuf));
+```
+
+直接将 mybuf 转换成 string 对象，`string(mybuf))`会生成一个临时对象，并将这个临时对象绑定到  pmybuf ，因此可以保证 pmybuf 肯定是有效的。
+
+> 给线程入口函数传递类型对象时，只要使用临时对象作为实参，就可以确保线程入口函数的形参在 main 主函数退出前就已经创建完毕，可以保证线程安全。
+
+> 参考：C++ 新经典 P480-486
+
+#### C++中的 mutable 关键字
+
+在C++中，mutable 是为了突破 const 的限制而设置的。被 mutable 修饰的变量，将永远处于可变的状态，即使在一个 const 函数中。
+
+
+## C++11 中互斥量
+
+```cpp
+#incclude <mutex>
+std::mutex my_mutex;
+......
+bool outMsgLULProc(int &command) {
+    my_mutex.lock();
+    if(!msgRecvQueue.empty())
+    {
+        comman = msgRecvQueue.front();
+        msgRecvQueue.pop_front();
+        my_mutex.unlock();
+        return true;
+    }
+    my_mutex.unlock();
+    return false;
+}
+```
+
+上面程序，同一时刻只有一个线程能拿到锁，这就意味着同一时刻只有一个线程能操作这个共享数据，但是写程序的时候会在 return 前忘记 unlock。
+
+C++11 引入了 std::lock_guard `[ɡɑːrd]`的**类模板**，会自动 unlock，这点和智能指针释放内存类似。
+
+### C++11 中解决死锁
+
+- **lock_guard**
+
+lock_guard 可以同时取代 lock 和 unlock 两个函数，上面代码改造
+
+```cpp
+bool outMsgLULProc(int &command) {
+    std::lock_guard<std::mutex> myguard(my_mutex);
+    // my_mutex.lock();
+    if(!msgRecvQueue.empty())
+    {
+        comman = msgRecvQueue.front();
+        msgRecvQueue.pop_front();
+        // my_mutex.unlock();
+        return true;
+    }
+    // my_mutex.unlock();
+    return false;
+}
+```
+
+**lock_guard 工作原理**：
+
+在 lock_guard 类模板的构造函数里，调用了 mutex 的 lock 成员函数，而在 析构函数 中，调用了 mutex 的 unlock 函数。
+
+> std::lock 函数模板能一次锁住两个或者两个以上的互斥量，它不存在多个线程中因为锁的顺序问题导致死锁的风险。        
+> 如果这些 互斥量 中有一个没有锁住，就要卡在 std::lock 那里等着，等所有互斥量都锁住，std::lock 才会返回，程序才会继续往下走。
+
+- **unique_lock**
+
+> 一般开发中使用 lock_guard 就够用了
+
+unique_lock 是一个类模板，和 lock_guard 一样，都是用来取代 mutx 的 lock 和 unlock 函数，原理和 lock_guard 一样
+
+#### 关于 std::adopt_lock 参数
+
+std::adopt_lock 标记表示这个互斥量已经被 lock 过了，不希望再再构造函数中 lock  这个互斥量了。
+
+```cpp
+std::lock_guard<std::mutex> myguard(my_mutex,std::adopt_lock);
+std::unique_lock<std::mutex> myguard(my_mutex,std::adopt_lock);
+```
+
+unique_lock 相对于 lock_guard 更占用内存，运行效率差一点，但是使用比较灵活。unique_lock 有三个参数，第三个参数 std::try_to_lock 会尝试用 mutex 的 lock 去锁定这个 mutex，但是如果没锁住就会立即返回，不会阻塞在那里。
+
+> 使用 std::try_to_lock 的前提是开发者不可以自己吧互斥量 lock 上，因为 std::try_to_lock 已经尝试 unlock 了，如果开发者 再次 lock ，程序会卡死
+
+### lock_guard 与 unique_lock
+
+两个都是在离开作用域时，检查关联的 mutex 是否 lock ，如果没有，就帮助开发者 unlock，
+
+工作原理都是：在 `lock_guard/unique_lock` 类模板的构造函数里，调用了 mutex 的 lock 成员函数，而在 析构函数 中，调用了 mutex 的 unlock 函数。
+
+unique_lock 相对于 lock_guard 更占用内存，运行效率差一点，但是使用比较灵活。unique_lock 有三个参数，第三个参数 std::try_to_lock 会尝试用 mutex 的 lock 去锁定这个 mutex，但是如果没锁住就会立即返回，不会阻塞在那里。
+
+### c++ overwrite(重写)
+
+- 如果派生类的函数与基类的函数同名，但是参数不同。此时，不论有无 virtual 关键字，基类的函数将被隐藏
+
+- 如果派生类的函数与基类的函数同名，并且参数也相同，但是基类函数没有 virtual 关键字。此时，基类的函数被隐藏。
+
+## `A a`和`A *aa = new A()`区别
+
+唯一的区别就是` A a` 的 a 是在栈上申请的空间，`A * aa = new A()` 是在堆上申请的空间，a 退出作用范围后，自动析构了！而  aa 没有析构，需要人为的调用`delete aa`来析构`aa`。使用时没有区别！
+
+```cpp
+class A {
+public:
+    A() {
+        cout << "A的构造函数" << endl;
+    }
+    int bb = 10;
+};
+
+class B : public A{
+public:
+    B() {
+        cout << "B的构造函数" << endl;
+    }
+};
+
+int main() {
+    A *a = nullptr;    //不会调用构造函数
+    // cout << a->bb << endl;  //报错
+    cout << "------------------" << endl;
+    A *ab = new B();   //先调用A的构造函数再调用B的构造函数
+    cout << "------------------" << endl;
+    B *bb = new B();
+    cout << "------------------" << endl;
+    B *b;             //不会调用构造函数
+    return 0;
+}
+```
+
+输出：
+
+```
+------------------
+A的构造函数
+B的构造函数
+------------------
+A的构造函数
+B的构造函数
+------------------
+```
+
+-----
+
+## C语言的宏中#和##的区别
+
+- # 字符串换操作符
+
+就是在宏定义中的参数参数名转换成勇双括号括起来参数名字符串，这里只能用在有传入参数的宏定义中，并且必须置于宏定义体中的参数名前
+
+```c
+#define func( str ) printf("the input string is : %s\n",#str)
+
+//当使用该宏定义时
+func( abc );  //在编译时将会展开成 printf("the input string is : %s\n",“abc");
+string str = func(abc);   //将会展开成：string str = "abc";
+```
+
+- ## 符号链接操作符
+
+将宏定义的多个形参转成一个实际参数名
+
+> 连接成的参数名必须是已经存在的参数名或者比编译器已知的宏定义      
+> 如果 ## 后的参数本身也是一个宏的话，##会阻止这个宏的展开
+
+比如：
+
+```c
+#define funcNum( n ) num##n  //## 两边的空格可有可无，也可以写成 num ## n
+
+// 使用
+int num10 = 123;
+int num = funcNum(10);   //就会扩展成 int num = num10;  //所以这里num = 123
+```
+
+----
+
+## C语言中 struct（结构体） 和 union（联合体） 的区别时什么
+
+- 结构体和联合体虽然都是由多个不同数据类型组成的，但是不同之处在于联合体所有成员**共用一块内存空间**
+
+- 结构体在计算总总长度的时候，它的空间大小等于所有成员总长度之和（当然需要考虑字节对齐）；但是在联合体中，所有成员不能同时占用内存空间，他们不能同时存在，所以一个联合体变量的长度等于所有成员中最长的成员长度。
+
+- 对于联合体的不同成员赋值，将会对他其他的成员重写，原来成员就不存在了，而对结构体的不同成员赋值是互不影响的。
 
 
 
