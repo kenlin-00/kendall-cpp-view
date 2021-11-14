@@ -8,9 +8,8 @@
     * [TCP项目](/寻offer总结/我要进大厂/TCP项目.md)
     * [音视频项目](/寻offer总结/我要进大厂/音视频项目.md)
   * Cpp部分
-    * [Cpp知识点01](/寻offer总结/Cpp基础/Cpp知识点01.md)
-    * [Cpp知识点02](/寻offer总结/Cpp基础/Cpp知识点02.md)
-    * [Cpp知识点03](/寻offer总结/Cpp基础/Cpp知识点03.md)
+    * [语言基础](/寻offer总结/Cpp基础/语言基础.md)
+    * [面向对象相关](/寻offer总结/Cpp基础/面向对象相关.md)
     * [STL总结](/寻offer总结/Cpp基础/STL总结.md)
   * 操作系统
     * [操作系统01](/寻offer总结/操作系统/操作系统01.md) 
