@@ -21,7 +21,9 @@ NSLog是Foundation框架􏰀供的 Objective-C 日志输出函数,与标准C中�
 
 ### 一个 NSObject 对象占用多少内存
 
-OC 的对象是通过 C/C++  的结构体啦实现的。
+
+
+
 
 -----
 
@@ -34,7 +36,27 @@ OC 的对象是通过 C/C++  的结构体啦实现的。
 - 编译过程
 
 
+- 泛型
 
+给泛型类型添加约束
+
+```swift
+//在一个数组里面查找一个值
+//会报错，所以要加约束 Equatable
+func findIndex<T: Equatable> (of valueFind: T,in array:[T]) -> Int? {
+    for (index,value) in array.enumerated() {
+        if value == valueFind {
+            return index
+        }
+    }
+    return nil
+}
+
+let names = ["zhangsan","lisi","wangwu"]
+print(findIndex(of: "lisi", in: names))
+```
+
+- 关联类型 Container
 
 
 
