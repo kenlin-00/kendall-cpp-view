@@ -2,6 +2,7 @@
 - [OC部分](#oc部分)
   - [NSLog 和printf区别](#nslog-和printf区别)
   - [一个 NSObject 对象占用多少内存](#一个-nsobject-对象占用多少内存)
+- [Swift](#swift)
 
 ------
 
@@ -22,6 +23,21 @@ NSLog是Foundation框架􏰀供的 Objective-C 日志输出函数,与标准C中�
 
 OC 的对象是通过 C/C++  的结构体啦实现的。
 
+-----
 
+## Swift
+
+- 常量的值不要求在编译时期确定，但是在使用之前需要赋初始值
+- 常量在初始化之前是不能使用的
+
+- swift 和 oc 的区别
+- 编译过程
+
+
+
+
+
+
+ 
 
 
