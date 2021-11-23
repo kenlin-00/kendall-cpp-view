@@ -14,6 +14,10 @@
 - [I/O 多路复用技术](#io-多路复用技术)
   - [select/poll](#selectpoll)
   - [epoll](#epoll)
+  - [epoll_create 函数](#epoll_create-函数)
+  - [epoll_ctl 函数](#epoll_ctl-函数)
+  - [epoll_wait 函数](#epoll_wait-函数)
+- [向内核双链表增加节点](#向内核双链表增加节点)
   - [边缘触发和水平触发](#边缘触发和水平触发)
 - [压力测试](#压力测试)
   - [Webbench实现的核心原理](#webbench实现的核心原理)
@@ -462,6 +466,137 @@ read write 这类函数时属于 **系统调用**，
 从下图你可以看到 `epoll` 相关的接口作用：
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/epoll01.58ud4l3nxm00.png)
+
+### epoll_create 函数
+
+- **格式**
+
+```c
+int epoll_create(int size);  // size 必须 > 0
+```
+
+- **功能**：创建一个 Epoll 对象，返回一个对象文件描述符来表示这个 Epoll 对象，后续通过操作这个描述符来进行数据的收发。
+
+这个对象最终要用 close 关闭，因为它是个描述符，或者说是个句柄，总是要关闭的，
+
+- **原理**
+
+执行 `struct eventpoll *ep` 生成一个 `eventpoll` 对象
+
+```c
+struct eventpoll *ep = (struct eventpoll*)calloc(1, sizeof(struct eventpoll)); 
+```
+
+`eventpoll` 的结构如下。
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/epol_create01.ik3e4xapf3k.png)
+
+`eventpoll` 的结构中有两个比较重要的成员
+
+(1) `rbr`,可以理解成代表一颗红黑树的根节点（的指针）。
+
+红黑树是一种高效的数据结构，用于保存数据，一般都是存“键值对（`key-value`）”，红黑树的特点是能够快速地根据给的 key 找到并取出 value ，这里的 key 一般是一个数字，而 value 代表的可能是一批数据。**红黑树查找的时间复杂度**是：`O(logn)`
+
+一开始的时候红黑树还是空的，也就是 rbr 指向 NULL，还没有节点。
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/epol_create02.5zdre53dgpo0.png)
+
+(2) `rdlist`，可以理解成代表一个双向链表的表头指针
+
+双向链表能快速顺序地访问里面的节点。
+
+一开始的时候双向链表也是空的，`rdlist` 指向 NULL，还没有节点。
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/epol_create03.5zueg4dj5yg0.png)
+
+- **总结**：
+  - 创建一个 eventpoll 结构的对象，被系统保存起来
+  - 对象中的 rbr 成员被初始化成指向一颗红黑树的根节点，
+  - 对象中的 rdlist 成员被初始化成指向一个双向链表的头结点。
+
+### epoll_ctl 函数
+
+- **格式**：
+
+```c
+int epoll_ctl (int efpd,int op,int sockid,struct epoll_event *event);
+```
+
+- **功能**：
+
+把一个 socket 以及 socket 相关的事件添加到 epoll 对象描述符中，以通过这个 epoll 对象监视该 socket（也就是这个 tcp 连接）上数据的来往情况，当有数据来往时，系统会通知程序。
+
+我们可以通过 `epoll_ctl` 函数吧程序中需要关注的事件添加到 epoll 对象描述符中，当有数据来往时，系统会通知程序。
+
+**epoll_ctl 函数中参数的介绍**：
+
+- `efpd`：`epoll_create()`返回的`epoll`对象描述符
+- `op`：一个操作类型，添加/删除/修改 ，对应数字是`1,2,3`. 分别对应： `EPOLL_CTL_ADD`（添加事件）, `EPOLL_CTL_DEL`（删除事件）， `,EPOLL_CTL_MOD`（修改事件）
+- `sockid`：表示一个 TCP 连接，添加事件（也就是往红黑树中添加节点）时，就是用 sockid 作为 key 往红黑树中增加节点的。
+- `event`: 向 `epoll_ctl` 函数传递信息，比如要增加一些书剑，就可以通过 `event` 参数将具体事件传递进 `epoll_ctl` 函数。
+
+- **原理**：
+
+假如传递进来的是一个 `EPOLL_CTL_MOD` ,首先使用 `RB_FIND` 来查找红黑树上是否已经有了这个节点，如果有了，程序就直接返回，如果没有，程序流程就继续往下走。
+
+>  **EPOLL_CTL_ADD 怎么往红黑树你增加节点**
+
+**确定红黑树没有该节点**的情况下，会生成一个 epitem 对象。
+
+通过执行下面代码创建 `epitem` 对象
+
+```cpp
+epi = (struct epitem*)calloc(1, sizeof(struct epitem));
+```
+
+这个对象就是后续增加到红黑树中的一个节点，该节点的 key 保存在 sockfd 中，要增加的事件保存在 event 中，然后使用 `RB_INSERT` 宏将该节点插入红黑树中，对于红黑树来说,每个节点都要记录自己的左子树、右子树和父节点，这里是通过 rbn 成员，指向父节点和子节点的。如果将来多个用户连入服务器，需要向这颗红黑树加入很多节点，这些节点彼此也要连接起来。
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结/epol_ctl01.7d2r4etg4d40.png)
+
+> EPOLL_CTL_ADD：等价于往红黑树中增加节点
+
+> EPOLL_CTL_DEL：等价于从红黑树中删除节点
+
+> EPOLL_CTL_MOD：等价于修改已有的红黑树的节点
+
+**每一个连入客户端都应该调用 `epoll_ctl` 向红黑树增加一个红黑树节点**，如果有 100w 个并发连接，红黑树上就会有个 100w 个节点
+
+### epoll_wait 函数
+
+- **格式**：
+
+```c
+int epoll_wait(int epfd,struct epoll_event *events,int maxevents,int timeout);
+```
+
+- **功能**：
+
+阻塞一小段时间并等待事件发生，返回事件集合，也就是获取内核的事件通知；
+
+其实就是遍历这个双向链表，把这个双向链表里边的节点数据拷贝出去，拷贝完毕的就从双向链表里移除；因为所有数据的 socket（ TCP 连接）都在双链表里记着。
+
+- 参数`epfd`：是`epoll_create()`返回的`epoll`对象描述符
+
+- 参数`events`：是内存，也是数组，长度 是`maxevents`，表示此次`epoll_wait`调用可以收集到的`maxevents`个已经就绪【已经准备好的】的读写事件；换句话说返回的是有事件发生的 TCP 连接数目
+
+- 参数`timeout`：阻塞等待的时长；
+
+> 总的来说，epoll_wait 函数就是到双链表中去，把此刻同时连入的连接中有事件发生的连接拿出来，后续 read，write，或者 send，secv 之类的函数调用收到数据，某个 socket 只要在双链表中，这个 socket 上一定发生了 某个/某些 事件，也就是说，只有发生了某个/某些 事件的 socket 才会在双向链表中实现。
+
+> 这也就是 epoll 高效的原因，因为 epoll 每次值遍历发生事件的一小部分 socket 连接（这些 socket 都在这个双向链表中），而不用到全部 socket 连接中逐个遍历以判断事件是否到来。
+
+
+## 向内核双链表增加节点
+
+epoll_wait 函数实际上就是去双向链表，那么，**操作系统什么时候向双向链表中插入节点呢**？
+
+- 客户端完成三次握手时，操作系统会向双向链表插入节点，这时服务器往往要调用 accept 函数把该连接从已完成连接队列中取走
+
+- 当客户端发送来数据时，操作系统会向双向链表插入节点，这时服务器也要调用 close 关闭对应的 socket
+
+- 当客户端发送数据时，操作系统会向双向链表插入节点，这时服务器要调用 read 或者 recv 来收数据
+
+- 当可以发送数据时，操作系统会向双向链表插入节点，这时服务器可以调用 send 或者 write 向客户端发送数据。可以这样理解：如果客户端接收话剧慢，服务器发送数据快，那么服务器就得等客户端收完一批数据后才能再发下一批。
 
 ### 边缘触发和水平触发
 
