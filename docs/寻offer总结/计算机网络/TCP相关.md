@@ -37,6 +37,10 @@
   - [客户端调用 close 了，连接是断开的流程是什么](#客户端调用-close-了连接是断开的流程是什么)
 - [TCP怎么保证可靠传输的](#tcp怎么保证可靠传输的)
   - [<font color=orange size=4>**重传机制**</font>](#font-colororange-size4重传机制font)
+    - [<b><font color=green size=3 font-weight=bold>1.超时重传</font></b>](#bfont-colorgreen-size3-font-weightbold1超时重传fontb)
+    - [<b><font color=green size=3 font-weight=bold>2.快速重传</font></b>](#bfont-colorgreen-size3-font-weightbold2快速重传fontb)
+    - [<font size=3 color=#0075f8 >**3.SACK 方法**</font>](#font-size3-color0075f8-3sack-方法font)
+      - [<font size=3 color=#0075f8 >**4.D-SACK**</font>](#font-size3-color0075f8-4d-sackfont)
   - [<font color=orange size=4>**滑动窗口**</font>](#font-colororange-size4滑动窗口font)
     - [窗口大小由哪一方决定](#窗口大小由哪一方决定)
   - [<font color=orange size=4>**流量控制**</font>](#font-colororange-size4流量控制font)
@@ -559,11 +563,11 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 **接下来说说常见的重传机制**：
 
-- <font color=orange size=5>**1.超时重传**</font>
+#### <b><font color=green size=3 font-weight=bold>1.超时重传</font></b>
 
 重传机制的其中一个方式，就是在发送数据时，设定一个定时器，当超过指定的时间后，没有收到对方的 `ACK` 确认应答报文，就会重发该数据，也就是我们常说的**超时重传**。
 
-> 先来链接一下什么是 RTT
+> 先来了解一下什么是 RTT
 >
 > `RTT` 就是**数据从网络一端传送到另一端所需的时间**，也就是包的往返时间。
 
@@ -580,22 +584,23 @@ UDP 的数据大小如果大于 MTU {最大传输单元,一般1500个字节} 大
 
 -------
 
-- <font color=orange size=5>**2.快速重传**</font>
+#### <b><font color=green size=3 font-weight=bold>2.快速重传</font></b>
 
-TCP 还有另外一种快速重传（Fast Retransmit）机制，它不以时间为驱动，而是以数据驱动重传。
+
+TCP 还有另外一种**快速重传**（Fast Retransmit）机制，它不以时间为驱动，而是以数据驱动重传。
 
 <img src="https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/快速重传01.21a9dmnfvigw.png"  />
 
 发送方发出了 1，2，3，4，5 份数据：
 
-- 第一份 Seq1 先送到了，于是就 Ack 回 2；
-- 结果 Seq2 因为某些原因没收到，Seq3 到达了，于是还是 Ack 回 2；
+  - 第一份 Seq1 先送到了，于是就 Ack 回 2；
+  - 结果 Seq2 因为某些原因没收到，Seq3 到达了，于是还是 Ack 回 2；
 
-- 后面的 Seq4 和 Seq5 都到了，但还是 Ack 回 2，因为 Seq2 还是没有收到；
+  - 后面的 Seq4 和 Seq5 都到了，但还是 Ack 回 2，因为 Seq2 还是没有收到；
 
-- **发送端收到了三个 Ack = 2 的确认，知道了 Seq2 还没有收到，就会在定时器过期之前，重传丢失的 Seq2**。
+  - **发送端收到了三个 Ack = 2 的确认，知道了 Seq2 还没有收到，就会在定时器过期之前，重传丢失的 Seq2**。
 
-- 最后，收到了 Seq2，此时因为 Seq3，Seq4，Seq5 都收到了，于是 Ack 回 6 。
+  - 最后，收到了 Seq2，此时因为 Seq3，Seq4，Seq5 都收到了，于是 Ack 回 6 。
 
 > 快速重传的工作方式是当收到三个相同的 ACK 报文时，会在定时器过期之前，重传丢失的报文段。
 
@@ -611,7 +616,7 @@ TCP 还有另外一种快速重传（Fast Retransmit）机制，它不以时间�
 
 -----
 
-<font size=4 color="orange">**3.SACK 方法**</font>
+#### <font size=3 color=#0075f8 >**3.SACK 方法**</font>
 
 这种方式需要在 TCP 头部「选项」字段里加一个 SACK 的东西，它可以将缓存的信息发送给发送方，这样发送方就可以知道哪些数据收到了，哪些数据没收到，知道了这些信息，就可以只重传丢失的数据。
 
@@ -620,8 +625,7 @@ TCP 还有另外一种快速重传（Fast Retransmit）机制，它不以时间�
 如果要支持 SACK，必须双方都要支持。在 Linux 下，可以通过 net.ipv4.tcp_sack 参数打开这个功能（Linux 2.4 后默认打开）。
 
 
-
-<font size=4 color="orange">**4.D-SACK**</font>
+##### <font size=3 color=#0075f8 >**4.D-SACK**</font>
 
 又称 `D-SACK`，其主要**使用了 SACK 来告诉「发送方」有哪些数据被重复接收了。**
 
@@ -646,10 +650,10 @@ TCP 还有另外一种快速重传（Fast Retransmit）机制，它不以时间�
 
 **D-SACK 有这么几个好处**：
 
-- 可以让「发送方」知道，是发出去的包丢了，还是接收方回应的 ACK 包丢了;
-- 可以知道是不是「发送方」的数据包被网络延迟了;
-- 可以知道网络中是不是把「发送方」的数据包给复制了;
-- 在 Linux 下可以通过 net.ipv4.tcp_dsack 参数开启/关闭这个功能（Linux 2.4 后默认打开）。
+  - 可以让「发送方」知道，是发出去的包丢了，还是接收方回应的 ACK 包丢了;
+  - 可以知道是不是「发送方」的数据包被网络延迟了;
+  - 可以知道网络中是不是把「发送方」的数据包给复制了;
+  - 在 Linux 下可以通过 net.ipv4.tcp_dsack 参数开启/关闭这个功能（Linux 2.4 后默认打开）。
 
 
 
