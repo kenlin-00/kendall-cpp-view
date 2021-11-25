@@ -1,4 +1,11 @@
 
+- [OC 和 C++ 的区别](#oc-和-c-的区别)
+- [什么是 runtime](#什么是-runtime)
+- [为什么说 OC 是一门动态编程语言](#为什么说-oc-是一门动态编程语言)
+- [objc在向一个对象发送消息时，发生了什么](#objc在向一个对象发送消息时发生了什么)
+- [isa 指针](#isa-指针)
+- [objc中向一个nil对象发送消息将会发生什么](#objc中向一个nil对象发送消息将会发生什么)
+- [一个NSObject对象占用多少内存](#一个nsobject对象占用多少内存)
 
 -----
 
@@ -60,3 +67,23 @@ objc在向一个对象发送消息时，runtime 会根据对象的 isa 指针找
 如果方法的返回值不是上述提到的几种情况，那么发送给nil的消息的返回值将是未定义的
 
 
+----
+
+## 一个NSObject对象占用多少内存
+
+将 OC 中的类其实就是通过 C/C++ 的结构体实现的。
+
+`clang -rewrite-objc main.m -o main.cpp`
+
+不建议，因为不同平台产生的 C++ 代码时不一样的。
+
+```bash
+xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc main.m -o main-arm64.cpp
+```
+
+
+```cpp
+struct NSObject_IMPL {
+	Class isa;
+};
+```
