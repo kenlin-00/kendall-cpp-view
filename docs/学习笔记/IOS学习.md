@@ -4,6 +4,10 @@
   - [一个 NSObject 对象占用多少内存](#一个-nsobject-对象占用多少内存)
 - [Swift 和 OC 的区别](#swift-和-oc-的区别)
 - [swift 编译过程](#swift-编译过程)
+- [Optional](#optional)
+- [String 和 SubString](#string-和-substring)
+- [guard](#guard)
+- [闭包](#闭包)
 
 ------
 
@@ -74,6 +78,14 @@ swiftc main.swift -emit-sil
 //得到中间层表示
 swiftc main.swift -emit-ir 
 
-
 ```
+
+## Optional
+
+## String 和 SubString
+
+## guard
+
+## 闭包
+
 
