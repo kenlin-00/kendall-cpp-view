@@ -8,6 +8,8 @@
 - [String 和 SubString](#string-和-substring)
 - [guard](#guard)
 - [闭包](#闭包)
+- [项目实战](#项目实战)
+  - [项目配置](#项目配置)
 
 ------
 
@@ -87,5 +89,55 @@ swiftc main.swift -emit-ir
 ## guard
 
 ## 闭包
+
+> 自动闭包和逃避闭包，用的不多
+
+ 
+
+
+
+---
+
+## 项目实战
+
+### 项目配置
+
+- 进入工程目录 
+- 创建一个 Profile 文件
+  
+```
+ %  cat Podfile 
+platform :ios, "9.0"
+use_frameworks!
+
+target "geekTime" do
+
+  pod "Kingfisher"
+  pod "SnapKit"
+  pod "R.swift"
+
+end
+```
+
+- 开始下载第三方依赖库
+
+pod install 
+
+- 安装完成之后文件夹下会出现一个 `.xcworkspace` 文件
+
+- 关闭之前的项目打开这个 `.xcworkspace` 文件
+
+- 添加脚本
+
+```
+# Shell
+"$PODS_ROOT/R.swift/rswift" generate "$SRCROOT/R.generated.swift"
+
+# input Files
+$TEMP_DIR/rswift-lastrun
+
+# output Files
+$SRCROOT/R.generated.swift
+```
 
 
