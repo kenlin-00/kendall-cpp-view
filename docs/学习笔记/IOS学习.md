@@ -10,7 +10,6 @@
 - [闭包](#闭包)
 - [项目实战](#项目实战)
   - [项目配置](#项目配置)
-- [OC对象的本质](#oc对象的本质)
 
 ------
 
@@ -143,20 +142,5 @@ $SRCROOT/R.generated.swift
 ```
 
 
+----
 
------
-
-## OC对象的本质
-
-> 一个NSObject对象占用多少内存？
-
-需要清楚该对象在内存中怎么布局，怎么分布的，
-
-我们知道，OC代码底层实现是C/C++ ,转成C/C++, 
-
-Objective-C的对象、类主要是基于C\C++的什么数据结构实现的？
-
-结构体才能容纳不同类型。
-
-将Objective-C代码转换为C\C++代码
-xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc  OC源文件  -o  输出的CPP文件
