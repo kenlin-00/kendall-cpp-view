@@ -4,6 +4,7 @@
   - [一个 NSObject 对象占用多少内存](#一个-nsobject-对象占用多少内存)
 - [Swift 和 OC 的区别](#swift-和-oc-的区别)
 - [swift 编译过程](#swift-编译过程)
+- [类和结构体的区别](#类和结构体的区别)
 - [Optional](#optional)
 - [String 和 SubString](#string-和-substring)
 - [guard](#guard)
@@ -82,6 +83,10 @@ swiftc main.swift -emit-ir
 
 ```
 
+
+## 类和结构体的区别
+
+结构体是值类型，枚举也是，类是引用类型（指针类型）
 
 ## Optional
 
