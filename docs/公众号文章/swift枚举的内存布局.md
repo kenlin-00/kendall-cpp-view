@@ -77,7 +77,7 @@ print(MemoryLayout<EnumTest>.stride)  //1
 print(MemoryLayout<EnumTest>.alignment) // 1
 ```
 
-其实在 swift 的枚举中设置原始值，并不代表这个值就存储在枚举中，只能说这个值和枚举的 case 是关联的，比如上述代码的 test1 和 1 是关联的，我们也可以通过下面代码拿到对应 case 的值
+其实在 swift 的枚举中设置原始值，并不代表这个值就存储在枚举中，只能说这个值和枚举的 case 是关联的，比如上述代码的 test1 和 10 是关联的，我们也可以通过下面代码拿到对应 case 的值
 
 ```swift
 print(EnumTest.test1.rawValue)  // 10
@@ -114,7 +114,7 @@ print(MemoryLayout<TestEnum>.stride)  //32
 print(MemoryLayout<TestEnum>.alignment) //8   
 ```
 
-可以发现这时候系统给枚举分配了 32 个字节，但是占用了 25 个字节，如果说按照「字节对齐」来算，test1 三个 Int ，应该为 24 个字节才对，为何未 25 呢？？？
+可以发现这时候系统给枚举分配了 32 个字节，但是占用了 25 个字节，如果说按照「字节对齐」来算，test1 三个 Int ，应该为 24 个字节才对，为何为 25 呢？？？
 
 同样我们通过上述方法查看 t 的内存分布。
 
