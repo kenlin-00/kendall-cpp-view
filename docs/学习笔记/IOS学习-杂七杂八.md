@@ -146,6 +146,10 @@ $TEMP_DIR/rswift-lastrun
 $SRCROOT/R.generated.swift
 ```
 
+- 导入图片到 Resource 下
+
+
+
 
 ----
 

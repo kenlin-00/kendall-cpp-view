@@ -3,6 +3,7 @@
 - [尽量使用 const，enum,inline 替换 `#define`](#尽量使用-constenuminline-替换-define)
   - [class 专属常量](#class-专属常量)
   - [`#define`定义宏函数](#define定义宏函数)
+- [尽可能使用 const](#尽可能使用-const)
 
 ---
 
@@ -31,7 +32,7 @@ private:
 }
 ```
 
-上面的 num 是声明而不是定义，这种方式主要不对 num 取地址，可以声明并使用，不需要定义，但是如果要对 num 取地址，就需要进行如下定义
+上面的 num 是声明而不是定义，这种方式只要不对 num 取地址，就可以声明并使用，不需要定义，但是如果要对 num 取地址，就需要进行如下定义
 
 ```cpp
 const int A::num;  //num 的定义
@@ -48,3 +49,14 @@ const int A::num;  //num 的定义
 
 宏函数看起来像函数，但是不会没有函数调用带来的开销，但是使用 宏函数 最好要用「小括号」将所有实参括起来
 
+----
+
+## 尽可能使用 const
+
+```cpp
+char str[] = "hello";
+char *p = str;
+const char *p = str;   //const 在星号左侧，指针指向的数据不能改，指针指向可以改
+char *const p = str;   //const 在星号右侧，指针指向不能变，指针指向的值可以改变
+const char * const p = str;   //都不可以变
+```

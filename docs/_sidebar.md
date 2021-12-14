@@ -52,15 +52,21 @@
   * [16输入输出练习](/算法/我要进大厂/16输入输出练习.md)
 
 * 学习笔记
-  * [nginx读书笔记](/学习笔记/nginx读书笔记.md)
-  * [操作系统学习](/学习笔记/操作系统学习.md)
-  * [手撕一个操作系统](/学习笔记/操作系统专栏/手撕实现一个操作系统.md)
-* 音视频软文
-  * [av_packet](/音视频开发/博客软文/01av_packet.md)
-  * [基于SDL播放PCM](/音视频开发/博客软文/02基于SDL播放PCM.md)
-  * [ffmpeg解封装(解复用)](/音视频开发/博客软文/03ffmpeg解封装(解复用).md)
-  * [ffmpeg数据结构](/音视频开发/博客软文/04ffmpeg数据结构.md)
-  * [PCM转WAV](/音视频开发/博客软文/05PCM转WAV.md)
+  * [EffectiveCpp总结](/学习笔记/EffectiveCpp总结.md)
+  * [iOS底层学习笔记](/学习笔记/iOS底层学习笔记.md)
+  * [swift5_1学习笔记](/学习笔记/swift5_1学习笔记.md)
+  * [nginx总结](/学习笔记/nginx总结/.md)
+* 软文博客
+  * iOS软文
+    * [OC对象的本质](/软文博客/iOS软文/OC对象的本质.md)
+    * [runtime底层](/软文博客/iOS软文/runtime底层.md)
+    * [swift枚举的内存布局](/软文博客/iOS软文/swift枚举的内存布局.md)
+  * 音视频软文
+    * [av_packet](/软文博客/音视频开发/01av_packet.md)
+    * [基于SDL播放PCM](/软文博客/音视频开发/02基于SDL播放PCM.md)
+    * [ffmpeg解封装(解复用)](/软文博客/音视频开发/03ffmpeg解封装(解复用).md)
+    * [ffmpeg数据结构](/软文博客/博客软文/04ffmpeg数据结构.md)
+    * [PCM转WAV](/软文博客/博客软文/05PCM转WAV.md)
 
 
 
