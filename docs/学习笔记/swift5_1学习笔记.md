@@ -40,7 +40,7 @@ print(fn2(4)) // 6
 
 ## 属性
 
-- 存储属性
+### 存储属性
 
 类似成员变量，存储在实例的内存中，结构体和类都可以计算存储属性，但是枚举不能定义存储属性。（因为枚举的内存是用来存储 case 关联值得）
 
@@ -66,7 +66,7 @@ struct Point {
 var p = Point()  //默认调用init()
 ```
 
-- 计算属性
+### 计算属性
 
 本质是方法（函数），不占用示例内存，枚举、结构体、类都可以定义计算属性。
 
@@ -111,12 +111,12 @@ var n2 = TestNum.num2
 print(n2.rawValue)  // 22 
 ```
  
-- 延迟存储属性
+### 延迟存储属性
 
 使用 lazy 来修饰，**必须使用 var**，不能使用 let。**在第一次使用的时候才会被初始化**
 
 > 因为 let 必须在实例的初始化方法完成之前就拥有值        
-> 如果多条线程同时第一次访问 lazy 属性 无法保证属性只被初始化 1 次      
+> 如果多个线程同时第一次访问 lazy 属性 无法保证属性只被初始化 1 次      
 
 
 ```swift
@@ -167,7 +167,7 @@ Car is running!
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/lazy属性01.1q6asnhktkm8.png)
 
-- 属性观察器
+### 属性观察器
 
 可以为非lazy的var存储属性设置属性观察器
 
@@ -205,9 +205,9 @@ circle.radius = 10.5
 print(circle.radius)
 ```
 
-willSet 会传递新值，默认叫 newValue
+`willSet` 会传递新值，默认叫 `newValue`
 
-didSet 会传递旧值，默认叫 oldValue
+`didSet` 会传递旧值，默认叫 `oldValue`
 
 在初始化器中「`init`」设置属性值不会触发 willSet 和 didSet 
 
@@ -216,6 +216,8 @@ didSet 会传递旧值，默认叫 oldValue
 ## inout
 
 swift 需要对参数进行修改，需要用到 inout 关键字,调用函数时加 `&`，相当于把变量的**地址值**传进去。
+
+> inout 本质就是引用传递「地址传递」
 
 ```swift
 func swapFunc(_ num1 : inout Int,_ num2: inout Int) {
@@ -237,7 +239,7 @@ n1 = 10,n2 = 20
 n1 = 20,n2 = 10
 ```
 
-> 那如果 inout 传递的是 计算属性呢？
+> 那如果 inout 传递的是 计算属性呢 ？
 
 ```swift
 struct Shape {
@@ -292,6 +294,45 @@ setGirth, newValue = 20
 - get 方法返回值放在以临时存储空间
 - 然后把这个存储空间「地址值」传入 test 函数中
 - 接下来调用 set 方法，相当于把修改之后的 20 传给 newValue
+
+> 那么如果 inout 传递的是「带有属性观察器」的存储属性呢 ？
+
+```swift
+test(&shape.side)
+```
+
+
+带有属性观察器的存储属性的值真正修改不是发生在 test 函数里面
+- 首先拿到 side 的值，放到一个局部变量里面
+- 然后把这个局部变量的地址值传递到 test 里面，通过 test 函数去修改这个局部变量地址的值
+- 最后再把这个局部变量赋值给 side
+
+因为 test 函数只是关心才进来的地址值，只负责修改，test 并不关心才进来的是存储属性还是计算属性，为了实现通用性。
+
+### 类型属性
+
+严格来说，属性可以分为：实例属性和类型属性
+
+- 实例属性：只能通过实例去访问
+  - 存储实例属性：存储在实例的内存中，每个实例都有 1 份
+  - 计算实例属性
+
+- 类型属性：只能通过类型去访问，用 static 修饰，类似 C++ 中的静态成员
+  - 存储类型属性：整个程序运行过程中就只有 1 份内存
+  - 计算类型属性
+
+> 如果是 class，可以使用 class 定义类型属性
+
+```swift
+struct Shape {
+    static var count: Int = 1
+//    也可以写成 class
+//    class var count: Int = 1
+}
+var s = Shape()
+//s.count   //实例中不可以访问
+Shape.count 
+```
 
 
 
