@@ -334,6 +334,50 @@ var s = Shape()
 Shape.count 
 ```
 
+----
+
+## mutating
+
+结构体和枚举是值类型，默认情况下，值类型的属性不能被自身的实例方法修改 
+
+在 func 关键字前加 mutating 可以允许这种修改行为
+
+```swift
+struct Point {
+    var x = 0.0, y = 0.0
+    //加上 mutatin 才能修改
+    mutating func moveBy(dataX: Double,dataY: Double) {
+        x += dataX
+        y += dataY
+    }
+}
+
+enum StateWitch: Int{
+    case low = 1,middle = 2,high = 3
+    mutating func next() {
+        switch self {
+            case .low:
+                self = .middle
+            case .middle:
+                self = .high
+            case .high:
+                self = .low
+        }
+    }
+}
+
+var p = Point()
+p.moveBy(dataX: 1, dataY: 2)
+print("x = \(p.x),y = \(p.y)")
+
+var low = StateWitch.low
+var lowNext = low.next()
+```
+
+
+
+## 函数式编程
+
 
 
 
