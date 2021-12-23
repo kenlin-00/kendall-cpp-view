@@ -4,13 +4,14 @@
 
 ## 闭包的本质
 
-一个函数和它所捕获的常量\变量环境组合起来，成为「闭包」。
+一个函数和它所捕获的「常量\变量」环境组合起来，称为「闭包」。
 - 一般指定义在函数内部的函数
 - 一般它捕获的是外层函数的 局部变量\常量
 
-> 如果使用到局部变量，那么在 return 内部函数的时候会分开辟一个 堆内存 ，然后将栈空间的变量拷贝到堆内存中。
+> 如果使用到局部变量，那么在 return 内部函数的时候会分开辟一个 「堆内存」 ，然后将栈空间的变量拷贝到堆内存中。
 
 ```swift
+//ypealias 是用来为已经存在的类型重新定义名字的，通过命名，可以使代码变得更加清晰
 typealias Fn = (Int) -> Int
 
 func getFn() -> Fn {
@@ -22,10 +23,12 @@ func getFn() -> Fn {
     return plus
 }
  
+ //一块堆内存
 var fn1 = getFn()
 print(fn1(1))  //1
 print(fn1(3))  //4
 
+//另一块堆内存
 var fn2 = getFn()
 print(fn2(2)) // 2
 print(fn2(4)) // 6 
@@ -42,14 +45,15 @@ print(fn2(4)) // 6
 
 ### 存储属性
 
-类似成员变量，存储在实例的内存中，结构体和类都可以计算存储属性，但是枚举不能定义存储属性。（因为枚举的内存是用来存储 case 关联值得）
+类似成员变量，**存储在实例的内存中**，结构体和类都可以计算存储属性，但是枚举不能定义存储属性。（因为枚举的内存是用来存储 case 关联值得）
 
-> 创建「类」或者「结构体」示例对象时，必须要为所有的存储属性赋初始值。
+> 创建「类」或者「结构体」实例对象时，必须要为所有的存储属性赋初始值。
 > - 可以在初始化器里面赋初始值
 > - 可以在创建示例的时候赋初始值 
 
 ```swift 
 struct Point {
+    //必须为x和y赋初始值
     var x: Int
     var y: Int
     //初始化器
@@ -68,7 +72,7 @@ var p = Point()  //默认调用init()
 
 ### 计算属性
 
-本质是方法（函数），不占用示例内存，枚举、结构体、类都可以定义计算属性。
+本质是方法（函数），**不占用实例内存**，枚举、结构体、类都可以定义计算属性。
 
 > 枚举中的 rawValue 本质就是「只读」的计算属性
 
@@ -163,26 +167,26 @@ Car is running!
     }() }
 ```
 
-当结构体包含一个延迟存储属性时，只有 var 才能访问延迟存储属性，因为延迟属性初始化时需要改变结构体的内存
+当「结构体」包含一个延迟存储属性时，只有 var 才能访问延迟存储属性，因为延迟属性初始化时需要改变结构体的内存
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/lazy属性01.1q6asnhktkm8.png)
 
 ### 属性观察器
 
-可以为非lazy的var存储属性设置属性观察器
+可以为非 lazy 的 var 存储属性设置属性观察器
 
 ```swift
   struct Circle {
       //这是存储属性，不是计算属性，因为里面不是 set 和 get 方法
     var radius: Double {
-    //即将设置
-    willSet {
-            print("willSet", newValue)
-    } 
-    //已经设置
-    didSet {
-                print("didSet", oldValue, radius)
-            }
+        //即将设置
+        willSet {
+                print("willSet", newValue)
+        } 
+        //已经设置
+        didSet {
+                    print("didSet", oldValue, radius)
+                }
     } 
     init() {
             self.radius = 1.0
@@ -231,7 +235,7 @@ var n1: Int = 10
 var n2: Int = 20
 
 print("n1 = \(n1),n2 = \(n2)")
-swapFunc(&n1, &n2)
+swapFunc(&n1, &n2)  //传递地址
 print("n1 = \(n1),n2 = \(n2)")
 
 //输出结果：
@@ -249,8 +253,8 @@ struct Shape {
         willSet {
             print("willSettSide ",newValue)
         }
-        didSet {  //默认又个 oldValue
-            print("didSetSide ",oldValue,side)
+        didSet {  //默认有个 oldValue 
+            print("didSetSide ",oldValue,side) //oldValue 保存的是修改之前的值
         }
     }
     //计算属性
@@ -276,7 +280,7 @@ func test(_ num: inout Int) {
 
 var shape = Shape(width: 10, side: 4)
 
-//test(&shape.width)  //还是直接将 shape.width 的地址值传进去
+//test(&shape.width)  //存储属性：还是直接将 shape.width 的地址值传进去
 
 test(&shape.girth)  //这是计算属性，依然修改成功
 //shape.show()
@@ -291,7 +295,7 @@ setGirth, newValue = 20
 因为计算属性不是存储在结构体的内存中的，所以不可能直接传递结构体内存地址到 test 函数中修改。
 
 - 首先调用 get 方法
-- get 方法返回值放在以临时存储空间
+- get 方法返回值放在「临时存储空间」
 - 然后把这个存储空间「地址值」传入 test 函数中
 - 接下来调用 set 方法，相当于把修改之后的 20 传给 newValue
 
@@ -301,9 +305,9 @@ setGirth, newValue = 20
 test(&shape.side)
 ```
 
-
 带有属性观察器的存储属性的值真正修改不是发生在 test 函数里面
-- 首先拿到 side 的值，放到一个局部变量里面
+
+- 首先拿到 side 的值，放到一个「局部变量」里面
 - 然后把这个局部变量的地址值传递到 test 里面，通过 test 函数去修改这个局部变量地址的值
 - 最后再把这个局部变量赋值给 side
 
@@ -311,7 +315,7 @@ test(&shape.side)
 
 ### 类型属性
 
-严格来说，属性可以分为：实例属性和类型属性
+严格来说，属性可以分为：**实例属性** 和 **类型属性**
 
 - 实例属性：只能通过实例去访问
   - 存储实例属性：存储在实例的内存中，每个实例都有 1 份
@@ -338,9 +342,9 @@ Shape.count
 
 ## mutating
 
-结构体和枚举是值类型，默认情况下，值类型的属性不能被自身的实例方法修改 
+结构体 和 枚举 是「值类型」，默认情况下，值类型的属性不能被自身的实例方法修改，类 就没有这个限制，可以直接修改。
 
-在 func 关键字前加 mutating 可以允许这种修改行为
+**在 func 关键字前加 mutating 可以允许这种修改行为**
 
 ```swift
 struct Point {
@@ -374,10 +378,302 @@ var low = StateWitch.low
 var lowNext = low.next()
 ```
 
+## 下标 subsrcipt
+
+使用 subscript 可以给任意类型（枚举，结构体，类）增加下标功能
+
+subscript 的语法类似实例方法，计算属性，其本质就是方法（函数）
+
+```swift
+class Point {
+    var x = 0.0,y = 0.0
+    subscript(index: Int) -> Double {
+        set {
+            if(index == 0) {
+                x = newValue
+            }else if index == 1 {
+                y = newValue
+            }
+            else {
+                print("error")
+            }
+        }
+        get {
+            if index == 0 {
+                return x
+            } else if index == 1 {
+                return y
+            }
+            return 0
+        }
+    }
+}
+var point:Point = Point()
+point[0] = 10
+point[1] = 11
+point[2] = 1
+print(point[0])
+print(point[1])
+
+//error
+//10.0
+//11.0
+```
+
+> 注意：subscript 可以没有 set 方法，但是必须有 get 方法，如果只有 get 方法，可以省略 get 关键字。
+
+此外，下标方法可以设置多个参数，也可以设置标签
+
+```swift
+class Sum {
+    //类方法
+    static subscript(index1 a:Int,index2 b: Int) -> Int {
+        return a + b
+    }
+}
+
+print(Sum[index1: 10,index2: 20])  //如果设置标签就必须加上标签
+
+// 30
+```
 
 
-## 函数式编程
+## 继承
+
+在 swift 里面，值类型是不支持继承的，就是说 struct 是不支持继承的，只有 class 才支持继承。
+
+### 重写方法和重写下标
+
+重写必须加 override 关键字
+
+```swift
+class Animal {
+    func show() {
+        print("this is Animal")
+    }
+    subscript(index: Int) -> Int {
+        print("Animal subscript")
+        return index
+    }
+}
+class Cat : Animal {
+    override func show() {
+        //调用父类的方法
+        super.show()
+        print("this is Cat")
+    }
+    override subscript(index: Int) -> Int {
+        print("Cat subscript")
+        return super[index] + 1  // 2 + 1
+    }
+}
+var cat:Cat = Cat()
+print(cat[2])
+
+//Cat subscript
+// Animal subscript
+//3
+```
+
+- 被 class 修饰的「计算属性」能被子类重写
+- 被 static 修饰的「计算属性」不能被子类重写
+
+## swift的多态
+
+多态就是父类指针指向子类对象
+
+对于结构体来说，结构体是不能被继承的，所以在编译的时候就能知道调用的是哪个方法。
+
+但是对于类，只有在运行的时候才能知道实际调用哪个方法
+
+```swift
+//基类
+class Animal {
+    func speak() {
+        print("Animal speak")
+    }
+    func eat() {
+        print("Animal eat")
+    }
+    func sleep() {
+        print("Animal sleep")
+    }
+}
+//子类
+class Dog : Animal {
+    override func speak() {
+        print("Dog speak")
+    }
+    override func eat() {
+        print("Dog eat")
+    }
+    //没有重写sleep 方法
+    //自己的分
+    func run() {
+        print("Dog run")
+    }
+}
+var animal = Animal()
+animal = Dog()  //父类指针指向子类对象
+
+animal.speak()  //Dog speak
+animal.eat()    //Dog eat
+animal.sleep()  //Animal sleep
+//animal.run()  //error
+```
+
+对于 swift 对象，前 8 个字节存储的是「类型相关信息」，比如下图中前面存储的是 Dog 类型信息相关，后面一块区域存储的是方法的地址，比如 Dog 重写了 speak 和 eat 方法。
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/swift多态01.3w1kiuaj1zs0.png)
+
+当调用 `anim.speak()`，首先先取出 `Dog` 对象的前 8 个字节，根据这 8 个字节指针找到指针指向的内存，找到内存地址之后加上一个固定偏移量，就会获得 `Dog.speak` 方法的内存地址，找到方法之后调用。
+
+同理，Dog eat也是先取出前8字节，找到这8字节的内存地址，然后再加上一个固定偏移量，找到 `Dog.eat` 方法，找到方法之后调用。
+
+> **注意**： 无论创建多少个同类型对象，对象的类型信息都指向同一块内存地址。     
+> 对象类型信息保存在「**全局区**」。
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/swift多态02.4h6w6bxfu2e0.png)
+
+## 初始化器
+
+每个类至少有一个指定初始化器，指定初始化器是类的主要初始化器
+
+默认初始化器总是类的「指定初始化器」
+
+类偏向于少量指定初始化器，**一个类通常只有一个指定初始化器**
 
 
+```swift
+class Size {
+    var width: Int
+    var height: Int
+    //指定初始化器(主要初始化器）
+    init(width: Int,height: Int) {
+        self.width = width
+        self.height = height
+    }
+    //便捷初始化器
+    convenience init(width: Int) {
+        //需要调用指定初始化器
+        self.init(width: width,height: 0)
+    }
+    convenience init(height: Int) {
+        self.init(width: 0, height: height)
+    }
+    convenience init() {
+        self.init(width: 0,height: 0)
+    }
+}
+var s1 = Size(width: 11, height: 22)
+var s2 = Size(width: 21)
+var s3 = Size(height: 31)
+var s4 = Size()
+
+```
+
+初始化器的相互调用规则：
+
+1. 指定初始化器必须从它的直系父类调用指定初始化器
+2. 便捷初始化器必须从相同的类里调用另一个初始化器，最终必须调用一个指定初始化器
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/初始化器01.23i0levp15b4.png)
+
+这一套规则保证了使用任意初始化器，都可以完整地初始化实例。
+
+```swift
+class Person {
+    var age: Int
+    init(age: Int) {
+        print("Person init")
+        self.age = age
+    }
+}
+class Student : Person {
+    var score: Int
+    init(age: Int,score: Int) {
+        print("Studet init")
+        self.score = score
+        
+//        print(super.age)
+//        print(self.age
+        //初始化才调用父类的初始化器，且必须得调用，也就是必须等第一阶段结束
+        super.init(age: age)
+        
+        //只有初始化完才能进行其他的访问与修改,下面代码属于第二阶段调用
+        self.age = 10
+        print(super.age)
+        print(self.age)
+    }
+    //便捷初始化器
+    convenience init(score: Int) {
+        print("Student convenience init")
+        self.init(age: 0,score: score)
+    }
+}
+
+var stu1: Student = Student(age: 11, score: 100)
+print("--------")
+//直接调用便捷初始化器初始化
+var stu2 = Student(score: 99)
+```
+
+输出
+
+```
+Studet init
+Person init
+10
+10
+--------
+Student convenience init
+Studet init
+Person init
+10
+10
+```
+
+**两段式初始化**
+
+**第1阶段**：初始化所有存储属性
+
+- ① 外层调用指定\便捷初始化器
+- ② 分配内存给实例，但未初始化
+- ③ 指定初始化器确保当前类定义的存储属性都初始化
+- ④ 指定初始化器调用父类的初始化器，不断向上调用，形成初始化器链
+
+**第2阶段**：设置新的存储属性值
+
+- ⑤ 从顶部初始化器往下，链中的每一个指定初始化器都有机会进一步定制实例
+- ⑥ 初始化器现在能够使用 self 访问、修改它的属性，调用它的实例方法等等
+- ⑦ 最终，链中任何便捷初始化器都有机会定制实例以及使用 self
+
+> 直到第1阶段结束，实例才算完全合法   
+
+**补充**：一般我们自定义UIView都会重写它的init(frame: CGRect)方法，如下：
+
+```swift
+override init(frame: CGRect) {
+    super.init(frame: frame)
+    setupLayout()
+}
+```
+
+
+> 这时候你可能会疑惑为什么这里的`super.init`在最上面？  
+  
+其实不管是重写初始化器还是自定义初始化器，都是定义一个初始化器，重写初始化器一般「没有」新的参数(作为属性)，所以 `super.init` 在最上面，如果是自定义一个新的初始化器，一般都有新的参数(作为属性)，所以就是上面的两段式初始化。
+
+
+
+
+-------
+## Swift底层
+
+生成 sil 文件
+
+```
+swiftc -emit-sil main.swift >> main.sil
+```
 
 
