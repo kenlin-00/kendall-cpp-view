@@ -664,6 +664,149 @@ override init(frame: CGRect) {
   
 其实不管是重写初始化器还是自定义初始化器，都是定义一个初始化器，重写初始化器一般「没有」新的参数(作为属性)，所以 `super.init` 在最上面，如果是自定义一个新的初始化器，一般都有新的参数(作为属性)，所以就是上面的两段式初始化。
 
+### 重写初始化器
+
+如果子类写了一个匹配父类便捷初始化器的初始化器，不用加上 override 。因为父类的便捷初始化器永远不会通过子类直接调用，因此，严格来说，子类无法重写父类的便捷初始化器。
+
+```swift
+class Person {
+    var age: Int
+    //指定初始化器
+    init(age: Int) {
+        self.age = age
+    }
+    //便捷初始化器
+    convenience init() {
+        self.init(age: 0)
+    }
+}
+class Student : Person {
+    var score: Int
+    //指定初始化器
+    init(age: Int, score: Int) {
+        self.score = score
+        super.init(age: age)
+    }
+    //希望重写父类便捷初始化器,但是不能调用父类的便捷初始化器
+    init() { //不报错
+        self.score = 0
+        super.init(age: 0)
+    }
+}
+```
+
+> - 如果子类没有自定义任何指定初始化器，它会自动继承父类所有的指定初始化器（一旦你自定义了一个指定初始化器，那么父类的指定初始化器统统不给你用了） 
+>        
+> - 我们一般不自定义指定初始化器，这样才能自动继承父类的指定初始化器，我们一般自定义便捷初始化器
+
+## 反初始化器 `#deinit`
+
+`#deinit` 叫做反初始化器，类似于 C++ 的析构函数、OC 中的 dealloc 方法.
+
+当类的实例对象被释放内存时，就会调用实例对象的 deinit 方法
+
+```swift
+ class Person {
+    deinit {
+print("Person对象销毁了") }
+}
+```
+
+- deinit 不接受任何参数，不能写小括号，不能自行调用 
+- 父类的 deinit 能被子类继承
+- 子类的 deinit 实现执行完毕后会调用父类的  deinit
+
+## 可选链
+
+可选链就是在变量的类型后面添加 `?`, 可能为 nil，具体看下面代码
+
+```swift
+class Car {
+    var price = 0
+}
+class Dog {
+    var weight = 0
+}
+class Person {
+    var name: String = ""
+    var dog: Dog = Dog()
+    var car: Car? = Car()  //可选类型，指的是可能 nil
+    func age() -> Int { 18 }
+    func eat() {
+        print("Person eat ...")
+    }
+}
+//定义可选类型
+var person: Person? = Person()
+//var age = person.age()  //报错，因为person可能为nil
+//age 类型是可选类型 var age: Int?
+var age = person?.age()   //如果是nil，后面.age 就不会发生，如果不是 nil ，返回 nil, 就解包调用 age()
+var name = person?.name
+
+//强制解包
+var name1 = person!.name
+```
+
+## 协议
+
+https://blog.csdn.net/u014795020/article/details/71270576
+
+## 错误
+
+需要设置自定义错误协议，并且遵守这个协议
+
+```swift
+enum SomeError: Error {
+    case illegalArg(String)
+    case outOfBounds(Int,Int)
+    case outOfMemory
+}
+
+func divide(_ num1: Int,_ num2: Int) throws -> Int {
+    if num2 == 0 {
+        throw SomeError.illegalArg("0不能为除数")
+    }
+    return num1 / num2
+}
+
+//var result = try divide(10, 2)
+//print( result)
+
+//捕捉异常
+func test() {
+    print(1)
+    do {
+        print(2)
+        print(try divide(200, 0))
+        //下面这些都不会执行了
+        print(3)
+        print(3)
+        print(3)
+    } catch let SomeError.illegalArg(msg) {
+        print("参考异常：",msg)
+    } catch let SomeError.outOfBounds(size, index) {
+        print("下标越界：", "size = \(size)","index=\(index)")
+    } catch SomeError.outOfMemory {
+        print("内存溢出")
+    } catch {
+        print("其他错误")
+    }
+    print(4)
+}
+test()
+```
+
+输出
+
+```
+1
+2
+参考异常： 0不能为除数
+4
+```
+
+
+
 
 
 
