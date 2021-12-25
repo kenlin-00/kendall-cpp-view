@@ -807,6 +807,176 @@ test()
 
 
 
+## 可选项的本质
+
+可选项的本质就是 enum 类型
+
+ ```swift
+var age: Int?
+
+switch age {
+case let v?:  //如果有值就解包给 v
+    print("1",v)
+case nil:   //如果没值就为 nil
+    print("2")
+}
+ ```
+
+ 但是由于可选项是枚举，因此可以跟下面这样写
+
+ ```swift
+switch age {
+case let .some(v):
+    print("1",v)
+case .none:
+    print("2")
+}
+```
+
+
+## 运算符重载
+
+下面是一种比较简单的重载方式
+
+```swift
+struct Point {
+    var x: Int = 0
+    var y: Int = 0
+    
+    //重载加号,必须是 static
+    static func + (p1: Point,p2: Point) -> Point {
+        return Point(x: p1.x + p2.x, y: p1.y + p2.y)
+    }
+}
+
+var p1 = Point(x: 1, y: 2)
+var p2 = Point(x: 3, y: 4)
+var p3: Point = p1 + p2
+print(p3.x,p3.y)
+```
+
+## Equatable
+
+判断两个实例是否等价，一般的做法就是遵守 Equatable 协议，并重载 `==` 运算符
+
+与此同时，这也等价与重载了 `!=` 运算符
+
+```swift
+class Person: Equatable {
+    var age: Int
+    init(age: Int) {
+        self.age = age
+    }
+    //重载 ==
+    static func == (lhs: Person, rhs: Person) -> Bool {
+        lhs.age == rhs.age  //如果两个 person 的 age 相等，就认为这两个 person 实例相等
+    }
+}
+
+var p1 = Person(age: 10)
+var p2 = Person(age: 11)
+print(p1 == p2)
+print(p1 != p2)  //默认也重载了 != ，但是必须遵守 Equatable 协议
+```
+
+> swift 为一下几种类型提供默认的 Equatable 实现
+
+- 没有关联类型的枚举
+
+```swift
+enum Answer: String {
+    case wrong
+    case right
+}
+var s1 = Answer.wrong
+var s2 = Answer.right
+print(s1 == s2)  //默认实现 Equatable 
+```
+
+- 只遵守 Equatable 协议关联类型枚举
+
+```swift
+enum Answer: Equatable {
+    case wrong(Int)  //Int 类型是遵守 Equatable 协议的，所以 Answer 不需要实现 ==
+    case right
+}
+var s1 = Answer.wrong(10)
+var s2 = Answer.wrong(10)
+print(s1 == s2)  //默认实现 Equatable
+```
+
+- 只拥有遵守 Equatable 协议存储属性的结构体
+
+
+## Comparable 
+
+要比较两个实例大小，遵守 Comparable 协议，并重载相应的运算符
+
+实现和什么的 Equatable 类似
+
+## 扩展
+
+扩展（Extension）可以为枚举，结构，类，协议 增加新功能
+
+```swift
+extension Double {
+    var km: Double { self * 1_1000.0}
+    var m: Double { self }
+    var dm: Double { self / 10.0}
+    var cm: Double { self / 100.0}
+    var mm: Double { self / 1_000.0}
+}
+
+var d = 100.0
+print(d.km)
+print(d.m)
+print(d.dm)
+print(d.mm)
+```
+
+## 内存管理
+
+跟 OC 一样，swif 是采取基于引用计数的 ARC 内存管理方案。
+
+swift 中的 ARC 有三种引用
+
+- 强引用，默认情况下的引用都是强引用
+
+
+- 弱引用(weak reference): 通过 weak 定义弱引用
+
+> 必须是可选类型的 var，因为实例销毁后，ARC 会自动将弱引用设置为 nil       
+> ARC自动给弱引用设置 nil 时，不会触发属性观察器
+
+```swift
+class Person {
+    deinit {
+        print("Person deinit")
+    }
+}
+
+
+weak var p1: Person? = Person()  //Person deinit
+```
+
+
+- 无主引用(unowned reference):通过unowned定义无主引用
+
+> 不会产生强引用，实例销毁后仍然存储着实例的内存地址(类似于 OC 中的 `unsafe_unretained`)      
+> 试图在实例销毁后访问无主引用，会产生运行时错误(野指针)
+
+
+### 循环引用
+
+weak、unowned 都能解决循环引用的问题， unowned 要比 weak 少一些性能消耗
+
+- 在声明周期中可能会变为 nil 的使用 weak
+- 初始化赋值后再也不会变为 nil 的使用 unowned
+
+
+
+
+
 
 
 
