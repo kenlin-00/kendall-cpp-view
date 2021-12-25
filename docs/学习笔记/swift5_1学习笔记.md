@@ -912,7 +912,7 @@ print(s1 == s2)  //默认实现 Equatable
 
 要比较两个实例大小，遵守 Comparable 协议，并重载相应的运算符
 
-实现和什么的 Equatable 类似
+实现和上面的 Equatable 类似
 
 ## 扩展
 

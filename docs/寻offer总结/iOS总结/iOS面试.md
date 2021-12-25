@@ -5,16 +5,19 @@
 - [objc在向一个对象发送消息时，发生了什么](#objc在向一个对象发送消息时发生了什么)
 - [isa 指针](#isa-指针)
 - [objc中向一个nil对象发送消息将会发生什么](#objc中向一个nil对象发送消息将会发生什么)
-- [一个NSObject对象占用多少内存](#一个nsobject对象占用多少内存)
+- [swift总结](#swift总结)
+  - [class 和 struct 的区别](#class-和-struct-的区别)
+  - [实现一个 min 函数，返回两个元素较小的元素](#实现一个-min-函数返回两个元素较小的元素)
+  - [guard 使用场景](#guard-使用场景)
 
 -----
 
 
 ## OC 和 C++ 的区别
 
-- Objective-C 不支持多重承继，而C++语言支持多重继承（从侧面可以说明多重继承的效率不高）；
-- Objective-C通过互相传递消息实现函数调用，而C++直接进行函数调用
-- Objective-C是动态定型（dynamicaly typed)。所以它的类库比 C++ 要容易操作。Objective-C 在运行时可以允许根据字符串名字来访问方法和类，还可以动态连接和添加类。而C++，对象的静态类型决定你是否可以发送消息给它。
+- Objective-C 不支持多重承继，而 C++ 语言支持多重继承（从侧面可以说明多重继承的效率不高）；
+- Objective-C 通过互相传递消息实现函数调用，而 C++ 直接进行函数调用
+- Objective-C 是动态定型（dynamicaly typed)。所以它的类库比 C++ 要容易操作。Objective-C 在运行时可以允许根据字符串名字来访问方法和类，还可以动态连接和添加类。而 C++ 对象的静态类型决定你是否可以发送消息给它。
 
 
 ## 什么是 runtime
@@ -67,26 +70,119 @@ objc在向一个对象发送消息时，runtime 会根据对象的 isa 指针找
 如果方法的返回值不是上述提到的几种情况，那么发送给nil的消息的返回值将是未定义的
 
 
+
 ----
 
-## 一个NSObject对象占用多少内存
+## swift总结
 
-将 OC 中的类其实就是通过 C/C++ 的结构体实现的。
 
-`clang -rewrite-objc main.m -o main.cpp`
+[参考](https://www.jianshu.com/p/f7dd76ea5be5)
 
-不建议，因为不同平台产生的 C++ 代码时不一样的。
+[参考](https://www.jianshu.com/p/cc4a737ddc1d)
 
-```bash
-xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc main.m -o main-arm64.cpp
+### class 和 struct 的区别
+
+- class 为类, struct 为结构体, 类是「引用类型」, 结构体为「值类型」, 结构体不可以继承
+
+- 其中值类型的变量包含它们的数据，而引用类型的变量存储对他们的数据引用
+
+
+- struct 定义结构体类型时其成员可以**没有初始值**，如果使用这种格式定义一个类，编译器是会报错的，他会提醒你这个类没有被初始化。
+
+```swift
+struct SRectangle {
+    var width = 200
+    var height: Int
+}
+
+class CRectangle {
+    var width = 200
+    var height: Int // 报错
+}
 ```
 
+- 所有的 struct 都有一个自动生成的成员构造器，而 class 需要自己生成。
 
-```cpp
-struct NSObject_IMPL {
-	Class isa;
-};
+```swift
+//struct
+var sRect = SRectangle(width: 300)
+sRect.width // 结果是300
+
+//class
+var cRect = CRectangle()
+// 不能直接用CRectangle(width: 300)，需要构造方法
+cRect.width // 结果是200
 ```
 
-`//源码网址：https://opensource.apple.com/`
+- 引用类型对一个变量操作可能影响另一个变量所引用的对象。对于值类型都有他们自己的数据副本，因此对一个变量操作不可能影响另一个变量。
 
+```swift
+//struct
+var sRect2 = sRect
+sRect2.width = 500
+sRect.width // 结果是300
+
+//class
+var cRect2 = cRect
+cRect2.width = 500
+cRect.width // 结果是500
+```
+
+- struct 的方法要去修改 属性 的值，要加上mutating，class则不需要。
+
+```swift
+//struct
+struct SRectangle {
+    var width = 200
+    //需要添加 mutating
+    mutating func changeWidth(width: Int) {
+        self.width = width
+    }
+}
+
+//class
+class CRectangle {
+    var width = 200
+    func changeWidth(width: Int) {
+        self.width = width
+    }
+}
+```
+
+### 实现一个 min 函数，返回两个元素较小的元素
+
+```swift
+func myMin<T: Comparable>(_ a: T, _ b: T) -> T {
+    return a < b ? a : b
+}
+
+print(myMin(1.2, 2.1))
+```
+
+### guard 使用场景
+
+guard 和 if 类似，不同的是，guard 总是有一个 else 语句，如果表达式是假或者值绑定失败的时候，会执行 else 语句，且在 else 语句中一定要停止函数调用.
+
+```swift
+guard 1 + 1 == 2 else {
+    //为真 不会执行
+    fatalError("something wrong")
+}
+
+guard 1 + 1 == 3 else {
+    //为假 会执行
+    fatalError("something wrong")  //main.swift:548: Fatal error: something wrong
+}
+```
+
+比如说，用户登录的时候, 验证用户是否有输入用户名密码等
+
+```swift
+guard let userName = self.userNameTextField.text,
+  let password = self.passwordTextField.text else {
+    //如果输入的用户名和密码不对就直接 return
+    return
+}
+```
+
+[参考](https://www.jianshu.com/p/23d99f434281)
