@@ -51,9 +51,11 @@
 ### 获取 RunLoop
 
 ```Objectivec
-NSLog(@"%p,%p",[NSRunLoop  ],[NSRunLoop mainRunLoop]);  // OC 方式
+NSLog(@"%p,%p",[NSRunLoop currentRunLoop],[NSRunLoop mainRunLoop]);  // OC 方式
 NSLog(@"%p,%p",CFRunLoopGetCurrent(),CFRunLoopGetMain());  //C语言 方式
 ```
+
+上面两行打印的地址是不一样，真正的 RunLoop 地址是 C语言 方式打印的地址，NSRunLoop 是对 CFRunLoop 包装。打印的只是包装后的地址。
 
 ### RunLoop 相关类
 
@@ -96,17 +98,45 @@ struct __CFRunLoopMode {
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/RunLoop01.4q187cyh9pc0.png)
 
 
-
-CFRunLoopModeRef 代表 RunLoop 的运行模式
+**CFRunLoopModeRef 代表 RunLoop 的运行模式**
 
 一个 RunLoop 包含若干个Mode，每个 Mode 又包含若干个`Source0/Source1/Timer/Observer`
 
 RunLoop 启动时只能选择其中一个 Mode，作为 currentMode
 
-如果需要切换 Mode，只能退出当前 Loop，再重新选择一个 Mode 进入
+如果需要切换 Mode，只能退出当前 Loop，再重新选择一个 Mode 进入.         
 不同组的 `Source0/Source1/Timer/Observer` 能分隔开来，互不影响
 
 如果 Mode 里没有任何 `Source0/Source1/Timer/Observer`，RunLoop 会立马退出.
+
+###  RunLoop 运行逻辑
+
+> Source0 
+> - 触摸事件处理
+> - performSelector:onThread:
+
+在点击事件内部打断点调试，然后在 lldb 命令行敲 `bt` 可以发现处理点击时间就是从 source0 开始的
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/RunLoop02.6a0or4up69g0.webp)
+
+> Source1
+> - 基于Port的线程间通信
+> - 系统事件捕捉
+
+> Timers
+> - NSTimer
+> - performSelector:withObject:afterDelay:
+
+> - Observers
+> - 用于监听 RunLoop 的状态
+> - UI刷新（BeforeWaiting）
+> - Autorelease pool（BeforeWaiting）  //自动释放池
+
+```objectivec
+self.view.backgroundColor = [UIColor redColor];
+```
+
+这句代码并不是一执行就生效，它是通过 Observers 监听到 RunLoop 在睡觉之前才刷新 UI，才将 view 设置为红色
 
 
 
