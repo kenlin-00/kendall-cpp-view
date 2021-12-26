@@ -34,6 +34,13 @@
 
 ## RunLoop
 
+### RunLoop 在实际开发中的应用
+
+- 控制线程的生命周期（线程保活）
+- 解决 NSTimer 在滑动时停止工作的问题
+- 监控应用卡顿
+- 性能优化
+
 ### RunLoop 的基本作用
 
 - 保存程序的持续运行
@@ -139,9 +146,74 @@ self.view.backgroundColor = [UIColor redColor];
 这句代码并不是一执行就生效，它是通过 Observers 监听到 RunLoop 在睡觉之前才刷新 UI，才将 view 设置为红色
 
 
+### CFRunLoopObserverRef 的集中状态
+
+```objectivec
+/* Run Loop Observer Activities */
+typedef CF_OPTIONS(CFOptionFlags, CFRunLoopActivity) {
+    kCFRunLoopEntry = (1UL << 0),       //即将进入 Loop
+    kCFRunLoopBeforeTimers = (1UL << 1), //即将处理Timer
+    kCFRunLoopBeforeSources = (1UL << 2), //即将处理Source
+    kCFRunLoopBeforeWaiting = (1UL << 5),  //即将进入休眠
+    kCFRunLoopAfterWaiting = (1UL << 6),  //刚从休眠中唤醒
+    kCFRunLoopExit = (1UL << 7),           //即将退出 Loop
+    kCFRunLoopAllActivities = 0x0FFFFFFFU
+};
+```
+
+### RunLoop 内部实现逻辑
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/RunLoop04-运行逻辑.vr6lhc1tq2o.webp)
+
+### RunLoop休眠的实现原理
+
+我们知道RunLoop在不断的切换Mode处理其中的 Source0，Source1，Observers，Timers，如果没有相关的触发就会休眠，进行线程阻塞，等到有相关的触发继续干活。
+
+通过源码分析可以知道，会用到一个 mach_msg 函数，mach_msg 是比较底层的函数，就是切换到内核态， 让线程直接阻塞休眠，实现真正的休眠。等到有相关的消息触发，又会苏醒干活。
+
+如果是以 `while(1){};` 这种形式是可以阻塞线程，但是CPU还是在不断的工作，不过是死循环而已。
+
+它们的区别：
+
+- 当用 mach_msg 的时候，会从用户态转化到内核态去让线程阻塞，休眠
+- 当用 `while(1){};` 的时候，还是在用户态，只不过是代码逻辑阻塞，线程没有真正的休眠
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/RunLoop03.1njh8v1tk43k.webp)
+
+> 这种休眠可以达到真正休眠的目的，可以实现节省 CPU 性能。可是达到手机省电的效果
 
 
+### RunLoop 与 NSTimer
 
+- NSTimer 是由 RunLoop 来管理的，NSTimer 其实就是 CFRunLoopTimeRef ，他们之间是 tool-free bridged「桥接」 的，他们之间可以相互转换；
+- 如果我们在子线程上使用 NSTimer，就必须开启子线程的 RunLoop，否则定时器无法生效
+
+#### 解决 tableview 滑动时 NSTImer 失效问题
+
+- 我们知道，RunLoop 同一时间只能运行在一种模式下，当我们滑动 `tableview/scrollview` 的时候 RunLoop 会切换到 UITrackingRunLoopMode 界面追踪模式下。如果我们的 NSTimer 是添加到 RunLoop 的 `KCFRunLoopDefaultMode/NSDefaultRunLoopMode` 默认模式下的话，此时是会失效的。
+
+- **解决**：我们可以将 NSTimer 添加到 RunLoop 的 `KCFRunLoopCommonModes/NSRunLoopCommonModes` 通用模式下，来保证无论在默认模式还是界面追踪模式下 NSTimer 都可以执行。
+
+- **NSTimer 的创建方式**
+
+如果我们是通过以下方法创建的 NSTimer，是自动添加到 RunLoop 的默认模式下的
+
+```objc
+[NSTimer scheduledTimerWithTimeInterval:1.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
+    NSLog(@"123");
+}];
+```
+
+我们可以通过以下方法创建 NSTimer，来自定义添加到RunLoop的某种模式下
+
+```objc
+NSTimer *timer = [NSTimer timerWithTimeInterval:1.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
+    NSLog(@"123");
+}];
+[[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+```
+
+> 一般情况下，通过 `timerxxx` 开头方法创建的 NSTimer 是不会自动添加到 RunLoop 中的，所以一定要记得手动添加，否则 NSTimer 不生效。
 
 
 
