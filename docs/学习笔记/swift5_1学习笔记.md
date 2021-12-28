@@ -1,4 +1,32 @@
 
+- [闭包的本质](#闭包的本质)
+- [属性](#属性)
+  - [存储属性](#存储属性)
+  - [计算属性](#计算属性)
+  - [延迟存储属性](#延迟存储属性)
+  - [属性观察器](#属性观察器)
+- [inout](#inout)
+  - [类型属性](#类型属性)
+- [mutating](#mutating)
+- [下标 subsrcipt](#下标-subsrcipt)
+- [继承](#继承)
+  - [重写方法和重写下标](#重写方法和重写下标)
+- [swift的多态](#swift的多态)
+- [初始化器](#初始化器)
+  - [重写初始化器](#重写初始化器)
+- [反初始化器 `#deinit`](#反初始化器-deinit)
+- [可选链](#可选链)
+- [协议](#协议)
+- [错误](#错误)
+- [可选项的本质](#可选项的本质)
+- [运算符重载](#运算符重载)
+- [Equatable](#equatable)
+- [Comparable](#comparable)
+- [扩展](#扩展)
+- [内存管理](#内存管理)
+  - [循环引用](#循环引用)
+    - [避免在闭包中循环引用](#避免在闭包中循环引用)
+  - [NSArray 和 NSMutableArray 的区别](#nsarray-和-nsmutablearray-的区别)
 
 ------
 
@@ -945,7 +973,7 @@ swift 中的 ARC 有三种引用
 
 - 弱引用(weak reference): 通过 weak 定义弱引用
 
-> 必须是可选类型的 var，因为实例销毁后，ARC 会自动将弱引用设置为 nil       
+> 必须是可选类型的 var，因为弱引用变量在没有被强引用的条件下会变为 nil, 而 let 常量在运行的时候不能被改变     
 > ARC自动给弱引用设置 nil 时，不会触发属性观察器
 
 ```swift
@@ -960,7 +988,7 @@ weak var p1: Person? = Person()  //Person deinit
 ```
 
 
-- 无主引用(unowned reference):通过unowned定义无主引用
+- 无主引用(unowned reference):通过 unowned 定义无主引用
 
 > 不会产生强引用，实例销毁后仍然存储着实例的内存地址(类似于 OC 中的 `unsafe_unretained`)      
 > 试图在实例销毁后访问无主引用，会产生运行时错误(野指针)
@@ -972,13 +1000,49 @@ weak、unowned 都能解决循环引用的问题， unowned 要比 weak 少一�
 
 - 在声明周期中可能会变为 nil 的使用 weak
 - 初始化赋值后再也不会变为 nil 的使用 unowned
+  
+#### 避免在闭包中循环引用
+
+在闭包中, 要拿到对象本身的属性, 必须要用到self关键字.导致 block 对对象进行了强引用, 而对象本身对 block 也是强引用, 这样就形成了循环引用. (`Self <-> Block`)
+
+1.解决办法和 OC 中一样, 将强引用 self 变为弱引用 self. 
+OC 中解决办法是 `__weak SelfClass *weakSelf = self`;
+
+在 Swift 中类似的解决办法是(解决方式一) `weak var weakSelf = self`
+
+2.使用捕获列表(在其定义的上下文中捕获常量或变量, 即使定义这些常量和变量的原域已经不存在, 闭包仍然可以在闭包函数体内引用和修改这些值.)
+
+苹果官方语言指南要求如果闭包和其捕获的对象相互引用, 应该使用 unowned, 这样可以保证他们会同时被销毁. 大概是为了避免对象被释放后维护 weak 引用空指针的开销.
 
 
 
 
+### NSArray 和 NSMutableArray 的区别
 
+NSMutableArray 是 NSArray 的子类,NSArray 建立静态数组,而 NSMutableArray 则是动态数组.换句话说,NSArray 建立之后不可修改,而 NSMutableArray 则可以修改.
 
+我们在使用时需要注意将一个数组赋值给另一个数组，比如下面，我们不想让 b 发生改变，但是 b 仍然会受 a 影响并改变。
 
+```swift
+let a  = NSMutableArray(array: [1,2,3])
+let b: NSArray = a
+a.insert(4, at: 3)
+print(b)  //1,2,3,4
+print(a)  //1,2,3,4
+//a 和 b 都会发生改变
+```
 
+因此正确的方式是在赋值时，先手动进行复制
+
+```swift
+let a = NSMutableArray(array: [1,2,4])
+var b = a.copy() as! NSArray  //先将a 复制出来再给r b，并转成 NSArray
+a.insert(44, at: 3)
+//b.insert(4, at: 22)  //无法添加元素，因为 NSArray 它是不可变的
+print(a)  // 1,2,4,44
+print(b)  //1,2,4
+```
+
+上面的赋值操作在 swift 中使用了「写时复制」，它能够保证只在必要的时候对数据进行复制。在我们的例子中，直到 `a.insert` 被调用的之前，a 和 b 都将共享内部的存储。
 
 

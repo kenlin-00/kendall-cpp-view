@@ -109,7 +109,7 @@ swiftc main.swift -emit-ir
 ### 项目配置
 
 - 进入工程目录 
-- 创建一个 Profile 文件
+- 创建一个 Podfile 文件
   
 ```
  %  cat Podfile 
