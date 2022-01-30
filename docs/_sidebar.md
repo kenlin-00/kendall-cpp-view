@@ -51,11 +51,7 @@
   * [15CodeTop](/算法/我要进大厂/15CodeTop.md)
   * [16输入输出练习](/算法/我要进大厂/16输入输出练习.md)
 
-* 学习笔记
-  * [EffectiveCpp总结](/学习笔记/EffectiveCpp总结.md)
-  * [iOS底层学习笔记](/学习笔记/iOS底层学习笔记.md)
-  * [swift5_1学习笔记](/学习笔记/swift5_1学习笔记.md)
-  * [nginx总结](/学习笔记/nginx总结/.md)
+
 * 软文博客
   * iOS软文
     * [OC对象的本质](/软文博客/iOS软文/OC对象的本质.md)
