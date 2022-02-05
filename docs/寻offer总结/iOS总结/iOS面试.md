@@ -13,6 +13,15 @@
 - [runtime如何通过selector找到对应的IMP地址](#runtime如何通过selector找到对应的imp地址)
 - [Objective-C中调用方法的过程](#objective-c中调用方法的过程)
 - [load和initialize的区别](#load和initialize的区别)
+- [UI总结](#ui总结)
+  - [ViewController 生命周期](#viewcontroller-生命周期)
+    - [两个控制器AB进行跳转调用顺序](#两个控制器ab进行跳转调用顺序)
+  - [CALayer 和 UIView](#calayer-和-uiview)
+- [UIWindow是什么,有什么特点](#uiwindow是什么有什么特点)
+  - [程序启动过程](#程序启动过程)
+  - [UI 卡顿掉帧原因](#ui-卡顿掉帧原因)
+  - [离屏渲染是什么](#离屏渲染是什么)
+  - [什么时候会出现录屏渲染](#什么时候会出现录屏渲染)
 - [swift总结](#swift总结)
   - [class 和 struct 的区别](#class-和-struct-的区别)
   - [实现一个 min 函数，返回两个元素较小的元素](#实现一个-min-函数返回两个元素较小的元素)
@@ -194,7 +203,134 @@ objc在向一个对象发送消息时，runtime库会根据对象的isa指针找
 
 - load 和 initialize 方法内部使用了锁，因此它们是线程安全的。实现时要尽可能保持简单，避免阻塞线程，不要再使用锁。
 
+---
 
+## UI总结
+
+
+### ViewController 生命周期
+
+```objc
+- initWithCoder:(NSCoder *)aDecoder：//（如果使用storyboard或者xib）
+- loadView：              // 加载视图 view
+- viewDidLoad：           // 视图控制器中的视图加载完成，就是 viewController 自带的 view 加载完成
+- viewWillAppear：        // 控制器的view将要显示
+- viewWillLayoutSubviews：// view 即将布局它的 Subviews（子控件）
+- viewDidLayoutSubviews： // view 的 Subviews 布局完成  
+- viewDidAppear:         // 控制器的 view 完全显示
+- viewWillDisappear：    // 控制器的 view 即将消失的时候
+- viewDidDisappear：     // 控制器的 view 完全消失的时候
+- dealloc                //控制器视图销毁
+```
+
+#### 两个控制器AB进行跳转调用顺序
+
+- A控制器先展示调用
+
+```objc
+ - [ViewControllerA loadView]
+ - [ViewControllerA viewWillAppear:]
+ - [ViewControllerA viewWillLayoutSubviews]
+ - [ViewControllerA viewDidLayoutSubviews]
+ - [ViewControllerA viewDidAppear:]
+```
+
+- B控制器跳转调用顺序
+
+```objc
+ - [ViewControllerB loadView]
+ - [ViewControllerB viewDidLoad]
+ - [ViewControllerA viewWillDisappear:]
+ - [ViewControllerB viewWillAppear:]
+ - [ViewControllerB viewWillLayoutSubviews]
+ - [ViewControllerB viewDidLayoutSubviews]
+ - [ViewControllerA viewDidDisappear:]
+ - [ViewControllerB viewDidAppear:]
+```
+
+- B控制器返回A顺序
+
+```objc
+ - [ViewControllerB viewWillDisappear:]
+ - [ViewControllerA viewWillAppear:]
+ - [ViewControllerB viewDidDisappear:]
+ - [ViewControllerA viewDidAppear:]
+```
+
+### CALayer 和 UIView
+
+- UIView 和 CALayer 都是 UI 操作的对象
+
+- UIView 是 CALayer 用于交互的对象, UIView 是 CALayer 的delegate ,
+  
+- UIView 是 UIResponder 的子类,其中提供了很多 CALayer 所没有的交互接口,主要负责处理用户触发的各种操作;
+
+- CALayer 主要负责绘制,在图像和动画上渲染性能更好
+
+## UIWindow是什么,有什么特点
+
+UIWindow 继承自 UIView, 作为根视图来装置 View 元素, UIWindow 提供一个区域用于显示 UIView,并且将事件分发给 UIView,一般一个应用只有一个 UIWindow;
+
+一般情况下，应用程序只有一个 UIWindow  对象，即使有多个UIWindow 对象，也只有一个 UIWindow 可以接受到用户的触屏事件
+
+### 程序启动过程
+
+**main 函数执行前**:
+
+- 首先当程序启动时，系统会读取程序的可执行文件（mach-o）, 从里面获取动态加载器(dylb)的路径;
+
+- 加载dylb, dylb会初始化运行环境，配合ImageLoader将二进制文件加载到内存中去;
+
+- 动态链接依赖库, 初始化依赖库，初始化 runtime;
+
+- runtime 会对项目中的所有类进行类结构初始化，调用所有的 load 方法;
+
+- 最后 dylb 会返回 main 函数地址，main 函数被调用，进入程序入口
+
+**main 函数执行后**:
+
+- 内部会调用 UIApplicationMain 函数，创建一个UIApplication对象和它的代理，就是我们项目中的 Appdelegate 类
+
+- 开启一个事件循环(main runloop), 监听系统事件
+
+- 程序启动完毕时，通知代理Appdelegate, 调用 didFinishLaunching 代理方法，在这里会创建 UIWindow,设置它的rootViewController,
+
+- 最后调用 self.window makeKeyAndVisable显示窗口
+
+### UI 卡顿掉帧原因
+
+iOS 设备的硬件时钟会发出 Vsync(垂直同步信号)，然后 App 的 CPU 会去计算屏幕要显示的内容，之后将 计算好的内容提交到 GPU 去渲染。随后，GPU 将渲染结果提交到帧缓冲区，等到下一个 VSync 到来时将缓 冲区的帧显示到屏幕上。也就是说，一帧的显示是由 CPU 和 GPU 共同决定的。 
+
+一般来说，页面滑动流畅是60fps，也就是1s有60帧更新，即每隔16.7ms就要产生一帧画面，而如果CPU 和 GPU 加起来的处理时间超过了 16.7ms，就会造成掉帧甚至卡顿。
+
+### 离屏渲染是什么
+
+指的是 GPU （图形处理器）在当前屏幕缓冲区以外新开辟一个缓冲区进行渲染操作。
+
+因为离屏渲染有创建缓冲区和上下文切换。创建新的缓冲区代价都不算大，付出最大代价的是上下文切换。所以离屏渲染非常耗时。所以要尽量避免的则是 GPU 离屏渲染。
+
+- **GPU屏幕渲染有两种方式**:
+
+  - On-Screen Rendering (当前屏幕渲染) 指的是GPU的渲染操作是在当前用于显示的屏幕缓冲区进行。
+
+  - Off-Screen Rendering (离屏渲染) 指的是在GPU在当前屏幕缓冲区以外开辟一个缓冲区进行渲染操作。
+
+### 什么时候会出现录屏渲染
+
+> 圆角(当和 maskToBounds 一起使用时)、或者是图层蒙版、阴影的时候都会可能出现
+
+- 为图层设置遮罩（layer.mask）
+- 将图层的 `layer.masksToBounds / view.clipsToBounds` 属性设置为 true
+- 将图层 `layer.allowsGroupOpacity` 属性设置为 YES 和 `layer.opacity` 小于 1.0
+- 为图层设置阴影（`layer.shadow *`）。
+- 为图层设置 `layer.shouldRasterize=true`
+- 具有 `layer.cornerRadius，layer.edgeAntialiasingMask，layer.allowsEdgeAntialiasing的` 图层
+- 文本（任何种类，包括 UILabel，CATextLayer，Core Text 等）。
+
+
+
+
+[参考](https://juejin.cn/post/6991403913991684109#heading-1)
 
 ----
 
