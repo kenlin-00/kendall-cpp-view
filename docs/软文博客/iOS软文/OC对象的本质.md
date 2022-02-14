@@ -53,6 +53,12 @@ struct NSObject_IMPL {
 NSLog(@"%zd",class_getInstanceSize([NSObject class]));  // 8
 ```
 
+我们可以在[这里](https://opensource.apple.com/tarballs/objc4/)下载 objc 的源码。
+
+- class_getInstanceSize
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/oc对象本质01.44u8ake7cwc0.webp)
+
 但是我们使用 malloc_size 函数查看时 16
 
 ```objectivec
@@ -60,15 +66,12 @@ NSLog(@"%zd",class_getInstanceSize([NSObject class]));  // 8
 NSLog(@"%zd", malloc_size((__bridge const void *)obj));  //使用桥接转成 C语言指针类型
 ```
 
-我们通过查看源码中 class_getInstanceSize 和 malloc_size 的具体实现克可知，这个函数返回的是实例对象的成员变量所占用的实际大小，也就是 8，但是系统给这个对象分配的空间是 16 个字节，因为源码中：`if (size < 16) size = 16;`
+我们通过查看源码中 class_getInstanceSize 和 malloc_size 的具体实现可知，这个函数返回的是实例对象的成员变量所占用的实际大小，也就是 8，但是系统给这个对象分配的空间是 16 个字节，因为源码中：`if (size < 16) size = 16;`
 
-- class_getInstanceSize
-
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/OC对象本质01.46ffriru73w0.png)
-
-- malloc_size
+我们追踪 alloc 的源码可知 OC 中的 alloc 实际上是通过 C 语言的 calloc 函数实现的，具体见下图。
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/OC对象本质03.1ab0f73zb7nk.png)
+
 
 因此可以得知 NSObject 对象的内存分布图如下：
 

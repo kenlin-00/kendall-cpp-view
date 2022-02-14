@@ -1,5 +1,9 @@
 
 - [环境准备](#环境准备)
+- [OC对象的本质](#oc对象的本质)
+  - [一个 NSObject 对象占用多少内存](#一个-nsobject-对象占用多少内存)
+  - [自定义 NSObject 对象](#自定义-nsobject-对象)
+  - [OC 对象的分类](#oc-对象的分类)
 - [RunLoop](#runloop)
   - [RunLoop 在实际开发中的应用](#runloop-在实际开发中的应用)
   - [RunLoop 的基本作用](#runloop-的基本作用)
@@ -44,6 +48,340 @@
 这样就可以正常进行真机调试了
 
 -----
+
+---
+
+## OC对象的本质
+
+### 一个 NSObject 对象占用多少内存
+
+> 一个 NSObject 对象占用多少内存呢？也就是 obj 指针所指向的内存空间多大？
+
+如果想很好的回答这个问题，我们需要先知道 NSObject 对象的内存布局。
+
+我们平时写的 Objective-C 代码，底层实现歧视就是 C/C++ 代码，所以 OC 的面向对象其实就是基于 C/C++ 的数据结构来实现的。所以可以猜到，**OC 中的对对象和类其实就是 C/C++ 中的结构体实现的**。
+
+首先我们编写如下一段 OC 代码
+
+```objectivec
+#import <Foundation/Foundation.h>
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        NSObject *obj = [[NSObject alloc] init];
+    }
+    return 0;
+}
+```
+
+我们需要将上面这段代码转成 cpp 代码，可以使用如下命令：
+
+```
+xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc  OC源文件  -o
+```
+
+然后在生成的 `.cpp` 文件中搜索如下代码快，顾名思义，NSObject_IMPL  表示 NSObject Implement，翻译过来就是 NSObject 的实现。因此也验证了 NSObject 对象是通过 「结构体」来实现的。
+
+```cpp
+struct NSObject_IMPL {
+	Class isa;
+};
+```
+
+我们再来看看 NSObject 的定义。发现和上面代码一样，都是一个 isa 类。其中 isa 的类型就是一个结构体指针：`typedef struct objc_class *Class;`，在 64 位机器中，指针占 8 个字节。
+
+```objectivec
+@interface NSObject <NSObject> {
+    Class isa  OBJC_ISA_AVAILABILITY;
+}
+@end
+```
+
+因此可以初步认为一个 NSObject 对象占 8 个字节（其实不是），在结构体中只有一个成员，那么该成员的地址就是结构体的地址。所以 obj 是指向 isa 的地址空间。我们也可以使用。我们也可以通过 class_getInstanceSize 方法来查看对象占用的实际空间.
+
+```objectivec
+// 获得NSObject实例对象的成员变量所占用的大小 >> 8
+NSLog(@"%zd",class_getInstanceSize([NSObject class]));  // 8
+```
+
+- class_getInstanceSize
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/oc对象本质01.44u8ake7cwc0.webp)
+
+但是我们使用 malloc_size 函数查看时 16
+
+```objectivec
+// 获得obj指针所指向内存的大小 >> 16
+NSLog(@"%zd", malloc_size((__bridge const void *)obj));  //使用桥接转成 C语言指针类型
+```
+
+我们通过查看源码中 class_getInstanceSize 和 malloc_size 的具体实现可知，这个函数返回的是实例对象的成员变量所占用的实际大小，也就是 8，但是系统给这个对象分配的空间是 16 个字节，因为源码中：`if (size < 16) size = 16;`
+
+我们追踪 alloc 的源码可知 OC 中的 alloc 实际上是通过 C 语言的 calloc 函数实现的，具体见下图。
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/OC对象本质03.1ab0f73zb7nk.png)
+
+因此可以得知 NSObject 对象的内存分布图如下：
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/OC对象本质02.1ecfy7fsvig0.png)
+
+
+> 因此可以回答一开始的问题，一个 NSObject 对象占用多少内存      
+> 系统分配了 16 个字节给 NSObject 对象，通过 malloc_size 函数查看，但是 NSObject 对象内部只使用了 8 个字节（前提是在 64 位系统环境下）可以通过 class_getInstanceSize 函数查看。
+
+此外，我们还可以通过查看对象的内存来认证
+
+查看内存数据
+
+```
+<NSObject: 0x101254910>
+(lldb) memory read 0x101254910
+0x101254910: 89 4c c9 44 f8 ff 1d 01 00 00 00 00 00 00 00 00  .L.D............  
+0x101254920: 2d 5b 4e 53 54 6f 6f 6c 62 61 72 43 6f 6c 6c 65  -[NSToolbarColle
+```
+
+`89 4c c9 44 f8 ff 1d 01` 存储 isa 指针，后面八个字节 `00 00 00 00 00 00 00 00 ` 是分配但没被使用的内存。
+
+> LLDB 指令
+
+```
+//print、p：打印
+
+po：打印对象
+
+//读取内存
+memory read/数量格式字节数  内存地址
+x/数量格式字节数  内存地址
+x/3xw  0x10010
+
+//修改内存中的值
+memory  write  内存地址  数值
+memory  write  0x0000010  10
+```
+
+---
+
+### 自定义 NSObject 对象
+
+```objc
+@interface Student : NSObject
+{
+    @public
+    int _no;
+    int _age;
+}
+@end
+
+@implementation Student
+
+@end
+```
+
+我们先生成它的 C++ 代码查看它的实现
+
+```cpp
+//struct NSObject_IMPL {
+//    Class isa;
+//};
+//
+
+struct Student_IMPL {
+    Class isa;  //直接把父类的成员拿过来
+    int _no;
+    int _age;
+};
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        Student *stu = [[Student alloc] init];
+        
+       NSLog(@"%zd",class_getInstanceSize([Student class]));  //16
+       NSLog(@"%zd",malloc_size((__bridge const void *)stu));  //16
+        
+        stu->_no = 4;
+        stu->_age = 5;
+
+    }
+    return 0;
+}
+```
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/oc对象本质02.xlbryrpoab.webp)
+
+查看地址可以看到 4 和 5 的存储位置
+
+```
+(lldb) x 0x0000000100717140
+0x100717140: 41 81 00 00 01 80 1d 01 04 00 00 00 05 00 00 00  A...............
+0x100717150: 2d 5b 4e 53 44 65 62 75 67 54 6f 75 63 68 42 61  -[NSDebugTouchBa
+```
+
+> 再看继承关系的时候内存占用情况
+
+```objc
+//struct Person_IMPL {
+//    struct NSObject_IMPL NSObject_IVARS; // 8
+//    int _age; // 4
+//}; // 16 内存对齐：结构体的大小必须是最大成员大小的倍数
+//
+//struct Student_IMPL {
+//    struct Person_IMPL Person_IVARS; // 16  但是后面 4 个字节是空的
+//    int _no; // 4
+//}; // 16
+@interface Person : NSObject
+{
+    @public
+    int _age;
+}
+@end
+@interface  Student: Person
+{
+    @public
+    int _no;
+}
+@end
+
+@implementation Person
+
+@end
+@implementation Student
+
+@end
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        Student *stu = [[Student alloc] init];
+        Person *per = [[Person alloc] init];
+        
+        NSLog(@" Person: %zd",class_getInstanceSize([Person class]));  // 16
+        NSLog(@"Student: %zd",class_getInstanceSize([Student class]));  // 16
+        
+        NSLog(@" Person: %zd",malloc_size((__bridge const void *)per));  // 16
+        NSLog(@" Person: %zd",malloc_size((__bridge const void *)stu));  // 16
+
+    }
+    return 0;
+}
+```
+
+再看看如果增加属性的情况
+
+```objc
+@interface Person : NSObject
+{
+    @public
+    int _age;
+}
+@property (nonatomic, assign) int height;  //增加一个属性，填在后面的空的 4 个字节
+@property (nonatomic, assign) int weight;
+//增加两个属性之后就会变成分配 32
+@end
+@interface  Student: Person
+{
+    @public
+    int _no;
+}
+@end
+
+@implementation Person
+
+@end
+@implementation Student
+
+
+
+@end
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        Student *stu = [[Student alloc] init];
+        Person *per = [[Person alloc] init];
+        
+        NSLog(@" Person使用了: %zd",class_getInstanceSize([Person class]));  // 24
+        NSLog(@"Student使用了: %zd",class_getInstanceSize([Student class]));  // 24
+        
+        NSLog(@" Person分配了: %zd",malloc_size((__bridge const void *)per));  // 32
+        NSLog(@" Person分配了: %zd",malloc_size((__bridge const void *)stu));  // 32
+
+    }
+    return 0;
+}
+```
+
+### OC 对象的分类
+
+- `instance`「实例对象」 对象就是通过类 alloc 出来的对象，每次调用 alloc 都会产生新的 instance 对象
+  -  instance 对象在内存中存储的信息包括：
+       - isa 指针
+       - 其他成员变量
+- class 「类对象」
+
+```objc
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        
+        NSObject *obj1 = [[NSObject alloc] init];
+        NSObject *obj2 = [[NSObject alloc] init];
+        
+        //获取类对象
+        Class objcClass1 = [obj1 class];
+        Class objcClass2 = [obj2 class];
+        Class objcClass3 = object_getClass(obj1);
+        Class objcClass4 = object_getClass(obj2);
+        Class objcClass5 = [NSObject class];
+        
+        NSLog(@"%p %p %p %p %p",
+              objcClass1,
+              objcClass2,
+              objcClass3,
+              objcClass4,
+              objcClass5);
+        //全部输出 0x7ff844c94c88 同一个地址
+        
+    }
+    return 0;
+}
+```
+
+`objcClass1 ~ objcClass5` 都是 NSObject 的 class 对象（类对象）
+
+它们是同一个对象。每个类在内存中有且只有一个 class 对象
+
+class 对象内存存储的信息包括
+
+- isa 指针
+- superclass 指针
+- 类的属性信息（`@property`）、类的对象方法信息（`instance method`）
+- 类的协议信息（`protocol`）、类的成员变量信息（`ivar`）
+- 成员变量信息
+
+- meta-class「元类对象」
+
+```objc
+//获取元类对象
+Class objectMetaClass1 = object_getClass([NSObject class]);  //Runtime API
+Class objectMetaClass2 = object_getClass(objcClass2);
+NSLog(@"objectMetaClass1: %p,objectMetaClass2: %p",objectMetaClass1, objectMetaClass2);
+//地址是一样的
+```
+
+`objectMetaClass` 是 `NSObject的meta-class `对象（元类对象）
+
+每个类在内存中有且只有一个 meta-class 对象
+
+meta-class 对象和 class 对象的内存结构是一样的，但是用途不一样，在内存中存储的信息主要包括
+
+- isa 指针
+- superclass 指针
+- 类的类方法信息（`class method`）
+
+
+
+
+-----
+
+
+
 
 ## RunLoop
 
@@ -230,4 +568,6 @@ NSTimer *timer = [NSTimer timerWithTimeInterval:1.0 repeats:YES block:^(NSTimer 
 
 
 
+
+-----
 
