@@ -15,7 +15,7 @@
 |  `avformat_open_input`   | 打开输入流 (音视频文件) |
 |  `avformat_find_stream_info`   | 读取媒体文件并获取流信息 |
 |  `av_read_frame`   | 读取音视频包 (文件中的内容),但不进行验证这些码流哪些帧是有效帧 |
-|  `avformat_seek_file`   | 寻找时间戳 (定位文件) |
+|  `avformat_seek_file`   | 定位文件，比如播放器中的拖动定位播放 |
 |  `av_seek_file`   |  寻找关键帧 |
 
 > `AVFormatContext`主要存储视音频封装格式中包含的信息
@@ -80,7 +80,7 @@ int avformat_open_input(AVFormatContext **ps,
 - fmt：是打开媒体格式的操作结构，因为是读，所以是 inputFormat，在这可以传入一个自定义的的 inputFormat ,对应命令行中的 -f xxx 段，如果指定了它，在打开文件中就不会再探测文件的实际格式了，就以这个为准了。
 - options： 是对某种格式的一些操作，是为了在命令行中可以对不同的格式传入，一般为 NULL
 
-避免篇幅过程，源码详细介绍可以[参考这里](https://blog.csdn.net/qq_36391075/article/details/90514721)
+避免篇幅过长，源码详细介绍可以[参考这里](https://blog.csdn.net/qq_36391075/article/details/90514721)
 
 大致流程：
 

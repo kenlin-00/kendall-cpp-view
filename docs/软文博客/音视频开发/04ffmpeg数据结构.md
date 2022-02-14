@@ -1,7 +1,7 @@
 ## 1.ffmpeg数据结构介绍
 ffmpeg的数据结构有很多，各司其职，大致见下面的音视频播放流程图：
 
-![](./img/ffmpeg数据结构01.png)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/ffmpeg数据结构01.30bhhwy7f6m0.png)
 
 ffmpeg的数据结构可以分为以下几类：
 
@@ -19,7 +19,7 @@ ffmpeg的数据结构可以分为以下几类：
 
 	* `AVStream`是存储每一个视频/音频流信息的结构体。
 	* `AVCodecContext`: 编解码器上下文结构体，存储该视频/音频流使用解码方式的相关数据。
-	* `AVCodec`: 每种视频（音频）编解码器(例如H.264解码器)对应一  个该结构体。
+	* `AVCodec`: 每种视频（音频）编解码器(例如H.264解码器)对应一个该结构体。
 	
 	三者的关系如下图:
 
@@ -35,12 +35,13 @@ ffmpeg的数据结构可以分为以下几类：
 
 ## 2.各种结构体之间的关系
 
-![](./img/ffmpeg数据结构03.jpg)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/ffmpeg数据结构03.31vbcezocym0.jpg)
 > 图片来源雷神博客
 
 ### 2.1 AVFormatContext 和 AVInputFormat之间的关系
 
-![](./img/ffmpeg数据结构04.png)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/ffmpeg数据结构04.fnx3k76bak0.png)
+
 
 
 `AVInputFormat`被封装在`AVFormatContext`里
@@ -56,6 +57,6 @@ ffmpeg的数据结构可以分为以下几类：
 
 ### 2.2 `AVFormatContext`, `AVStream`和`AVCodecContext`之间的关系
 
-![](./img/ffmpeg数据结构05.png)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/寻offer总结02/ffmpeg数据结构05.69ymb94m49c0.png)
 
 `AVStream`和`AVpacket`中都有`index`字段用于区分不同的码流（视频、音频、字幕等），`AVFormatContext`中包含输入的`AVStream`数组用于记录各个码流，`nb_streams`记录输入码流的数量。`AVCodecContext`记录着`AVStream`需要用那种解码器来进行解码。
