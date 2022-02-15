@@ -4,6 +4,10 @@
   - [一个 NSObject 对象占用多少内存](#一个-nsobject-对象占用多少内存)
   - [自定义 NSObject 对象](#自定义-nsobject-对象)
   - [OC 对象的分类](#oc-对象的分类)
+  - [对象的 isa 指针指向哪里](#对象的-isa-指针指向哪里)
+  - [class 的 superclasss 指针](#class-的-superclasss-指针)
+  - [meta-class 的 superclass 指针](#meta-class-的-superclass-指针)
+  - [isa、superclass总结](#isasuperclass总结)
 - [RunLoop](#runloop)
   - [RunLoop 在实际开发中的应用](#runloop-在实际开发中的应用)
   - [RunLoop 的基本作用](#runloop-的基本作用)
@@ -375,13 +379,89 @@ meta-class 对象和 class 对象的内存结构是一样的，但是用途不�
 - superclass 指针
 - 类的类方法信息（`class method`）
 
+总结为如下图；
 
-
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/OC类分类01.784xe7s4evg0.webp)
 
 -----
 
+### 对象的 isa 指针指向哪里
+
+```objc
+Person *person = [[Person alloc] init];
+//调用对象方法
+[person personInstanceMethod];
+//上面调用方法的本质是：objc_msgSend(person, @selector(personInstanceMethod))
+//就是给实例对象 person 对象发送消息
+
+//调用类方法
+[Person personClassMethod];
+//本质 objc_msgSend([Person,class], @selector(personInstanceMethod))
+```
+
+上面通过实例对象调用对象方法时，其本质是给「类对象」发送消息，因为对象方法存储在「类对象」中。如果调用「类方法」，就需要给「元类对象」发送消息，因为类方法存储在「元类对象」中。
+
+因此就需要 isa 指针作为桥梁
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/OC类分类02.50i5c09715o0.webp)
+
+- **instance 的isa 指向 class**
+    - 当调用对象方法时，通过 instance 的 isa 找到 class，最后找到「对象方法」的实现进行调用
+
+- **class 的 isa 指向 meta-class**
+    - 当调用类方法时，通过 class 的 isa 找到 meta-class ，最后找到「类方法」的实现进行调用
 
 
+### class 的 superclasss 指针
+
+```objc
+Student *student = [[Student alloc] init];
+//调用 Person 的对象方法
+[student personInstanceMethod];
+```
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/superclass指针01.74sb4rgyjxs0.webp)
+
+当 Student 的 instance 对象要调用 Person 的对象方法时，会先通过 isa 找到 Student 的 class，然后通过 superclass 找到 Person 的 class，最后找到对象方法的实现进行调用
+
+### meta-class 的 superclass 指针
+
+```objc
+//调用 Person 的 类方法
+[Student personClassMethod];
+```
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/superclass指针02.69pgnq42tk40.webp)
+ 
+当 Student 的 class 要调用 Person 的类方法时，会先通过 isa 找到 Student 的 meta-class ，然后通过 superclass 找到 Person 的 meta-class ，最后找到类方法的实现进行调用。
+
+### isa、superclass总结
+
+- instance 的 isa 指向 class
+
+- class 的 isa 指向 meta-class
+
+- meta-class 的 isa 指向基类的 meta-class
+
+- class 的 superclass 指向父类的 class
+  - 如果没有父类，superclass 指针为 nil
+
+- meta-class 的 superclass 指向父类的 meta-class
+  - 基类的 meta-class 的 superclass 指向基类的 class
+
+- instance 调用对象方法的轨迹
+  - isa 找到 class，方法不存在，就通过 superclass 找父类
+
+- class 调用类方法的轨迹
+  - isa 找 meta-class，方法不存在，就通过 superclass 找父类
+
+
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/OC类分类03.5okmqa5vcj00.webp)
+
+
+
+
+----
 
 ## RunLoop
 
