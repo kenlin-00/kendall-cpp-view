@@ -1,288 +1,347 @@
-/*可任意修改样式，或恢复预设值，保存后生效
-相对“默认样式”而作的修改会用  红色 标注*/
+/*自定义样式，实时生效*/
 
-.output_wrapper/*此属性为全局*/
-{
-     font-size: 18px;
-     color: #3e3e3e;
-     line-height: 1.6;
-     word-spacing:0px; 
-     letter-spacing:0px;
-     font-family: "Helvetica Neue",Helvetica,"Hiragino Sans GB","Microsoft YaHei",Arial,sans-serif;
-   
-     /*增加背景网格*/
-     background-image: linear-gradient(90deg, rgba(50, 0, 0, 0.05) 3%, rgba(0, 0, 0, 0) 3%), linear-gradient(360deg,rgba(50, 0, 0, 0.05) 3%, rgba(0, 0, 0, 0) 3%);
-     background-size: 20px 20px;
-     background-position: center center;
-}
-.output_wrapper *
-{
-  font-size: inherit  ;
-  color: inherit;
-  line-height: inherit;
-  margin:0px;
-  padding:0px;
+/*自定义样式，实时生效*/
+
+/* 全局属性
+* 页边距 padding:30px;
+* 全文字体 font-family:optima-Regular;
+* 英文换行 word-break:break-all;
+color:#2b2b2b;
+*/
+#nice {
+  line-height: 1.35;
+  color: #333;
+  font-family: Optima-Regular, PingFangTC-light;
+  letter-spacing: 1.5px;
 }
 
-p {/*段落*/
-  margin: 1.5em 0px;
-}
-h1,h2,h3,h4,h5,h6 {
-  margin: 1.5em 0px;
-  font-weight:bold;
-}
-h1 {
-  font-size: 1.6em  ;
- background-color:  #00b8d4;
-}
-h2 {
-  font-size: 1.4em;
-background-color:  #00b8d4;
-
-}
-h3 {
-  font-size: 1.3em;
-}
-h4 {
-  font-size: 1.2em;
-}
-h5 {
-  font-size: 1em;
-}
-h6 {
-  font-size: 1em;
+/* 段落，下方未标注标签参数均同此处
+* 上边距 margin-top:5px;
+* 下边距 margin-bottom:5px;
+* 行高 line-height:26px;
+* 词间距 word-spacing:3px;
+* 字间距 letter-spacing:3px;
+* 对齐 text-align:left;
+* 颜色 color:#3e3e3e;
+* 字体大小 font-size:16px;
+* 首行缩进 text-indent:2em;
+*/
+#nice p {
+  color: #2b2b2b;
+  margin: 10px 0px;
+  letter-spacing: 2px;
+  font-size: 16px;
+  word-spacing: 2px;
 }
 
-ul, ol {
-  padding-left: 32px;
-}
-ul{ /*无序列表*/
-    list-style-type: disc;
-}
-ol { /*有序列表*/
-  list-style-type: decimal;
-}
-li *  
-{
- /* color: #3e3e3e;*/
-} 
-
-li{  /*在公众号下，改变不了li符号的属性（如颜色），并会影响其子元素的属性;而在其它博客平台中，则能正常使用*/ 
-    margin-bottom: 0.5em;
-/*  color:#159957; */    
-}
-.code_size_default  /*代码块默认size*/
-{
-  line-height: 18px;
-  font-size: 14px; 
-  font-weight:normal;
-  word-spacing:0px; 
-  letter-spacing:0px; 
-}
-.code_size_tight /*代码块紧凑size*/
-{
-   line-height: 15px; 
-   font-size: 11px; 
-   font-weight:normal;
-   word-spacing:-3px; 
-   letter-spacing:0px; 
-}
-pre code /*代码块*/
-{           
-     font-family: Consolas, Inconsolata, Courier, monospace;
-     border-radius: 0px;
-}
-blockquote { /*引用块*/
-  display: block;
-  padding: 15px 1rem;
-  font-size: 0.9em;
-  padding-right: 15px;
-  margin: 1em 0;
-  color: #819198;
-  border-left: 6px solid #dce6f0;
-  background: #f2f7fb;
-  overflow: auto;
-  overflow-scrolling: touch; 
-  word-wrap: normal;
-  word-break: normal;  
-}
-blockquote p {
-    margin: 0px;
+/* 一级标题 */
+#nice h1 {
+  font-size: 25px;
 }
 
-a { /*超链接*/
-  text-decoration: none;
-  color: #1e6bb8;
-  word-wrap:break-word;
+/* 一级标题内容 */
+#nice h1 span {
+  display: inline-block;
+  font-weight: bold;
+  color: #4CAF50;
 }
 
-strong  /*强调*/
-{
+/* 一级标题修饰 请参考有实例的主题 */
+#nice h1:after {}
+
+/* 二级标题 */
+#nice h2 {
+  display:block;
+  border-bottom: 4px solid #4CAF50;
+}
+
+/* 二级标题内容 */
+#nice h2 .content {
+  display: flex;
+  color: #4CAF50;
+  font-size: 20px;
+
+}
+
+/* 二级标题前缀 */
+#nice h2 .prefix {
+
+}
+
+/* 二级标题后缀 */
+#nice h2 .suffix {
+  display: flex;
+  box-sizing: border-box;
+  width: 20px;
+  height: 10px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  background: RGBA(76, 175, 80, .5);
+  color: rgb(255, 255, 255);
+  font-size: 16px;
+  letter-spacing: 0.544px;
+  justify-content: flex-end;
+  box-sizing: border-box !important;
+  overflow-wrap: break-word !important;
+  float: right;
+  margin-top: -10px;
+}
+
+/* 三级标题 */
+#nice h3 {
+  font-size: 17px;
+  font-weight: bold;
+  text-align: center;
+  position:relative;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* 三级标题内容 */
+#nice h3 .content {
+  color: #2b2b2b;
+  padding-bottom:2px
+}
+
+#nice h3 .content:before{
+  content:'';
+  width:30px;
+  height:30px;
+  display:block;
+  background-image:url(https://files.mdnice.com/grass-green.png);
+  background-position:center;
+  background-size:30px;
+  margin:auto;
+  opacity:1;
+  background-repeat:no-repeat;
+  margin-bottom:-8px;
+}
+
+/* 三级标题修饰 请参考有实例的主题 */
+#nice h3:after {}
+
+#nice h4 .content {
+  height:16px;
+  line-height:16px;
+  font-size: 16px;
+}
+
+#nice h4 .content:before{
+
+}
+
+/* 无序列表整体样式
+* list-style-type: square|circle|disc;
+*/
+#nice ul {
+  font-size: 15px; /*神奇逻辑，必须比li section的字体大才会在二级中生效*/
+  color: #595959;
+  list-style-type: circle;
+}
+
+
+/* 有序列表整体样式
+* list-style-type: upper-roman|lower-greek|lower-alpha;
+*/
+#nice ol {
+  font-size: 15px;
+  color: #595959;
+}
+
+/* 列表内容，不要设置li
+*/
+#nice li section {
+  font-size: 16px;
+  font-weight: normal;
+  color: #595959;
+}
+
+
+
+/* 链接
+* border-bottom: 1px solid #009688;
+*/
+#nice a {
+  color: #399003;
+  font-weight: normal;
+  border-bottom: 1px solid #399003;
+}
+
+/* #nice strong::before {
+  content: '「';
+} */
+
+/* 加粗 */
+#nice strong {
+  color: #399003;
   font-weight: bold;
 }
-em /*斜体*/
-{
- font-style:italic;
-}
-del /*删除线*/
-{
- font-style:italic;
-}
-strong em/*强调的斜体*/
-{
-font-weight: bold;
+
+/* #nice strong::after {
+  content: '」';
+} */
+
+/* 斜体 */
+#nice em {
+  font-style: normal;
+  color: #399003;
+  font-weight:bold;
 }
 
-hr {  /*分隔线*/
-  height: 1px;
-  margin: 1.5rem 0px;
-  border: none;
-  border-top: 1px dashed #A5A5A5;
+/* 加粗斜体 */
+#nice em strong {
+  color: #399003;
 }
 
-code /*行内代码*/
-{
-    word-wrap: break-word;
-    padding: 2px 4px;
-    border-radius: 4px;
-    margin:0 2px;
-    color:#e96900;
-    background:#f8f8f8;
-}
-img
-{
-  display: block;
-  margin:0 auto;  /*图片水平居中*/
-  /* margin:0 0;  */ /*图片水平居左，如需要请打开*/
-  max-width:100%;
-}
-figcaption/*图片描述文字*/
-{
-  margin-top:10px;
-  text-align:center;
-   /* text-align:left;  */ /*当图片水平居左时，请打开*/
-  color:#999;
-  font-size: 0.7em;
+/* 删除线 */
+#nice del {
+  color: #399003;
 }
 
-/*================表格开始================*/
-table
-{
- display:table;
- width: 100% ;
- text-align: left;
-}
-tbody {
-  border: 0;
-}
-
-table tr {
-  border: 0;
-  border-top: 1px solid #CCC;
-  background-color: white;
- 
-}
-
-/*隔行改变行的背景色，如需要请打开*/
-/*
-table tr:nth-child(2n) {
-  background-color: #F8F8F8;
-}
+/* 分隔线
+* 粗细、样式和颜色
+* border-top:1px solid #3e3e3e;
 */
+#nice hr {
+  height: 1px;
+  padding: 0;
+  border: none;
+  border-top: 2px solid #399003;
+}
 
-table tr th, table tr td {
-  font-size: 1em;
-  border: 1px solid #CCC;
-  padding: 0.5em 1em;
-  text-align: left;
+/* 图片
+* 宽度 width:80%;
+* 居中 margin:0 auto;
+* 居左 margin:0 0;
+*/
+#nice img {
+  border-radius: 6px;
+  display: block;
+  margin: 20px auto;
+  object-fit: contain;
+  box-shadow:2px 4px 7px #999;
 }
-/*表头的属性*/
-table tr th {
- font-weight: bold;
-  background-color: #F0F0F0;
-}
-/*================表格结束================*/
 
+/* 图片描述文字 */
+#nice figcaption {
+  display: block;
+  font-size: 13px;
+  color: #2b2b2b;
+}
 
+/* 行内代码 */
+#nice p code,
+#nice li code {
+  color: #407600;
 
-/*================数学公式开始================*/
-.katex-display {/*块公式*/
-  font-size:1.22em; 
-}
-.katex
-{/*行内公式*/
-  padding:8px 3px;
-}
-.katex-display > .katex
-{/*块公式*/
-   display:inline-block;
-   text-align:center;
-   padding:3px;
-}
-.katex img
-{/*行内公式对应的图片*/
   display:inline-block;
-  vertical-align:middle;
-}
-/*================数学公式结束================*/
-
-a[href^="#"] sup
-{/*注脚*/
-  vertical-align:super;
-  margin:0 2px;  
-  padding:1px 3px; 
-  color: #ffffff;
-  background:#666666;
-  font-size:0.7em;
+  padding:0 2px;
+  border-radius:2px;
+  height:21px;
+  line-height:22px;
 }
 
-/*================任务列表开始================*/
-.task-list-list {
-  list-style-type: none;
-}
-.task-list-list.checked {/*已完成*/
-  color: #3e3e3e;
+/* 非微信代码块
+* 代码块不换行 display:-webkit-box !important;
+* 代码块换行 display:block;
+*/
+#nice .code-snippet__fix {
+  background: #f7f7f7;
+  border-radius: 2px;
 }
 
-.task-list-list.uncheck {/*未完成*/
-  color: #bfc1bf;
+#nice pre code {
+  letter-spacing: 0px;
 }
-.task-list-list .icon_uncheck, .task-list-list .icon_check {
+
+/*
+* 表格内的单元格
+* 字体大小 font-size: 16px;
+* 边框 border: 1px solid #ccc;
+* 内边距 padding: 5px 10px;
+*/
+#nice table tr th,
+#nice table tr td {
+  font-size: 16px;
+  color: #595959;
+}
+
+#nice .footnotes {
+  background: #F6EEFF;
+  padding: 20px 20px 20px 20px;
+  font-size: 16px;
+  border: 0.8px solid #399003;
+  border-radius: 6px;
+  border: 1px solid #399003;
+}
+
+/* 脚注文字 */
+#nice .footnote-word {
+  font-weight: normal;
+  color: #595959;
+}
+
+/* 脚注上标 */
+#nice .footnote-ref {
+  font-weight: normal;
+  color: #595959;
+}
+
+/*脚注链接样式*/
+#nice .footnote-item em {
+  font-size: 16px;
+  color: #595959;
+  display: block;
+}
+
+#nice .footnotes{
+  background: #fff;
+  padding: 20px 20px 20px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #4CAF50;
+}
+
+/* "参考资料"四个字
+* 内容 content: "参考资料";
+*/
+#nice .footnotes-sep:before {
+  content: 'Reference';
+  color: #55a8a5;
+  letter-spacing: 1px;
+  border-bottom: 2px solid #55a8a5;
+  display: inline;
+  font-size: 14px;
+}
+
+/* 参考资料编号 */
+#nice .footnote-num {}
+
+/* 参考资料文字 */
+#nice .footnote-item p {
+  color: #cccccc;
+  /* font-weight: bold; */
+}
+
+/* 参考资料解释 */
+#nice .footnote-item p em {
+   color: #cccccc;
+  font-weight: normal;
+}
+
+/* 行间公式
+* 最大宽度 max-width: 300% !important;
+*/
+#nice .block-equation svg {}
+
+/* 行内公式
+*/
+#nice .inline-equation svg {}
+
+/* 滑动图片
+ */
+#nice .imageflow-img {
   display: inline-block;
-  vertical-align: middle;
-  margin-right: 10px;
-}
-.task-list-list .icon_check:before
-{/*已完成*/
-    content: "√";
-    border: 2px solid #3e3e3e;
-    color:red;
-}
-.task-list-list .icon_uncheck:before
-{/*未完成*/
-   content: "x";
-   border: 2px solid #bfc1bf;
-    color: #bfc1bf;
-}
-.task-list-list .icon_check:before, .task-list-list .icon_uncheck:before
-{/*标志框*/
-  padding:2px;
-  padding-left: 5px;
-  padding-right: 8px;
-  border-radius:5px;
-}
-/*================任务列表结束================*/
-
-.toc
-{/*总目录*/
-  margin-left:25px;
-}
-.toc_item
-{/*每条目录*/
-  display:block;
-
-}
-.toc_left
-{/*每级目录的缩进*/
-  margin-left:25px;
+  width:100%;
+  margin-bottom: 0;
 }
