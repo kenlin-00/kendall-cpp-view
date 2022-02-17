@@ -21,6 +21,20 @@
   - [为什么要使用心跳包](#为什么要使用心跳包)
     - [如何处理不发心跳包的客户端](#如何处理不发心跳包的客户端)
     - [怎么实现时间轮](#怎么实现时间轮)
+    - [连接超时被踢掉的过程](#连接超时被踢掉的过程)
+- [内存池的设计](#内存池的设计)
+  - [为什么要设计内存池](#为什么要设计内存池)
+  - [内存池的结构](#内存池的结构)
+    - [第一层 ThreadCache](#第一层-threadcache)
+      - [设计ThreadCache类](#设计threadcache类)
+      - [Thread Cache申请内存](#thread-cache申请内存)
+      - [Thread Cache释放内存](#thread-cache释放内存)
+    - [CentralCache](#centralcache)
+      - [Central Cache申请内存](#central-cache申请内存)
+      - [Central Cache 释放内存](#central-cache-释放内存)
+    - [PageCache](#pagecache)
+      - [申请内存](#申请内存)
+      - [PageCache释放内存](#pagecache释放内存)
 - [压力测试](#压力测试)
   - [Webbench实现的核心原理](#webbench实现的核心原理)
 - [压力测试 Bug 排查](#压力测试-bug-排查)
@@ -29,7 +43,7 @@
     - [connect](#connect)
     - [accept](#accept)
     - [定位 accept](#定位-accept)
-    - [Epoll的ET、LT](#epoll的etlt)
+    - [Epoll 的 ET、LT](#epoll-的-etlt)
     - [代码分析解决](#代码分析解决)
     - [Bug原因](#bug原因)
 
@@ -396,7 +410,7 @@ int output_buf::write2fd(int fd) //取代 io层 write方法
 
 这个服务器项目可以同时处理大量的并发请求，结合多进程和异步机制，异步机制使用的是异步非阻塞方式，也就是 master -worker.
 
-么个公祖欧进程使用异步非阻塞方式，可以处理多个客户端请求，当某个工作进程收到客户端的请求后，调用 IO 进行处理，如果不能立即得到结果，就去处理其他的请求；客户端在这个期间也不需要等待响应，可以去处理其他的事情；当 IO 返回的时候，就会通知这个工作的进程，这个进程得到通知，暂时挂起当前处理的事务，去响应客户端请求。
+每个工作进程使用异步非阻塞方式，可以处理多个客户端请求，当某个工作进程收到客户端的请求后，调用 IO 进行处理，如果不能立即得到结果，就去处理其他的请求；客户端在这个期间也不需要等待响应，可以去处理其他的事情；当 IO 返回的时候，就会通知这个工作的进程，这个进程得到通知，暂时挂起当前处理的事务，去响应客户端请求。
 
 因为处理请求具体到系统底层就是读写事件（所谓阻塞调用方式也就是请求事件还没准备好，线程只能一直去等，等事件准备好了再处理；而非阻塞即事件没准备好，马上返回 ENGAIN,告诉你事件还没准准备好，而在这期间可以先去做其他事，再回头看看事件准备好了吗，时不时会看，需要的开销也是不小的）
 
@@ -648,11 +662,19 @@ tcp 建立好连接之后，如果客户端不给服务端发送心跳包，比�
 
 #### 如何处理不发心跳包的客户端
 
+
+
+[参考1](https://blog.csdn.net/haolipengzhanshen/article/details/80502994)
+
 使用 **定时器**，主要通过 **时间轮** 的方式实现
+
+> 为什么要用定时器？
+> 
+> 处理定时任务，或者非活跃连接，节省系统资源；
 
 当时设计的时候考虑到了三种情况
 
-1） 如果一个客户端连接在连续8秒钟（也可自定义时间间隔）内没有收到数据，那么可以在一定程度上认为这是个无效连接，应该将其断开。
+1） 如果一个客户端连接在连续 8 秒钟（也可自定义时间间隔）内没有收到数据，那么可以在一定程度上认为这是个无效连接，应该将其断开。
 
 2）如果一个客户端连接在连续7秒钟内没有收到数据，但是在第8秒（马上触发超时）连接上有数据收发，那么此时要更新此连接对应定时器剩余时间为8秒，而不是1秒。
 
@@ -670,39 +692,174 @@ tcp 建立好连接之后，如果客户端不给服务端发送心跳包，比�
 
 shared_ptr 是基于引用计数的智能指针，用于共享对象的所有权，即多个指针指向同一个对象。
 
-然后使用 8 个桶组成的循环队列，
+这个事件轮的基本结构是 [一个循环队列 + 一个指向队尾的指针 (tail)] ，这个指针每秒钟移动一格,就像钟表上的时针，，格子里的数字是倒计时，表示这个格子（桶子）中的连接的剩余寿命。一秒钟以后，tail 指针移动一格，原来四点钟方向的格子被清空，其中的连接已被断开。
 
-- 第一个桶放下一秒将要超时的连接
-- 第二个放下 2 秒将要超时的连接
-- 每个连接一收到数据就把自己放到第 8 个桶（环形缓冲区的尾部）
-- 然后在每秒钟的 callback 里把第一个桶里的所有连接断开，把这个空桶挪到队尾
+![](https://img-blog.csdnimg.cn/20201205092636692.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JhaWR1XzE1OTUyMTAz,size_16,color_FFFFFF,t_70)
 
-这样大致可以做到 8 秒钟没有数据就超时断开连接
 
-更重要的是，每次不用检查全部的 connection，只要检查第一个桶里的 connections，相当于把任务分散了
+#### 连接超时被踢掉的过程
 
-**情况一：连接超时被断开的情况**
+假设在某个时刻，conn 1 到达，把它放到当前格子中，它的剩余寿命是 7 秒。此后 conn 1 上没有收到数据。1 秒钟之后，tail 指向下一个格子，conn 1 的剩余寿命是 6 秒。又过了几秒钟，tail 指向 conn 1 之前的那个格子，conn 1 即将被断开。下一秒，tail 重新指向 conn 1 原来所在的格子，清空其中的数据，断开 conn 1 连接。
 
-假设在某个时刻，conn 1 到达，把它放到当前格子中，它的剩余寿命是 7 秒。此后 conn 1 上没有收到数据。
+![](https://img-blog.csdnimg.cn/2020120509335293.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JhaWR1XzE1OTUyMTAz,size_16,color_FFFFFF,t_70)
 
-![](https://img-blog.csdn.net/20180530175433277?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2hhb2xpcGVuZ3poYW5zaGVu/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+![](https://img-blog.csdnimg.cn/20201205093359329.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JhaWR1XzE1OTUyMTAz,size_16,color_FFFFFF,t_70)
 
-1 秒钟之后，tail 指向下一个格子，conn 1 的剩余寿命是 6 秒。
+> 当然需要对里面的连接进行刷新
 
-![](https://img-blog.csdn.net/20180530175522733?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2hhb2xpcGVuZ3poYW5zaGVu/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+如果在断开 conn 1 之前收到数据，就把它移到当前的格子里。conn1的剩余寿命是3秒，此时 conn1 收到数据，conn 1 的寿命延长为 7 秒。时间继续前进，conn 1 寿命递减，不过它已经比第一种情况长寿了。
 
-又过了几秒钟，tail 指向 conn 1 之前的那个格子，conn 1 即将被断开。
+![](https://img-blog.csdnimg.cn/20201205093642972.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JhaWR1XzE1OTUyMTAz,size_16,color_FFFFFF,t_70)
 
-![](https://img-blog.csdn.net/20180530175543334?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2hhb2xpcGVuZ3poYW5zaGVu/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+![](https://img-blog.csdnimg.cn/20201205093720407.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JhaWR1XzE1OTUyMTAz,size_16,color_FFFFFF,t_70)
 
-下一秒，tail 重新指向 conn 1 原来所在的格子，清空其中的数据，断开 conn 1 连接。
+> 我们还需要考虑多个连接的情况
 
-![](https://img-blog.csdn.net/20180530175603204?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2hhb2xpcGVuZ3poYW5zaGVu/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+时间轮 中的每个格子是个 hash set，可以容纳不止一个连接。比如一开始，conn 1 到达。随后，conn 2 到达，这时候 tail 还没有移动，两个连接位于同一个格子中，具有相同的剩余寿命。（下图中画成链表，代码中是哈希表。）几秒钟之后，conn 1 收到数据，而 conn 2 一直没有收到数据，那么 conn 1 被移到当前的格子中。这时 conn 1 的寿命比 conn 2 长。
 
-如果不止一个连接的话，就把环形缓冲区的元素改为set集合类型，类比成一个时间圆盘下面挂着很多链子。
+![](https://img-blog.csdnimg.cn/20201205093859165.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JhaWR1XzE1OTUyMTAz,size_16,color_FFFFFF,t_70)
 
-每次时间轮超时检测时，检测当前指针所在的set中元素的引用计数是否为0，为0则超时。
+[参考2](https://blog.csdn.net/baidu_15952103/article/details/110676878)
 
+
+----
+
+## 内存池的设计
+
+> https://blog.csdn.net/M_jianjianjiao/article/details/88071878
+
+> https://blog.csdn.net/hansionz/article/details/87885229
+
+> [参考](https://blog.csdn.net/qq_37299596/article/details/108083749?spm=1001.2101.3001.6650.7&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-7.pc_relevant_default&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-7.pc_relevant_default&utm_relevant_index=14)
+
+### 为什么要设计内存池
+
+- 减少内存碎片
+- 提高效率，使得在特定的情况下平均运行效率该高于malloc
+- 解决在内存申请过程中的竞争问题
+
+**设计思路**
+
+- 以定长哈希映射的空闲内存池为基础
+- 使用三层缓存分配结构
+
+### 内存池的结构
+
+#### 第一层 ThreadCache
+
+![](https://img-blog.csdnimg.cn/20190302090146379.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L01famlhbmppYW5qaWFv,size_16,color_FFFFFF,t_70)
+
+- 第一层为线程缓存，线程直接从这里拿去内存。每个线程都有自己的 thread cache, 所以不用加锁，这就保证了并发内存池的高效性。
+
+- 使用哈希映射一个存储不同大小数据块的内存块池，通过根据不同大小的对象，构建不同大小的内存的分配器，进行内存的高效分配。
+
+- 当然，在内存分配的过程中会产生内存碎片，而内存碎片分为两种
+  - 内碎片：是指因为在内存中会因为内存对齐的原因，在内存分配过程中，为了要对齐到响应的对齐位置，会在造成一定空间的浪费
+  - 外碎片：是指在内存分配过程中会，当需要一块内存时，该内存，可能是从一个大块的内存上切割下来的，不断的切割，就会使大内存块变成小的内存块，等到需要大块内存时就会发现找不到。
+
+- 根据定长的结构对齐进行改进，将哈希映射的池分为 4 部分，他们的对齐数分别是 8 、16 、128 、512，将这几部分的内碎片的产生进行一定的控制，从而达到减少内碎片的目的，而外碎片通过后面的合并进行解决。
+
+> 怎么实现每个线程都拥有自己唯一的线程缓存呢？
+
+为了避免加锁带来的效率，在 Thread Cache 中保存每个线程本地的 ThreadCache 的指针，这样 Thread Cache 在申请释放内存是不需要锁的。因为每一个线程都拥有了自己唯一的一个全局变量。
+
+##### 设计ThreadCache类
+
+```cpp
+class ThreadCache
+{
+public:
+	//分配内存
+	void* Allocate(size_t size);
+	//释放内存
+	void Deallocate(void* ptr, size_t size);
+	//从中心缓存中获取内存对象
+	void* FetchFromCentralCache(size_t index, size_t size);
+	//当自由链表中的对象超过一次分配给threadcache的数量，则开始回收
+	void ListTooLong(FreeList* freelist, size_t byte);
+
+private:
+	FreeList _freelist[NLISTS];// 创建了一个自由链表数组
+};
+```
+
+##### Thread Cache申请内存
+
+- 只能申请在64k范围以内的大小的内存，如果大于64k，则直接向系统申请内存。
+
+- 当内存申请 `size<=64k` 时在 thread cache 中申请内存，先计算 size 在自由链表中的位置，如果自由链表中有内存对象时，直接从 `FistList[i]` 中 Pop 然后返回对象，时间复杂度是 O(1)，并且没有锁竞争，效率极高。 当 `FreeList[i]` 中没有对象时，则批量从 Central cache 中获取一定数量的对象。
+
+##### Thread Cache释放内存
+
+- 当释放内存小于 64k 时将内存释放回 thread cache，先计算 size 在自由链表中的位置，然后将对象 Push 到 `FreeList[i]`
+
+- 当自由链表的长度超过一次向中心缓存分配的内存块数目时，回收一部分内存对象到 Central cache
+
+
+#### CentralCache
+
+> 中心缓存要实现为单例模式，保证全局只有一份实例
+
+- Central cache 本质是由一个哈希映射的 span 对象自由双向链表构成
+
+> 什么是span? 一个 span 是由多个页组成的一个 span 对象。一页大小是恒定的 4k ((32位下4K 64位下8K)。 span 是为了对 thread cache 还回来的内存进行管理
+
+![](https://img-blog.csdnimg.cn/20200818203042292.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3Mjk5NTk2,size_16,color_FFFFFF,t_70#pic_center0)
+
+##### Central Cache申请内存
+
+- 当 thread cache 中没有内存时，就会批量向 Central cache 申请一定数量的内存对象，Central cache 也是一个哈希映射的 Spanlist，Spanlist 中挂着span，从 span 中取出对象给 thread cache，这个过程是需要加锁的，可能会存在多个线程同时取对象，会导致线程安全的问题。
+
+- 当 Central cache 中没有非空的 span 时，则将空的 span 链在一起，然后向 Page cache 申请一个 span 对象，span 对象中是一些以页为单位的内存，将这个 span 对象切成需要的内存大小并链接起来，最后挂到 Central Cache 中。
+
+- Central cache 的中的每一个 span 都有一个 use_count (引用计数)，分配一个对象给thread cache，就 `++use_count`，当这个 span 的使用计数为 0，说明这个 span 所有的内存对象都是空闲的，然后将它交给 Page Cache 合并成更大的页，减少内存碎片。
+
+**简言之**：当 thread cache 中没有内存时，就会批量向 Central cache 申请一定数量的内存对象，Central cache 也是一个哈希映射的 Spanlist，Spanlist 中挂着 span，从 span 中取出对象给 thread cache。比如线程申请一个 16bytes 的内存，但是此时thread cache 中16bytes往上的都没了 ,这个时候向 cantral 申请，central cache 就到 16bytes 的地方拿下一个span 给 thread cache。
+
+但是，当向 Central Cache 中申请发现 16bytes 往后的 span 节点全空了时，则将空的 span 链在一起，然后向 Page Cache 申请若干以页为单位的span对象，比如一个 3 页的 span 对象，然后把这个 3 页的 span 对象切成3 个一页的 span 对象，放在 central cache 中 16bytes 位置， 再将这三个一页的 span 对象切成需要的内存块大小，这里就是 16bytes，并链接起来，挂到 span 中
+
+
+##### Central Cache 释放内存
+
+- 当 thread cache 过长或者线程销毁，则会将内存释放回 Central cache 中，没释放一个内存对象，检查该内存所在的 span 使用计数是否为空，释放回来一个时 `--use_count`。
+
+- 当 use_count 减到 0 时则表示所有对象都回到了 span，则将 span 释放回 Page cache，在 Page cache 中会对前后相邻的空闲页进行合并。
+
+
+> **怎么才能将 Thread Cache 中的内存对象还给他原来的 span 呢**？
+
+可以在 Page Cache 中维护一个页号到 span 的映射。当 Page Cache 给 Central Cache 分配一个span时，将这个映射更新到 unordered_map 中去，这样的话在 central cache 中的 span 对象下的内存块都是属于某个页的 也就有他的页号,，同一个span切出来的内存块 PageID 都和 span 的 PageID 相同，这样就能很好的找出某个内存块属于哪一个 span 了
+
+#### PageCache
+
+![](https://img-blog.csdnimg.cn/20200818205901217.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3Mjk5NTk2,size_16,color_FFFFFF,t_70#pic_center)
+
+- PageCache 处于 CentralCache 的上一层缓存结构，当中心缓存中的内存数据块不够的话，就会从页缓存中进行申请，从而获得内存资源
+
+- 页缓存是以页为单位进行存储的，通过哈希的映射建立一个缓存池，每个下标对应该位置所挂的是几页的内存块，也就是 span
+
+##### 申请内存
+
+- 1.当 CentralCache 向 PageCache 申请内存时，PageCache 先检查对应位置有没有 span，如果没有则向更大页寻找一个 span，如果找到则分裂成两个。比如：申请的是 4page，4page 后面没有挂 span，则向后面寻找更大的 span，假设在 10page 位置找到一个span，则将 10page span分裂为一个 4 page span 和 一个 6 page span。
+  
+- 2.如果找到 128 page 都没有合适的 span，则向系统使用 mmap、brk(Linux)或者是 VirtualAlloc(windows) 等方式申请 128 page span 挂在自由链表中，再重复 1 中的过程。
+
+##### PageCache释放内存
+
+- 如果 CentralCache 释放回一个span，则依次寻找 span 的前后 page id 的 span，看是否可以合并，如果能够合并继续向前寻找。这样就可以将切小的内存合并收缩成大的 span，减少内存碎片。但是合并的最大页数超过 128 页，则不能合并。
+
+- 如果 ThreadCache 想直接申请大于 64k 的内存，直接去 PageCache 去申请，当在 PageCache 申请时，如果申请的内存大于 128 页，则直接向系统申请这块内存，如果小于 128 页，则去 SpanList 去查找。
+
+> 简单的说就是      
+> 如果 申请大于64k 且小于 128页的空间
+
+- 因为此时申请的空间大于第二层所能分配的空间，但小于第三层所能分配的最大的空间。所以此时申请时绕过第一层从第三层直接申请
+
+- 释放时也直接将内存释放给第三层
+
+> 如果 申请大于128页的空间
+- 直接从系统是申请， 绕过三层的缓存结构
+- 释放时直接将该块空间进行释放
 
 ----
 
@@ -777,7 +934,7 @@ int listen(int sockfd, int backlog)
 
 分析代码发现，web端和服务器端建立连接，采用 Epoll 的 **边缘触发模式** 同时监听多个文件描述符。
 
-#### Epoll的ET、LT
+#### Epoll 的 ET、LT
 
 - LT水平触发模式
 
@@ -832,4 +989,6 @@ established 状态的连接队列 backlog 参数，历史上被定义为已连�
 
 解决方案
 
-将 listenfd 设置成LT阻塞，或者 ET 非阻塞模式下 while 包裹 accept 即可解决问题。
+将 listenfd 设置成 LT 阻塞，或者 ET 非阻塞模式下 while 包裹 accept 即可解决问题。
+
+> [其他面试题](https://zhuanlan.zhihu.com/p/368154495)
