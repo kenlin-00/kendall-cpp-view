@@ -389,10 +389,6 @@ int output_buf::write2fd(int fd) //取代 io层 write方法
 ---
 ---
 
-- 整个项目采用 master-worker 模式，并使用 Epoll 技术实现网络通信数据包的接受和发送过程
-- 使用定时器设计心跳包机制来监听客户端和服务端的状态，解决客户端异常断开问题
-- 设计并实现 内存池 对内存的读写进行管理，防止了内存管理混乱和内存泄露问题
-
 ---
 
 ## 项目的架构设计
@@ -728,6 +724,10 @@ shared_ptr 是基于引用计数的智能指针，用于共享对象的所有权
 
 ----
 
+> - 使用非阻塞 socket + epoll 的 IO 多路复用 的并发模型来处理客户端的请求，也就是 master - worker 形式。   
+> - 设计心跳包机制来监听客户端和服务端的状态，在这部分主要是定时器的设计
+> - 在内存管理方面，也实现了一个内存池，对内存进行管理
+
 ## 内存池的设计
 
 > https://blog.csdn.net/M_jianjianjiao/article/details/88071878
@@ -749,17 +749,22 @@ shared_ptr 是基于引用计数的智能指针，用于共享对象的所有权
 
 ### 内存池的结构
 
+- thread cache：**线程缓存**是每个线程独有的，用于小于64k的内存的分配，线程从这里申请内存不需要加锁，每个线程独享一个cache，这也就是这个并发线程池高效的地方。
+- Central cache：**中心缓存**是所有线程所共享，thread cache是按需要从Central cache中获取的对象。 Central cache周期性的回收thread cache中的对象，避免一个线程占用了太多的内存，而其他线程的内存比较紧张的情况。达到内存分配在多个线程中更均衡的按需调度的目的。Central cache是存在竞争的，所以从这里取内存对象是需要加锁。
+- Page cache：**页缓存**是在Central cache缓存上面的一层缓存，存储的内存是以页为单位存储及分配 的，Central cache没有内存对象(Span)时，从Page cache分配出一定数量的page，并切割成定长大小的小块内存，分配给Central cache。Page cache会回收Central cache满足条件的Span(使用计数为0)对象，并且合并相邻的页，组成更大的页，缓解内存碎片的问题。
+
 #### 第一层 ThreadCache
 
 ![](https://img-blog.csdnimg.cn/20190302090146379.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L01famlhbmppYW5qaWFv,size_16,color_FFFFFF,t_70)
 
-- 第一层为线程缓存，线程直接从这里拿去内存。每个线程都有自己的 thread cache, 所以不用加锁，这就保证了并发内存池的高效性。
 
 - 使用哈希映射一个存储不同大小数据块的内存块池，通过根据不同大小的对象，构建不同大小的内存的分配器，进行内存的高效分配。
 
 - 当然，在内存分配的过程中会产生内存碎片，而内存碎片分为两种
   - 内碎片：是指因为在内存中会因为内存对齐的原因，在内存分配过程中，为了要对齐到响应的对齐位置，会在造成一定空间的浪费
   - 外碎片：是指在内存分配过程中会，当需要一块内存时，该内存，可能是从一个大块的内存上切割下来的，不断的切割，就会使大内存块变成小的内存块，等到需要大块内存时就会发现找不到。
+
+>使用哈希表和链表来实现
 
 - 根据定长的结构对齐进行改进，将哈希映射的池分为 4 部分，他们的对齐数分别是 8 、16 、128 、512，将这几部分的内碎片的产生进行一定的控制，从而达到减少内碎片的目的，而外碎片通过后面的合并进行解决。
 
@@ -806,7 +811,7 @@ private:
 
 - Central cache 本质是由一个哈希映射的 span 对象自由双向链表构成
 
-> 什么是span? 一个 span 是由多个页组成的一个 span 对象。一页大小是恒定的 4k ((32位下4K 64位下8K)。 span 是为了对 thread cache 还回来的内存进行管理
+> 什么是span? 一个 span 是由多个页组成的一个 span 对象。一页大小是恒定的 4k ((32位下4K 64位下8K)。 span **是为了对 thread cache 还回来的内存进行管理**
 
 ![](https://img-blog.csdnimg.cn/20200818203042292.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3Mjk5NTk2,size_16,color_FFFFFF,t_70#pic_center0)
 
