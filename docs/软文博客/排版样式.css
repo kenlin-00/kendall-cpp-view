@@ -58,8 +58,8 @@ color:#2b2b2b;
 /* 二级标题内容 */
 #nice h2 .content {
   display: flex;
-  color: #4CAF50;
-  font-size: 20px;
+  color: #21a3f1;
+  font-size: 22px;
 
 }
 
@@ -89,32 +89,35 @@ color:#2b2b2b;
 
 /* 三级标题 */
 #nice h3 {
-  font-size: 17px;
-  font-weight: bold;
-  text-align: center;
-  position:relative;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  display:block;
+  border-bottom: 4px solid #4CAF50;
 }
+
 
 /* 三级标题内容 */
 #nice h3 .content {
-  color: #2b2b2b;
-  padding-bottom:2px
+  display: flex;
+  color: #4CAF50;
+  font-size: 20px;
 }
 
-#nice h3 .content:before{
-  content:'';
-  width:30px;
-  height:30px;
-  display:block;
-  background-image:url(https://files.mdnice.com/grass-green.png);
-  background-position:center;
-  background-size:30px;
-  margin:auto;
-  opacity:1;
-  background-repeat:no-repeat;
-  margin-bottom:-8px;
+/* 三级标题后缀 */
+#nice h3 .suffix {
+  display: flex;
+  box-sizing: border-box;
+  width: 20px;
+  height: 10px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  background: RGBA(76, 175, 80, .5);
+  color: rgb(255, 255, 255);
+  font-size: 16px;
+  letter-spacing: 0.544px;
+  justify-content: flex-end;
+  box-sizing: border-box !important;
+  overflow-wrap: break-word !important;
+  float: right;
+  margin-top: -10px;
 }
 
 /* 三级标题修饰 请参考有实例的主题 */
@@ -123,7 +126,10 @@ color:#2b2b2b;
 #nice h4 .content {
   height:16px;
   line-height:16px;
-  font-size: 16px;
+  font-size: 18px;
+  color: #00cc00;
+  font-family: "黑体";
+  font-weight:900;
 }
 
 #nice h4 .content:before{
