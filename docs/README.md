@@ -19,7 +19,8 @@
 > **可以关注我的公众号：【零K同学】，后期的学习笔记会在公众号中分享**   
 
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-01/公众号.56g0fjb12ds0.jpg)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-02/公众号二维码.75dvf969t4w0.png)
+
 
 Markdown 格式参考：[Github Markdown格式](https://guides.github.com/features/mastering-markdown/)
 
