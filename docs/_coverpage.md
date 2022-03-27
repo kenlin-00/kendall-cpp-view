@@ -7,7 +7,7 @@
 </div>
 
 
-[**我的博客**](https://www.zhihu.com/people/kge-85-76/posts)
+[**我的知乎**](https://www.zhihu.com/people/kge-85-76/posts)
 [**GitHub**](https://github.com/linKge-web/kendall-cpp)
-[**开始阅读**](#零K那点记忆)
+[**开始阅读**](#零K同学)
 
