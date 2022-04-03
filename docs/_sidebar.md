@@ -2,7 +2,7 @@
 
 * 我的笔记汇总
   * linux内核学习
-    * [linux笔记-BIOS启动](/我的笔记汇总/linux内核学习/linux笔记-BIOS启动.md)
+    * [BIOS启动](/我的笔记汇总/linux内核学习/linux笔记-BIOS启动.md)
     * [几张图了解CPIU的工作](/我的笔记汇总/linux内核学习/linux笔记-几张图了解CPIU的工作.md)
 
 * 寻offer面试总结
@@ -22,9 +22,8 @@
     * [网络编程相关](/寻offer总结/计算机网络/网络编程相关.md) 
   * 数据库
     * [数据库知识点总结](/寻offer总结/数据库/数据库知识点总结.md) 
-  * 开发技能
-    * [linux系统编程01](/寻offer总结/linux编程/Linux系统编程1.md)
-    * [Linux内核](/寻offer总结/linux编程/Linux内核.md)
+  * linux
+    * [linux系统编程](/寻offer总结/linux编程/Linux系统编程.md)
   * 智力题
     * [智力题](/寻offer总结/智力题/智力题01.md)
 
