@@ -94,4 +94,4 @@ CPU 的访问内存需要涉及到内存分段机制，就是CPU 需要用 **段
 
 <font color="green" size=4>更多读书笔记关注公众号:**零K同学**<font>
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-02/公众号二维码.75dvf969t4w0.png)
+![零K同学](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-02/公众号二维码.leozf4yvy34.jpg)

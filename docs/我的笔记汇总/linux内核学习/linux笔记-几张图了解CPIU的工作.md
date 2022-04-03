@@ -177,7 +177,5 @@ AX = AH + AL， BX = BH+BL, CX = CH + CL,  DX = DH+DL
 
 <font color="green" size=4>更多读书笔记关注公众号:**零K同学**<font>
 
-![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-02/公众号二维码.75dvf969t4w0.png)
-
-
+![零K同学](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-02/公众号二维码.leozf4yvy34.jpg)
 
