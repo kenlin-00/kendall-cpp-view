@@ -1,4 +1,4 @@
-<font color="blue" size=4>大家好，我是零K同学，专注于分享读书笔记的 Linux 开发工程师，点击左上角 蓝字 关注公众号【零K同学】。</font>
+大家好，我是零K同学，专注于分享读书笔记的Linux开发工程师，点击左上角<font color="blue" size=4 font-weight=bolder>蓝字</font>关注公众号: <font color="blue" size=4 font-weight=bolder>零K同学</font>。
 
 ----
 
@@ -92,6 +92,6 @@ CPU 的访问内存需要涉及到内存分段机制，就是CPU 需要用 **段
 
 ----
 
-<font color="green" size=4>获取更多读书笔记关注公众号：**零K同学**<font>
+<font color="green" size=4>更多读书笔记关注公众号:**零K同学**<font>
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-02/公众号二维码.75dvf969t4w0.png)
