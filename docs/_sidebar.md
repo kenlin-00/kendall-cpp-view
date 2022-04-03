@@ -1,13 +1,11 @@
 * [零K同学](/README.md)
 
-
-
 * 我的笔记汇总
-  * 操作系统相关
-    * [01实模式下BIOS工作](/我的笔记汇总/01实模式下BIOS工作.md)
-    * [02比特，字节，字](/我的笔记汇总/02比特，字节，字.md)
+  * linux内核学习
+    * [linux笔记-BIOS启动](/我的笔记汇总/linux内核学习/linux笔记-BIOS启动.md)
+    * [几张图了解CPIU的工作](/我的笔记汇总/linux内核学习/linux笔记-几张图了解CPIU的工作.md)
 
-* 寻offer总结
+* 寻offer面试总结
 
   * Cpp部分
     * [语言基础](/寻offer总结/Cpp基础/语言基础.md)
