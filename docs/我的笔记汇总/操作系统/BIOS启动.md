@@ -6,7 +6,7 @@
 	- [比特，字，字节单位](#比特字字节单位)
 - [BIOS 是怎么启动的](#bios-是怎么启动的)
 	- [找到 BIOD 的入口地址](#找到-biod-的入口地址)
-- [找到 jmp指令](#找到-jmp指令)
+	- [找到 jmp指令](#找到-jmp指令)
 - [小小总结](#小小总结)
 
 ----
@@ -42,7 +42,7 @@
 
 ![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/linux笔记01/BIOS内存分布02.2n8j6l8cnew0.png)
 
-从上图从可以清楚看出 ROM 只有 64KB，所以能够实现所有的 IO 操作非常有限，这也正是在实模式下为什么计算机只能运行硬件 IO 的基本操作。这应该也是 BIOS 为什么叫基本输入输出系统的原因吧。
+从上图可以清楚看出 ROM 只有 64KB，所以能够实现所有的 IO 操作非常有限，这也正是在实模式下为什么计算机只能运行硬件 IO 的基本操作。这应该也是 BIOS 为什么叫基本输入输出系统的原因吧。
 
 > 回到一开始的问题，为什么在 CPU 眼里主板插上的内存条的内存不是“全部内存”呢？
 
@@ -69,7 +69,7 @@ BIOS 是计算机上第一个运行的软件，那么既然是第一个软件，
 
 > **好了，现在找到 BIOS 的入口了，那么 CPU 如何执行它呢？也就是说 CPU 的 cs：ip寄存器怎么将一串数字组织成 0xFFFF0 呢？**
 
-## 找到 jmp指令
+### 找到 jmp指令
 
 > 这里先注释一点，CPU 给一串字符串给地址总线，地址总线将这一字符串映射成地址，CPU 才能访问该地址。
 
@@ -94,4 +94,4 @@ CPU 的访问内存需要涉及到内存分段机制，就是CPU 需要用 **段
 
 <font color="green" size=4>更多读书笔记关注公众号:**零K同学**</font>
 
-![零K同学](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-02/公众号二维码.leozf4yvy34.jpg)
+![](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-02/公众号二维码.leozf4yvy34.jpg)
