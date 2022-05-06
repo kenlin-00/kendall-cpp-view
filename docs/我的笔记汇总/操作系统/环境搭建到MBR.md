@@ -52,6 +52,19 @@
 --enable-x86-debugger \
 --with-x \
 --with-x11
+
+
+## 如果是 Ubuntu 20.4 尝试用这个命令  后面不需要修改 LIBS
+./configure \
+--prefix=/home/kendall/kenspace/bochs/labstr \
+--enable-debugger \
+--enable-disasm \
+--enable-iodebug \
+--enable-x86-debugger \
+--with-x \
+--with-x11 \
+LDFLAGS='-pthread' \
+LIBS='-lX11'
 ```
 
 configure 之后执行 make
