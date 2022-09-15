@@ -1,5 +1,6 @@
 # 零K同学
 
+> 不再维护，有问题可以加 V：LS2amor 私信（备注github）
 
 项目 `GitHub`：[https://github.com/linKge-web/kendall-cpp](https://github.com/linKge-web/kendall-cpp)
 
@@ -16,9 +17,6 @@
 
 零K同学是一名在校生，目前在国内某高校读研，本项目仅仅是自己个人校招学习笔记总结。
 
-> **可以关注我的公众号：【零K同学】，后期的学习笔记会在公众号中分享**   
-
-![零K同学](https://cdn.jsdelivr.net/gh/kendall-cpp/blogPic@main/blog-img-02/公众号二维码.leozf4yvy34.jpg)
 
 
 Markdown 格式参考：[Github Markdown格式](https://guides.github.com/features/mastering-markdown/)
